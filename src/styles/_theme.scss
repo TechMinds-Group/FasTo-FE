@@ -1,0 +1,64 @@
+@use './tokens' as *;
+
+/* Groom-FE Global Theme Styles */
+body {
+  font-family: var(--tm-font-sans);
+  background-color: var(--tm-bg-color);
+  color: var(--tm-text-primary);
+  transition: background-color 0.4s ease, color 0.4s ease;
+  margin: 0;
+}
+
+/* Theme Utilities */
+.tm-card {
+  background-color: var(--tm-surface-color) !important;
+  border: 1px solid var(--tm-border-color) !important;
+  border-radius: var(--tm-border-radius) !important;
+  color: var(--tm-text-primary) !important;
+}
+
+.tm-text-muted {
+  color: var(--tm-text-secondary) !important;
+}
+
+.tm-bg-surface {
+  background-color: var(--tm-surface-color) !important;
+}
+
+[data-theme='dark'] {
+  body .custom-dark-text,
+  body .custom-dark-text label,
+  body .custom-dark-text input,
+  body .text-dark.custom-dark-text,
+  body .text-muted.custom-dark-text {
+    color: var(--tm-text-primary) !important;
+  }
+
+  .alert-warning {
+    background-color: rgba(255, 193, 7, 0.1) !important;
+    color: var(--tm-text-primary) !important;
+    border-color: rgba(255, 193, 7, 0.2) !important;
+    i { color: #ffc107 !important; }
+  }
+
+  .alert-success {
+    background-color: rgba(25, 135, 84, 0.1) !important;
+    color: var(--tm-success) !important;
+    border-color: rgba(25, 135, 84, 0.2) !important;
+    i, span { color: var(--tm-success) !important; }
+  }
+
+  .alert-danger {
+    background-color: rgba(239, 68, 68, 0.1) !important;
+    color: var(--tm-text-primary) !important;
+    border-color: rgba(239, 68, 68, 0.2) !important;
+    i { color: #ef4444 !important; }
+  }
+
+  .alert-info {
+    background-color: rgba(13, 202, 240, 0.1) !important;
+    color: var(--tm-text-primary) !important;
+    border-color: rgba(13, 202, 240, 0.2) !important;
+    i { color: #0dcaf0 !important; }
+  }
+}

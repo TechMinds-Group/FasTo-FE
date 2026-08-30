@@ -1,0 +1,359 @@
+.calendario-page-container {
+  padding: 1.5rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .calendario-wrapper {
+    flex: 1;
+    min-height: 0;
+    
+    // O tm-calendar cuida do scroll interno se necessário.
+    // Usamos um wrapper flexível para ocupar o remanescente da tela.
+    display: flex;
+    flex-direction: column;
+
+    tm-calendar {
+      flex: 1;
+      display: block;
+    }
+  }
+
+  .log-container {
+    min-height: 100px;
+  }
+
+  .calendario-header {
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text-color, #333);
+      margin: 0;
+    }
+  }
+}
+
+/* Ajustes Específicos para o Modo Escuro na Gaveta */
+:host-context([data-theme='dark']) ::ng-deep {
+  tm-drawer {
+    /* Títulos das Seções (Informações do Cliente, Detalhes, Horário) */
+    h6.text-secondary {
+      color: #ffffff !important;
+    }
+
+    /* Textos secundários, ícones (user, whatsapp) e botão cancelar */
+    .text-muted, 
+    .btn-link.text-muted {
+      color: #ffffff !important;
+    }
+
+    /* Labels dentro do componente tm-select (Serviço Desejado, Profissional Responsável) */
+    tm-select label, 
+    tm-select .form-label {
+      color: #ffffff !important;
+    }
+  }
+
+  /* Date Selection Card Dark Mode adjustments */
+  .date-selection-card {
+    background-color: rgba(255, 255, 255, 0.03) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+  
+  .icon-shape {
+    background-color: rgba(37, 99, 235, 0.15) !important; /* Tailwind blue-600 with opacity */
+  }
+
+  .duration-text {
+    color: #1a1a1a !important; /* Cinza quase preto */
+  }
+}
+
+/* Light Mode Styles for Date Selection Card */
+.date-selection-card {
+  background-color: var(--tm-surface-color, #ffffff);
+  border: 1px solid var(--tm-border-color, #e2e8f0);
+}
+
+.icon-shape {
+  background-color: rgba(37, 99, 235, 0.08); /* Light blue background for light mode */
+}
+
+/* =====================================================================
+   Badges de Data & Filtros — Alto Contraste & Design Premium
+   ===================================================================== */
+.agenda-filter-select-wrap {
+  width: 280px;
+  max-width: 100%;
+
+  @media (max-width: 575.98px) {
+    width: 100%;
+  }
+}
+
+/* =====================================================================
+   Responsividade & UX Mobile — Calendário (≤ md Bootstrap / < 992px)
+   Melhora a visualização, legibilidade e área de toque para telas pequenas.
+   ===================================================================== */
+@media (max-width: 991.98px) {
+  :host ::ng-deep {
+    /* Container principal da agenda em mobile — espaçamento enxuto */
+    .tm-calendar-container {
+      padding: 0;
+
+      .calendar-date-badges {
+        margin-top: 0.25rem;
+        max-width: 100%;
+      }
+    }
+
+    /* Cabeçalho de Controles — compacto e facil de tocar */
+    .tm-calendar-container > .row {
+      margin-bottom: 0.5rem !important;
+      --bs-gutter-y: 0.4rem;
+
+      /* Navegação (< Hoje >) e alternador de visão */
+      .btn-group .btn {
+        padding: 0.4rem 0.8rem !important;
+        font-size: 0.82rem !important;
+        min-height: 38px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        &:active {
+          transform: scale(0.97);
+          transition: transform 0.1s ease;
+        }
+      }
+
+      /* Badges de Data */
+      .badge {
+        font-size: 0.72rem !important;
+        padding: 0.35rem 0.65rem !important;
+        white-space: nowrap;
+        border-radius: 50rem !important;
+      }
+    }
+
+    /* Filtro de escopo */
+    .tm-calendar-container > .mb-4 {
+      margin-bottom: 0.5rem !important;
+    }
+
+    /* Grid do Mês (cal-month-view) */
+    .cal-month-view {
+      .cal-header {
+        font-size: 0.62rem !important;
+        font-weight: 700 !important;
+        padding: 6px 0 !important;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+      }
+
+      /* Células dos Dias — área de toque otimizada (min-height 52px) */
+      .cal-day-cell {
+        min-height: 52px !important;
+        padding: 1px !important;
+        touch-action: manipulation;
+        cursor: pointer;
+        transition: background-color 0.15s ease, transform 0.1s ease;
+
+        &:active {
+          background-color: rgba(13, 110, 253, 0.08) !important;
+          transform: scale(0.98);
+        }
+
+        /* Destaque do Dia Atual (Hoje) */
+        &.cal-today {
+          background-color: rgba(13, 110, 253, 0.06) !important;
+
+          .cal-day-number {
+            background-color: var(--bs-primary, #0d6efd) !important;
+            color: #ffffff !important;
+            width: 22px !important;
+            height: 22px !important;
+            border-radius: 50% !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-weight: 700 !important;
+            font-size: 0.68rem !important;
+            margin: 2px 2px 0 0 !important;
+            box-shadow: 0 1px 3px rgba(13, 110, 253, 0.3);
+          }
+        }
+
+        /* Dias fora do mês atual */
+        &.cal-out-month .cal-day-number {
+          opacity: 0.35 !important;
+        }
+      }
+
+      .cal-cell-top {
+        padding: 2px 3px !important;
+
+        .cal-day-number {
+          font-size: 0.72rem !important;
+          font-weight: 600;
+          margin: 1px 2px 0 0 !important;
+          float: right;
+        }
+      }
+
+      /* Container de pílulas de eventos */
+      .cal-events {
+        padding: 0 1px 2px 1px !important;
+        margin: 0 !important;
+        gap: 2px !important;
+        overflow: hidden !important;
+      }
+
+      /* Pílula de Evento no Mês — permite quebrar linha para baixo quando o texto for extenso */
+      .cal-event {
+        font-size: 0.62rem !important;
+        font-weight: 600 !important;
+        line-height: 1.15 !important;
+        height: auto !important;
+        min-height: 20px !important;
+        width: 100% !important;
+        padding: 2px 3px !important;
+        margin: 0 0 2px 0 !important;
+        border-radius: 8px !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+        overflow-wrap: anywhere !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        border-left: 2px solid rgba(0, 0, 0, 0.25) !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+        touch-action: manipulation;
+
+        .cal-event-title,
+        .cal-event-text,
+        mwl-calendar-event-title,
+        a {
+          font-size: 0.62rem !important;
+          font-weight: 600 !important;
+          line-height: 1.15 !important;
+          display: block !important;
+          width: 100% !important;
+          min-width: 0 !important;
+          max-width: 100% !important;
+          white-space: normal !important;
+          word-break: break-word !important;
+          overflow-wrap: anywhere !important;
+          text-align: center !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          box-sizing: border-box !important;
+        }
+
+        @media (max-width: 575.98px) {
+          font-size: 0.56rem !important;
+          padding: 2px 1px !important;
+
+          .cal-event-title,
+          .cal-event-text,
+          mwl-calendar-event-title,
+          a {
+            font-size: 0.56rem !important;
+          }
+        }
+
+        &:active {
+          opacity: 0.8;
+          transform: scale(0.96);
+        }
+      }
+
+      /* Badge de "mais X eventos" */
+      .cal-open-day-events {
+        font-size: 0.62rem !important;
+        font-weight: 700 !important;
+        color: var(--bs-primary, #0d6efd) !important;
+        padding: 0 3px !important;
+      }
+    }
+
+    /* Visão por Dia (cal-day-view) em mobile */
+    .cal-day-view {
+      min-height: calc(100vh - 170px);
+      overflow-y: auto;
+
+      .cal-event-container {
+        padding: 1px 2px !important;
+
+        .cal-event {
+          font-size: 0.75rem !important;
+          line-height: 1 !important;
+          height: 22px !important;
+          min-height: 22px !important;
+          width: calc(100% - 4px) !important;
+          padding: 0 6px !important;
+          border-radius: 11px !important;
+          white-space: nowrap !important;
+          word-break: normal !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          text-align: center !important;
+          min-width: 0 !important;
+          max-width: 100% !important;
+          box-sizing: border-box !important;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+
+          &:active {
+            opacity: 0.85;
+            transform: scale(0.98);
+          }
+
+          .cal-event-title,
+          .cal-event-text,
+          mwl-calendar-event-title,
+          a {
+            font-size: 0.75rem !important;
+            font-weight: 600 !important;
+            line-height: 1 !important;
+            display: block !important;
+            width: 100% !important;
+            min-width: 0 !important;
+            max-width: 100% !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            text-align: center !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-sizing: border-box !important;
+          }
+        }
+      }
+
+      /* Coluna de Hora */
+      .cal-time {
+        font-size: 0.72rem !important;
+        font-weight: 600 !important;
+        width: 46px !important;
+      }
+
+      /* Segmentos de hora toque fácil */
+      .cal-hour-segment {
+        height: 50px !important;
+        touch-action: manipulation;
+
+        &:active {
+          background-color: rgba(13, 110, 253, 0.04) !important;
+        }
+      }
+    }
+  }
+}
+

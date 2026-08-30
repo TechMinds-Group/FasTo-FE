@@ -1,0 +1,24 @@
+:host-context([data-theme='dark']) {
+  .custom-dark-text {
+    color: #ffffff !important;
+  }
+
+  tm-modal {
+    ::ng-deep .form-label {
+      color: #ffffff !important;
+    }
+  }
+}
+
+@media (max-width: 991px) {
+  tm-modal {
+    ::ng-deep .modal-backdrop-blur {
+      align-items: flex-start !important;
+      padding-top: 24px !important;
+    }
+
+    ::ng-deep .modal-premium {
+      max-height: calc(100vh - 48px) !important;
+    }
+  }
+}

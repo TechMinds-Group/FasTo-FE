@@ -1,0 +1,278 @@
+.agendamento-login-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.agendamento-login {
+  position: relative;
+  flex-grow: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 0.25rem 3rem;
+  background-color: var(--tm-bg-color);
+
+  .text-muted {
+    color: var(--tm-text-secondary) !important;
+  }
+
+  &__container {
+    width: 100%;
+    max-width: 430px;
+    margin: 0.125rem auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  &__brand-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-bottom: 0.75rem;
+    padding-right: 2.5rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--tm-border-color) 60%, transparent);
+  }
+
+  &__logo-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background-color: var(--tm-primary, #0d6efd);
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    color: #ffffff !important;
+    border: 2px solid color-mix(in srgb, var(--tm-primary) 30%, transparent);
+    flex-shrink: 0;
+  }
+
+  &__brand-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__nome-estabelecimento {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--tm-text-primary);
+    line-height: 1.2;
+  }
+
+  &__descricao-estabelecimento {
+    font-size: 0.8rem;
+    color: var(--tm-text-secondary);
+    line-height: 1.25;
+    margin-top: 0.2rem;
+  }
+
+  &__telefone-text {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--tm-primary);
+    display: inline-block;
+    margin-top: 0.15rem;
+  }
+
+  &__endereco-wrapper {
+    display: flex;
+    max-width: 100%;
+  }
+
+  &__endereco-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    max-width: 100%;
+    padding: 0.35rem 0.75rem;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--tm-primary) 10%, var(--tm-surface-color));
+    border: 1px solid color-mix(in srgb, var(--tm-primary) 25%, var(--tm-border-color));
+    color: var(--tm-primary);
+    font-size: 0.8rem;
+    line-height: 1.35;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+      background: color-mix(in srgb, var(--tm-primary) 18%, var(--tm-surface-color));
+      border-color: var(--tm-primary);
+    }
+  }
+
+  &__endereco-texto {
+    font-weight: 500;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  &__card {
+    position: relative;
+    width: 100%;
+    padding: 2.5rem;
+    border: 1px solid var(--tm-border-color);
+    border-radius: 16px;
+    background: var(--tm-surface-color);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    animation: slideUp 0.4s ease-out forwards;
+
+    ::ng-deep .form-label {
+      color: var(--tm-text-primary) !important;
+    }
+
+    ::ng-deep .input-wrapper,
+    ::ng-deep .icon-section {
+      i,
+      .text-muted {
+        color: var(--tm-text-secondary, #64748b) !important;
+      }
+    }
+
+    ::ng-deep .agendamento-login__submit .btn {
+      background-color: var(--tm-primary-color, #3b82f6);
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      height: 48px;
+      transition: all 0.2s ease;
+
+      &:hover:not(:disabled) {
+        background-color: var(--tm-primary-hover, #2563eb);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      }
+
+      &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  &__tema {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+    z-index: 5;
+    width: 2.25rem;
+    height: 2.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--tm-border-color);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--tm-surface-color) 80%, transparent);
+    color: var(--tm-text-secondary);
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+
+    &:hover,
+    &:focus-visible {
+      border-color: color-mix(in srgb, var(--tm-primary) 40%, var(--tm-border-color));
+      background: color-mix(in srgb, var(--tm-primary) 10%, var(--tm-surface-color));
+      color: var(--tm-primary);
+      outline: none;
+    }
+
+    &:active {
+      transform: translateY(1px);
+    }
+  }
+
+  &__toggle {
+    display: none;
+  }
+
+  &__cadastro-link {
+    margin-top: 1.25rem;
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--tm-text-secondary);
+  }
+
+  &__cadastro-link-btn {
+    padding: 0;
+    border: none;
+    background: none;
+    font-weight: 700;
+    color: var(--tm-primary);
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--tm-primary);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+  }
+
+  &__divisor {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 1.5rem 0;
+    color: var(--tm-text-secondary);
+    font-size: 0.8rem;
+
+    &::before,
+    &::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--tm-border-color);
+    }
+  }
+}
+
+:host-context([data-theme='dark']) {
+  .agendamento-login {
+    .text-muted {
+      color: var(--tm-text-secondary, #94a3b8) !important;
+    }
+
+    ::ng-deep .input-wrapper,
+    ::ng-deep .icon-section {
+      i,
+      .text-muted {
+        color: #94a3b8 !important;
+      }
+    }
+
+    .alert-danger {
+      background-color: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      border-color: rgba(239, 68, 68, 0.2);
+    }
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 575.98px) {
+  .agendamento-login__card {
+    padding: 1.25rem 1rem;
+  }
+}

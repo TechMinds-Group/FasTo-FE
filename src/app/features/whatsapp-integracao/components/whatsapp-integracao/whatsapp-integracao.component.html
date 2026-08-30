@@ -1,0 +1,461 @@
+<div class="container-fluid container-lg mt-3 mt-sm-4 mt-lg-4 mb-5 px-3 px-sm-4">
+  <!-- Cabeçalho com botão voltar -->
+  <div class="d-flex align-items-center mb-4 gap-3">
+    <button
+      (click)="voltar()"
+      type="button"
+      class="btn btn-outline-secondary shadow-sm p-0 d-flex align-items-center justify-content-center btn-voltar shrink-0 me-1"
+      title="Voltar para Configurações"
+    >
+      <i class="fas fa-arrow-left"></i>
+    </button>
+
+    <div class="min-w-0 flex-fill">
+      <h1 class="h3 mb-1.5 fw-bold custom-dark-text text-break d-flex align-items-center gap-2.5">
+        <i class="fab fa-whatsapp text-success me-2"></i>
+        Integração WhatsApp
+      </h1>
+      <span class="text-muted small custom-dark-text d-block text-break lh-sm ms-0.5">
+        Atendimento e confirmações automáticas via WhatsApp.
+      </span>
+    </div>
+  </div>
+
+  @if (carregando()) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Carregando...</span>
+      </div>
+      <p class="mt-3 text-muted custom-dark-text fw-medium">Verificando conexão...</p>
+    </div>
+  } @else {
+
+    <!-- BLOCO 1: Status da Conexão (sempre visível) -->
+    <section class="card border-0 shadow-sm custom-dark-card rounded-4 mb-4 overflow-hidden">
+      <div
+        class="card-header border-0 bg-transparent p-4 d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-4"
+      >
+        <div class="d-flex align-items-center gap-3.5 min-w-0 flex-fill">
+          <div
+            class="bloco-icone bg-success-subtle text-success d-flex align-items-center justify-content-center shrink-0 me-2"
+          >
+            <i class="fab fa-whatsapp"></i>
+          </div>
+          <div class="min-w-0 flex-fill">
+            <div class="d-flex align-items-center flex-wrap gap-3 mb-1.5">
+              <h2 class="h5 fw-bold mb-0 custom-dark-text text-break me-1">Status da Conexão</h2>
+              <span
+                class="badge border px-3 py-1.5 rounded-pill fw-semibold small shrink-0 d-inline-flex align-items-center gap-2"
+                [class.bg-success-subtle]="conectado()"
+                [class.text-success]="conectado()"
+                [class.border-success-subtle]="conectado()"
+                [class.bg-danger-subtle]="!conectado()"
+                [class.text-danger]="!conectado()"
+                [class.border-danger-subtle]="!conectado()"
+              >
+                <i class="fas fa-circle extra-small"></i>
+                <span>{{ conectado() ? 'Conectado' : 'Desconectado' }}</span>
+              </span>
+            </div>
+            <p class="text-muted small custom-dark-text mb-0 text-break lh-sm mt-1">
+              {{ statusTexto() }}
+            </p>
+          </div>
+        </div>
+
+        @if (!conectado()) {
+          <div class="w-100 w-md-auto shrink-0 mt-2 mt-md-0">
+            <button
+              class="btn btn-success w-100 w-md-auto px-4 py-2.5 fw-bold rounded-pill shadow-sm d-inline-flex align-items-center justify-content-center gap-2.5"
+              (click)="conectar()"
+              [disabled]="conectando()"
+            >
+              @if (conectando()) {
+                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+              } @else {
+                <i class="fab fa-whatsapp fs-5 me-2"></i>
+              }
+              <span>{{ qrCodeBase64() ? 'Gerar novo QR Code' : 'Conectar WhatsApp' }}</span>
+            </button>
+          </div>
+        }
+      </div>
+
+      <div class="card-body p-4 border-top border-secondary-subtle">
+        @if (!conectado() && !qrCodeBase64()) {
+          <div class="p-4 rounded-3 border dia-card">
+            <div class="row align-items-center g-3">
+              <div class="col-12 col-md-8">
+                <div class="fw-bold custom-dark-text fs-6 mb-2 d-flex align-items-center gap-2.5">
+                  <i class="fas fa-robot text-success fs-5 me-2"></i>
+                  <span>Automação de Atendimento</span>
+                </div>
+                <p class="text-muted small custom-dark-text mb-0 lh-sm ms-0.5">
+                  Envio automático de confirmações de agendamento e respostas rápidas aos seus
+                  clientes.
+                </p>
+              </div>
+              <div class="col-12 col-md-4 text-md-end mt-3 mt-md-0">
+                <span
+                  class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill small fw-semibold d-inline-flex align-items-center gap-2"
+                >
+                  <i class="fas fa-bolt me-1"></i>
+                  <span>Conexão Instantânea</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (qrCodeBase64(); as qr) {
+          <div class="text-center py-4 px-3 bg-body-tertiary rounded-4 border my-2">
+            <div
+              class="badge bg-primary-subtle text-primary border border-primary-subtle px-4 py-2 rounded-pill mb-3.5 small fw-semibold d-inline-flex align-items-center gap-2"
+            >
+              <i class="fas fa-qrcode me-1.5"></i>
+              <span>Escaneie com a câmera do seu WhatsApp</span>
+            </div>
+            <div>
+              <img
+                [src]="qr.startsWith('data:') ? qr : 'data:image/png;base64,' + qr"
+                alt="QR Code WhatsApp"
+                class="img-fluid border rounded-3 p-3.5 qr-code-img mb-3 shadow-sm"
+              />
+            </div>
+            <p
+              class="text-muted small mb-0 custom-dark-text text-break lh-base max-w-md mx-auto mt-2"
+            >
+              WhatsApp &gt; <strong>Aparelhos conectados</strong> &gt;
+              <strong>Conectar um dispositivo</strong>.
+            </p>
+          </div>
+        }
+
+        @if (erro(); as msg) {
+          <div
+            class="alert alert-danger d-flex align-items-center gap-3 mt-3.5 p-3.5 rounded-3"
+            role="alert"
+          >
+            <i class="fas fa-exclamation-circle shrink-0 fs-5 me-2"></i>
+            <span class="text-break">{{ msg }}</span>
+          </div>
+        }
+
+        @if (conectado()) {
+          <div
+            class="alert alert-success d-flex align-items-center gap-3 mb-3.5 p-3.5 rounded-3"
+            role="alert"
+          >
+            <i class="fas fa-check-circle fs-5 shrink-0 me-2"></i>
+            <span class="fw-semibold text-break">{{ statusTexto() }}</span>
+          </div>
+
+          @if (dispositivos().length > 0) {
+            <div class="pt-2">
+              <h3 class="h6 fw-bold custom-dark-text mb-3.5 d-flex align-items-center gap-2.5">
+                <i class="fas fa-mobile-alt text-success me-2"></i>
+                <span>Dispositivo Conectado</span>
+              </h3>
+              @for (dev of dispositivos(); track dev.id) {
+                <div class="d-flex align-items-center gap-4 p-4 rounded-3 border dia-card">
+                  @if (dev.profilePicUrl) {
+                    <img
+                      [src]="dev.profilePicUrl"
+                      alt="Foto"
+                      class="rounded-circle perfil-img shrink-0 me-2"
+                    />
+                  } @else {
+                    <div
+                      class="rounded-circle bg-success-subtle d-flex align-items-center justify-content-center avatar-placeholder shrink-0 me-2"
+                    >
+                      <i class="fab fa-whatsapp text-success fs-5"></i>
+                    </div>
+                  }
+                  <div class="min-w-0 flex-fill">
+                    <div class="fw-semibold custom-dark-text text-break fs-6 mb-1">
+                      {{ dev.profileName || 'WhatsApp' }}
+                    </div>
+                    <div class="text-muted small custom-dark-text text-break lh-sm">
+                      {{ formatarNumero(dev.ownerJid) }}
+                      <span class="mx-2">•</span>
+                      Conectado em {{ dev.createdAt | date: 'dd/MM/yyyy' }}
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        }
+      </div>
+    </section>
+
+    <!-- BLOCO 2: Configurações de Atendimento (Colapsável) -->
+    <section class="card border-0 shadow-sm custom-dark-card rounded-4 mb-4 overflow-hidden">
+      <div
+        class="card-header border-0 bg-transparent p-4 d-flex align-items-center justify-content-between collapsible-trigger gap-4"
+        (click)="toggleBlocoConfig()"
+        role="button"
+        [attr.aria-expanded]="blocoConfigExpandido()"
+      >
+        <div class="d-flex align-items-center gap-3.5 min-w-0 flex-fill">
+          <div
+            class="bloco-icone bg-primary-subtle text-primary d-flex align-items-center justify-content-center shrink-0 me-2"
+          >
+            <i class="fas fa-sliders-h"></i>
+          </div>
+          <div class="min-w-0 flex-fill">
+            <h2 class="h5 fw-bold mb-0 custom-dark-text text-break">
+              Configurações de Atendimento
+            </h2>
+            <p class="text-muted small custom-dark-text mb-0 text-break lh-sm mt-1">
+              Mensagens automáticas e modo de teste.
+            </p>
+          </div>
+        </div>
+
+        <div class="chevron-icon-box shrink-0 ms-3">
+          <i
+            class="fas text-muted custom-dark-text fs-5 transition-transform"
+            [class.fa-chevron-up]="blocoConfigExpandido()"
+            [class.fa-chevron-down]="!blocoConfigExpandido()"
+          ></i>
+        </div>
+      </div>
+
+      @if (blocoConfigExpandido()) {
+        <div class="card-body p-4 border-top border-secondary-subtle">
+          <form [formGroup]="form">
+            <div class="mb-4">
+              <tm-text
+                formControlName="welcomeMessage"
+                [textarea]="true"
+                [rows]="3"
+                label="Mensagem de Boas-Vindas"
+                placeholder="Digite a mensagem enviada automaticamente..."
+                icon="fas fa-comment-dots"
+              ></tm-text>
+            </div>
+
+            <div class="mb-4">
+              <tm-text
+                formControlName="closingMessage"
+                [textarea]="true"
+                [rows]="3"
+                label="Mensagem de Encerramento"
+                placeholder="Mensagem enviada ao cliente quando a conversa é encerrada..."
+                icon="fas fa-hand-peace"
+              ></tm-text>
+              <div class="form-text custom-dark-text small mt-2 ms-1 lh-sm">
+                Enviada ao cliente quando a conversa é encerrada (por "sair" do cliente ou
+                encerramento pelo profissional).
+              </div>
+            </div>
+
+            <div class="p-4 rounded-3 border dia-card mb-4">
+              <div class="fw-bold custom-dark-text fs-6 mb-1 d-flex align-items-center gap-2.5">
+                <i class="fas fa-bell text-primary me-2"></i>
+                <span>Lembretes de Agendamento</span>
+              </div>
+              <div class="form-text custom-dark-text small mb-3 ms-1 lh-sm">
+                Enviados automaticamente para o cliente. O lembrete de 1 dia só é enviado quando o
+                agendamento foi feito com mais de 2 dias de antecedência.
+              </div>
+              <div class="row g-4">
+                <div class="col-12 col-lg-6">
+                  <tm-text
+                    formControlName="lembrete1DiaMensagem"
+                    [textarea]="true"
+                    [rows]="5"
+                    label="Lembrete 1 dia antes"
+                    placeholder="Mensagem enviada 1 dia antes do agendamento..."
+                    icon="fas fa-calendar-day"
+                  ></tm-text>
+                </div>
+                <div class="col-12 col-lg-6">
+                  <tm-text
+                    formControlName="lembrete4hMensagem"
+                    [textarea]="true"
+                    [rows]="5"
+                    label="Lembrete 4 horas antes"
+                    placeholder="Mensagem enviada 4 horas antes do agendamento..."
+                    icon="fas fa-hourglass-half"
+                  ></tm-text>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <div class="form-text custom-dark-text small mb-2 ms-1 fw-semibold">
+                Variáveis disponíveis:
+              </div>
+              <div class="table-responsive">
+                <table class="table table-sm table-bordered mb-0 small placeholder-table">
+                  <thead>
+                    <tr>
+                      <th class="fw-semibold var-col">Código</th>
+                      <th class="fw-semibold">O que faz</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (variavel of variaveisDisponiveis; track variavel.codigo) {
+                      <tr>
+                        <td>
+                          <code>{{ variavel.codigo }}</code>
+                        </td>
+                        <td>{{ variavel.descricao }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="p-4 rounded-3 border dia-card mb-4">
+              <div class="form-check form-switch mb-0">
+                <input
+                  class="form-check-input me-2"
+                  type="checkbox"
+                  role="switch"
+                  id="testMode"
+                  formControlName="testMode"
+                />
+                <label
+                  class="form-check-label fw-bold custom-dark-text fs-6 mb-0 text-break ms-1"
+                  for="testMode"
+                >
+                  <i class="fas fa-flask me-2 text-warning"></i>
+                  <span>Modo Teste</span>
+                </label>
+              </div>
+              <div class="form-text custom-dark-text small mt-2 ms-1 lh-sm">
+                Restringe as respostas automáticas apenas aos números abaixo.
+              </div>
+
+              @if (form.get('testMode')?.value) {
+                <div class="row g-4 mt-3">
+                  <div class="col-12 col-md-4">
+                    <tm-text
+                      formControlName="testNumber1"
+                      label="Número 1 (teste)"
+                      placeholder="(11) 99999-9999"
+                      mask="phone"
+                      [maxlength]="15"
+                      icon="fas fa-phone"
+                    ></tm-text>
+                  </div>
+                  <div class="col-12 col-md-4">
+                    <tm-text
+                      formControlName="testNumber2"
+                      label="Número 2 (teste)"
+                      placeholder="(11) 99999-9999"
+                      mask="phone"
+                      [maxlength]="15"
+                      icon="fas fa-phone"
+                    ></tm-text>
+                  </div>
+                  <div class="col-12 col-md-4">
+                    <tm-text
+                      formControlName="testNumber3"
+                      label="Número 3 (teste)"
+                      placeholder="(11) 99999-9999"
+                      mask="phone"
+                      [maxlength]="15"
+                      icon="fas fa-phone"
+                    ></tm-text>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Ações Internas -->
+            <div
+              class="pt-4 mt-3 border-top d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center justify-content-between gap-4"
+            >
+
+
+
+              <div
+                class="d-flex flex-column flex-sm-row gap-3 w-100 w-sm-auto ms-auto justify-content-sm-end"
+              >
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary px-4 py-2.5 fw-semibold rounded-pill w-100 w-sm-auto"
+                  (click)="carregarConfig()"
+                >
+                  <i class="fas fa-times me-2"></i>Cancelar
+                </button>
+
+                <button
+                  type="button"
+                  class="btn btn-primary px-4 py-2.5 fw-bold rounded-pill w-100 w-sm-auto shadow-sm"
+                  (click)="salvarConfig()"
+                  [disabled]="configSalvando()"
+                >
+                  @if (configSalvando()) {
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                  } @else {
+                    <i class="fas fa-save me-2"></i>
+                  }
+                  Salvar
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      }
+    </section>
+
+    <!-- BLOCO 3: Como Funciona? (Colapsável) -->
+    <section class="card border-0 shadow-sm custom-dark-card rounded-4 mb-4 overflow-hidden">
+      <div
+        class="card-header border-0 bg-transparent p-4 d-flex align-items-center justify-content-between collapsible-trigger gap-4"
+        (click)="toggleBlocoAjuda()"
+        role="button"
+        [attr.aria-expanded]="blocoAjudaExpandido()"
+      >
+        <div class="d-flex align-items-center gap-3.5 min-w-0 flex-fill">
+          <div
+            class="bloco-icone bg-warning-subtle text-warning d-flex align-items-center justify-content-center shrink-0 me-2"
+          >
+            <i class="fas fa-question-circle"></i>
+          </div>
+          <div class="min-w-0 flex-fill">
+            <h2 class="h5 fw-bold mb-0 custom-dark-text text-break">Como Funciona?</h2>
+            <p class="text-muted small custom-dark-text mb-0 text-break lh-sm mt-1">
+              Passos para conectar.
+            </p>
+          </div>
+        </div>
+
+        <div class="chevron-icon-box shrink-0 ms-3">
+          <i
+            class="fas text-muted custom-dark-text fs-5 transition-transform"
+            [class.fa-chevron-up]="blocoAjudaExpandido()"
+            [class.fa-chevron-down]="!blocoAjudaExpandido()"
+          ></i>
+        </div>
+      </div>
+
+      @if (blocoAjudaExpandido()) {
+        <div class="card-body p-4 border-top border-secondary-subtle">
+          <ol class="mb-0 ps-4 pe-2 custom-dark-text lh-base">
+            <li class="mb-3">Abra o <strong>WhatsApp</strong> no celular.</li>
+            <li class="mb-3">Acesse <strong>Aparelhos conectados</strong>.</li>
+            <li class="mb-3">Toque em <strong>Conectar um dispositivo</strong>.</li>
+            <li class="mb-3">Escaneie o <strong>QR Code</strong> no topo da tela.</li>
+            <li class="mb-0">Pronto! Atendimento automático ativo.</li>
+          </ol>
+          <div
+            class="alert alert-warning d-flex align-items-start gap-3 mt-4 mb-0 p-4 rounded-3 shadow-sm"
+            role="alert"
+          >
+            <i class="fas fa-exclamation-triangle fs-5 shrink-0 me-2.5 mt-0.5 text-warning"></i>
+            <span class="text-break lh-sm">
+              Desconecte outros bots de WhatsApp antes de parear.
+            </span>
+          </div>
+        </div>
+      }
+    </section>
+  }
+</div>
