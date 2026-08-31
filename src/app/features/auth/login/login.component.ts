@@ -60,8 +60,13 @@ export class LoginComponent implements OnInit {
 
     this.authService.login({ estabelecimento: estabelecimento!, email: email!, password: password! }, rememberMe!)
       .subscribe({
-        next: () => {
+        next: (user) => {
           this.isLoading.set(false);
+          if (user?.requirePasswordChange || this.authService.currentUser()?.requirePasswordChange) {
+            this.isForceChangePassword.set(true);
+            this.errorMessage.set('Sua senha foi resetada. Por favor, crie uma nova senha para acessar o sistema.');
+            return;
+          }
           if (rememberMe) {
             sessionStorage.setItem('login_remember_me', 'true');
             sessionStorage.setItem('login_estabelecimento', estabelecimento!);
@@ -71,7 +76,7 @@ export class LoginComponent implements OnInit {
             sessionStorage.removeItem('login_estabelecimento');
             sessionStorage.removeItem('login_email');
           }
-          this.router.navigate(['/']); // Redirecionar para dashboard/home
+          this.router.navigate(['/']);
         },
         error: (err) => {
           this.isLoading.set(false);

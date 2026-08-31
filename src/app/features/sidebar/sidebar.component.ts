@@ -85,14 +85,19 @@ export class SidebarComponent implements OnInit {
 
       return [
         {
-          label: 'Perfil',
-          icon: 'fas fa-user-shield',
-          route: '/sg-perfil-x7k9p',
-        },
-        {
           label: 'Estabelecimentos',
           icon: 'fas fa-store',
           route: '/sg-estabelecimentos-x7k9p',
+        },
+        {
+          label: 'Planos',
+          icon: 'fas fa-crown',
+          route: '/sg-planos-x7k9p',
+        },
+        {
+          label: 'Perfil',
+          icon: 'fas fa-user-shield',
+          route: '/sg-perfil-x7k9p',
         },
         {
           label: 'Sair',

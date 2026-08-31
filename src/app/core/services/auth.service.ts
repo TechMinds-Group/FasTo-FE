@@ -23,6 +23,7 @@ export interface UserContext {
   roleColor?: string;
   roleIconClass?: string;
   estabelecimento?: string;
+  requirePasswordChange?: boolean;
 }
 
 @Injectable({
@@ -172,6 +173,42 @@ export class AuthService {
     return this.http.post<any>(`${environment.apiUrl}/sg-empresas/${empresaId}/usuarios`, data, {
       withCredentials: true,
       headers: { 'X-Skip-Error-Toast': 'true' }
+    });
+  }
+
+  getSgPlanos(): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiUrl}/sg-planos`, {
+      withCredentials: true
+    });
+  }
+
+  getSgPlanoById(id: string): Observable<any> {
+    return this.http.get<any>(`${environment.apiUrl}/sg-planos/${id}`, {
+      withCredentials: true
+    });
+  }
+
+  createSgPlano(data: any): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/sg-planos`, data, {
+      withCredentials: true
+    });
+  }
+
+  updateSgPlano(id: string, data: any): Observable<any> {
+    return this.http.put<any>(`${environment.apiUrl}/sg-planos/${id}`, data, {
+      withCredentials: true
+    });
+  }
+
+  deleteSgPlano(id: string): Observable<any> {
+    return this.http.delete<any>(`${environment.apiUrl}/sg-planos/${id}`, {
+      withCredentials: true
+    });
+  }
+
+  updateSgEmpresaPlano(empresaId: string, data: any): Observable<any> {
+    return this.http.put<any>(`${environment.apiUrl}/sg-empresas/${empresaId}/plano`, data, {
+      withCredentials: true
     });
   }
 

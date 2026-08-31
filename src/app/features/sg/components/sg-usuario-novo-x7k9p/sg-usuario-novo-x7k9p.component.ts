@@ -3,14 +3,13 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TmTextComponent, TmSelectComponent, TmToastService } from '@techminds-group/tm-angular-lib';
-import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 import { ThemeService } from '../../../../core/services/theme.service';
 import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-sg-usuario-novo-x7k9p',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TmTextComponent, TmSelectComponent, TranslatePipe],
+  imports: [CommonModule, ReactiveFormsModule, TmTextComponent, TmSelectComponent],
   templateUrl: './sg-usuario-novo-x7k9p.component.html',
   styleUrl: './sg-usuario-novo-x7k9p.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

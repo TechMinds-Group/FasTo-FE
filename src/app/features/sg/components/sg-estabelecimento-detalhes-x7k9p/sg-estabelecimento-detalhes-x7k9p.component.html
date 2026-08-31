@@ -184,20 +184,49 @@
           <div class="card border-0 shadow-sm p-4 custom-dark-card rounded-4">
             <div class="border-bottom border-secondary pb-3 mb-4">
               <h3 class="h5 fw-bold mb-0 custom-dark-text d-flex align-items-center gap-2">
-                <i class="fas fa-file-contract text-warning"></i><span>Assinatura & Tenant</span>
+                <i class="fas fa-crown text-warning"></i><span>Plano de Assinatura</span>
               </h3>
             </div>
 
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-muted text-uppercase mb-2">Plano Atual</label>
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1.5 rounded-pill fw-bold d-inline-block mb-2">
+                {{ empresa().planoAssinatura || 'Sem plano' }}
+              </span>
+              <p class="text-muted small mb-0">Validade: {{ empresa().assinaturaValidaAte ? (empresa().assinaturaValidaAte | date:'dd/MM/yyyy') : 'Não definida' }}</p>
+            </div>
+
+            @if (planosOptions().length > 0) {
+              <div class="mb-3">
+                <label class="form-label small fw-bold text-muted text-uppercase mb-2">Alterar Plano</label>
+                <div class="d-flex flex-column gap-2">
+                  <tm-select
+                    [label]="'Selecione um plano'"
+                    [options]="[{ value: '', label: 'Nenhum' }, ...planosOptions()]"
+                    [value]="selectedPlanoId()"
+                    (valueChange)="selectedPlanoId.set($event)"
+                    [darkMode]="themeService.isDarkMode()"
+                    class="custom-dark-text"
+                  ></tm-select>
+                  @if (selectedPlanoId() !== (empresa().planoSistemaId || '')) {
+                    <button type="button" (click)="salvarPlano()" class="btn btn-success btn-sm fw-bold rounded-3" [disabled]="savingPlano()">
+                      @if (savingPlano()) {
+                        <span class="spinner-border spinner-border-sm me-1"></span>Salvando...
+                      } @else {
+                        <i class="fas fa-save me-1"></i>Salvar Plano
+                      }
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+
             <ul class="list-group list-group-flush bg-transparent mb-0">
               <li class="list-group-item bg-transparent text-muted px-0 py-2.5">
-                <span class="d-block small text-uppercase fw-bold mb-1">Plano Atual</span>
-                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1.5 rounded-pill fw-bold">
-                  {{ empresa().planoAssinatura || 'FasTo Pro' }}
+                <span class="d-block small text-uppercase fw-bold mb-1">Status</span>
+                <span class="badge {{ empresa().statusAssinatura === 'Ativo' ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-warning-subtle text-warning' }} px-3 py-1.5 rounded-pill fw-bold">
+                  {{ empresa().statusAssinatura || 'Ativo' }}
                 </span>
-              </li>
-              <li class="list-group-item bg-transparent text-muted px-0 py-2.5">
-                <span class="d-block small text-uppercase fw-bold mb-1">Válido Até</span>
-                <span class="text-white fw-semibold">{{ empresa().assinaturaValidaAte | date: 'dd/MM/yyyy' }}</span>
               </li>
               <li class="list-group-item bg-transparent text-muted px-0 py-2.5">
                 <span class="d-block small text-uppercase fw-bold mb-1">Tenant ID</span>

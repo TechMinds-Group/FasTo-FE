@@ -1,0 +1,77 @@
+<div class="sg-acesso-page">
+  <div class="container mt-5 mb-5">
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <button (click)="voltar()" class="btn btn-outline-secondary rounded-circle p-2 shadow-sm btn-voltar" title="Cancelar cadastro">
+        <i class="fas fa-arrow-left custom-dark-text"></i>
+      </button>
+      <div>
+        <h1 class="h2 fw-bold mb-1 custom-dark-text">Novo Plano</h1>
+        <p class="text-muted small mb-0 custom-dark-text">Cadastre um novo plano de assinatura para estabelecimentos.</p>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-12">
+        <div class="card border-0 shadow-sm p-4 custom-dark-card rounded-4">
+          <form [formGroup]="form" (ngSubmit)="salvar()">
+            <div class="row g-3">
+
+              <div class="col-sm-6 col-12">
+                <tm-text formControlName="nome" [label]="'Nome do Plano *'" placeholder="Ex: FasTo Pro" class="custom-dark-text"></tm-text>
+                @if (form.get('nome')?.touched && form.get('nome')?.invalid) {
+                  <div class="text-danger extra-small mt-1">Nome é obrigatório.</div>
+                }
+              </div>
+
+              <div class="col-sm-6 col-12">
+                <tm-text formControlName="valor" [label]="'Valor (R$) *'" type="number" placeholder="89,90" class="custom-dark-text"></tm-text>
+              </div>
+
+              <div class="col-12">
+                <tm-text formControlName="descricao" [label]="'Descrição'" placeholder="Descreva o plano..." class="custom-dark-text"></tm-text>
+              </div>
+
+              <div class="col-sm-6 col-12">
+                <tm-text formControlName="limiteProfissionais" [label]="'Limite de Profissionais *'" type="number" placeholder="5" class="custom-dark-text"></tm-text>
+              </div>
+
+              <div class="col-sm-6 col-12">
+                <tm-text formControlName="limiteClientes" [label]="'Limite de Clientes *'" type="number" placeholder="100" class="custom-dark-text"></tm-text>
+              </div>
+
+              <div class="col-sm-6 col-12">
+                <tm-select
+                  formControlName="ciclo"
+                  [label]="'Ciclo de Cobrança *'"
+                  [options]="cicloOptions()"
+                  class="custom-dark-text"
+                ></tm-select>
+              </div>
+
+              <div class="col-sm-6 col-12">
+                <div class="form-check form-switch mt-4 pt-3">
+                  <input class="form-check-input custom-switch" type="checkbox" role="switch" id="switchAtivo"
+                    [checked]="form.get('status')?.value === 'Ativo'"
+                    (change)="form.patchValue({ status: $event ? 'Ativo' : 'Inativo' })" />
+                  <label class="form-check-label ms-2 fw-semibold text-white" for="switchAtivo">Plano Ativo</label>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="d-flex gap-3 mt-4 justify-content-end flex-column flex-sm-row">
+              <button type="button" class="btn btn-outline-secondary fw-semibold px-4 py-2 rounded-3" (click)="voltar()">Cancelar</button>
+              <button type="submit" class="btn btn-primary fw-bold px-4 py-2 rounded-3" [disabled]="salvando()">
+                @if (salvando()) {
+                  <span class="spinner-border spinner-border-sm me-2" role="status"></span>Salvando...
+                } @else {
+                  <i class="fas fa-save me-2"></i>Salvar
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

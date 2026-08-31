@@ -298,6 +298,21 @@ export const routes: Routes = [
           import('./features/sg/components/sg-usuario-novo-x7k9p/sg-usuario-novo-x7k9p.component').then((m) => m.SgUsuarioNovoX7k9pComponent),
       },
       {
+        path: 'sg-planos-x7k9p',
+        loadComponent: () =>
+          import('./features/sg/components/sg-planos-x7k9p/sg-planos-x7k9p.component').then((m) => m.SgPlanosX7k9pComponent),
+      },
+      {
+        path: 'sg-plano-novo-x7k9p',
+        loadComponent: () =>
+          import('./features/sg/components/sg-plano-novo-x7k9p/sg-plano-novo-x7k9p.component').then((m) => m.SgPlanoNovoX7k9pComponent),
+      },
+      {
+        path: 'sg-plano-editar-x7k9p/:id',
+        loadComponent: () =>
+          import('./features/sg/components/sg-plano-editar-x7k9p/sg-plano-editar-x7k9p.component').then((m) => m.SgPlanoEditarX7k9pComponent),
+      },
+      {
         path: 'users',
         redirectTo: 'gestao/gestao-usuarios',
         pathMatch: 'full',
