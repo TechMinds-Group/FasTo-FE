@@ -72,7 +72,7 @@ export const enUS: TranslationSchema = {
   },
   GUIA: {
     TITLE: 'System Guide',
-    SUBTITLE: 'Everything you need to know to use Groom.',
+    SUBTITLE: 'Everything you need to know to use FasTo.',
     VERSAO: 'Version',
     NOVIDADES: "What's New",
     MUDANCAS: 'Changes',
@@ -81,11 +81,11 @@ export const enUS: TranslationSchema = {
   },
   ASSINATURA: {
     HEADER_TITLE: 'My Subscription',
-    HEADER_SUBTITLE: 'Manage your Groom system license, view invoices, and account limits.',
+    HEADER_SUBTITLE: 'Manage your FasTo system license, view invoices, and account limits.',
     LOADING: 'Loading...',
     PLANO_ATUAL: {
       TITLE: 'Current Plan',
-      SUBTITLE: 'Track your Groom system subscription details.',
+      SUBTITLE: 'Track your FasTo system subscription details.',
       STATUS_PREFIX: 'Your subscription is',
       PRICE_LABEL: 'Price',
       VALID_UNTIL: 'Valid until',
@@ -105,7 +105,7 @@ export const enUS: TranslationSchema = {
     },
     RENOVACAO: {
       TITLE: 'Renewal / Plan Subscription',
-      SUBTITLE: 'Select the desired plan to unlock or renew 1 month of Groom system usage. Payment is made via Pix with Mercado Pago.',
+      SUBTITLE: 'Select the desired plan to unlock or renew 1 month of FasTo system usage. Payment is made via Pix with Mercado Pago.',
       SELECT_PLAN_LABEL: 'Select Desired Plan',
       PER_MONTH: '/ month',
       UP_TO: 'Up to',
@@ -128,7 +128,7 @@ export const enUS: TranslationSchema = {
       START_USING: 'Get Started',
     },
     PIX_MODAL: {
-      TITLE: 'Groom Subscription (Pix Payment)',
+      TITLE: 'FasTo Subscription (Pix Payment)',
       HIRING_TEXT: 'You are subscribing to',
       MONTH_SINGULAR: 'month',
       MONTH_PLURAL: 'months',

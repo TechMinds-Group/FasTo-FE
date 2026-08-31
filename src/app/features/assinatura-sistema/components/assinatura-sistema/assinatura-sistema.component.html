@@ -12,12 +12,12 @@
 
   <div class="row">
     <div class="col-lg-6 mb-4">
-      <app-plano-atual [plano]="planoGroom()" />
+      <app-plano-atual [plano]="planoFasTo()" />
     </div>
 
     <div class="col-lg-6 mb-4">
       <app-uso-licenca
-        [plano]="planoGroom()"
+        [plano]="planoFasTo()"
         [pctProfissionais]="pctProfissionais()"
         [pctClientes]="pctClientes()"
       />
@@ -29,7 +29,7 @@
           [planosDisponiveis]="planosDisponiveis()"
           [planoSelecionado]="planoSelecionado()"
           [valorTotal]="valorTotal()"
-          [nomePlanoAtual]="planoGroom().nome"
+          [nomePlanoAtual]="planoFasTo().nome"
           [mostrarCheckoutMp]="mostrarCheckoutMp()"
           [pagamentoSucesso]="pagamentoSucesso()"
           (selecionarPlano)="aoSelecionarPlano($event)"

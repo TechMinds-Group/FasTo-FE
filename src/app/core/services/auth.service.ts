@@ -73,6 +73,34 @@ export class AuthService {
     );
   }
 
+  sgLogin(emailOrUsername: string, password: string, rememberMe = true): Observable<any> {
+    const body = { emailOrUsername, password, rememberMe };
+    return this.http.post<any>(`${environment.apiUrl}/sg-login?useCookies=true&useSessionCookies=${!rememberMe}`, body, {
+      withCredentials: true
+    }).pipe(
+      switchMap(() => this.getMe()),
+      tap(user => {
+        if (user && user.tenantId) {
+          localStorage.setItem('tenant_id', user.tenantId);
+        }
+      })
+    );
+  }
+
+  sgUpdateProfile(currentUsername: string, newUsername: string, newEmail: string): Observable<any> {
+    const body = { currentUsername, newUsername, newEmail };
+    return this.http.post<any>(`${environment.apiUrl}/sg-update-profile`, body, {
+      withCredentials: true
+    });
+  }
+
+  sgChangePassword(username: string, currentPassword: string, newPassword: string): Observable<any> {
+    const body = { username, currentPassword, newPassword };
+    return this.http.post<any>(`${environment.apiUrl}/sg-change-password`, body, {
+      withCredentials: true
+    });
+  }
+
   getMe(): Observable<UserContext> {
     return this.http.get<UserContext>(`${this.baseApiUrl}/me`, {
       withCredentials: true,
@@ -103,6 +131,31 @@ export class AuthService {
   // will automatically slide the cookie expiration if halfway through its life.
   
   // Logout will clear the cookie from the backend
+  getSgEmpresas(): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiUrl}/sg-empresas`, {
+      withCredentials: true
+    });
+  }
+
+  getSgEmpresaById(id: string): Observable<any> {
+    return this.http.get<any>(`${environment.apiUrl}/sg-empresas/${id}`, {
+      withCredentials: true
+    });
+  }
+
+  getSgFluxosWhatsApp(id: string): Observable<any> {
+    return this.http.get<any>(`${environment.apiUrl}/sg-empresas/${id}/fluxos-whatsapp`, {
+      withCredentials: true
+    });
+  }
+
+  updateSgFluxosWhatsApp(id: string, fluxos: any): Observable<any> {
+    return this.http.put<any>(`${environment.apiUrl}/sg-empresas/${id}/fluxos-whatsapp`, fluxos, {
+      withCredentials: true,
+      headers: { 'X-Skip-Error-Toast': 'true' }
+    });
+  }
+
   logout(): Observable<any> {
     return this.http.post<any>(`${environment.apiUrl}/logout`, {}, {
       withCredentials: true

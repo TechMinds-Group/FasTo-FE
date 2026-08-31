@@ -1,4 +1,4 @@
-import {
+﻿import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
@@ -440,15 +440,15 @@ export class DisponibilidadeComponent implements OnInit, AfterViewInit {
       );
 
       localStorage.setItem(
-        `groom_usar_est_${profissionalId}`,
+        `fasto_usar_est_${profissionalId}`,
         this.usarHorarioEstabelecimento() ? 'true' : 'false',
       );
       localStorage.setItem(
-        `groom_servicos_${profissionalId}`,
+        `fasto_servicos_${profissionalId}`,
         JSON.stringify(this.servicosSelecionados()),
       );
       localStorage.setItem(
-        `groom_planos_${profissionalId}`,
+        `fasto_planos_${profissionalId}`,
         JSON.stringify(this.planosSelecionados()),
       );
 
@@ -476,7 +476,7 @@ export class DisponibilidadeComponent implements OnInit, AfterViewInit {
 
     let servs = dados.servicoIds ?? [];
     if (servs.length === 0 && profId) {
-      const storedServs = localStorage.getItem(`groom_servicos_${profId}`);
+      const storedServs = localStorage.getItem(`fasto_servicos_${profId}`);
       if (storedServs) {
         try {
           servs = JSON.parse(storedServs);
@@ -487,7 +487,7 @@ export class DisponibilidadeComponent implements OnInit, AfterViewInit {
 
     let plans = dados.planoIds ?? [];
     if (plans.length === 0 && profId) {
-      const storedPlans = localStorage.getItem(`groom_planos_${profId}`);
+      const storedPlans = localStorage.getItem(`fasto_planos_${profId}`);
       if (storedPlans) {
         try {
           plans = JSON.parse(storedPlans);
@@ -496,7 +496,7 @@ export class DisponibilidadeComponent implements OnInit, AfterViewInit {
     }
     this.planosSelecionados.set(plans);
 
-    const storedVal = profId ? localStorage.getItem(`groom_usar_est_${profId}`) : null;
+    const storedVal = profId ? localStorage.getItem(`fasto_usar_est_${profId}`) : null;
     const personalizar = storedVal === 'true';
     this.usarHorarioEstabelecimento.set(personalizar);
 

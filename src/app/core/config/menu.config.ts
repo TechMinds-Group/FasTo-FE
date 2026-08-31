@@ -21,41 +21,32 @@ export const ALL_SIDEBAR_MENU_ITEMS: MenuItem[] = [
     roles: ['Administrador', 'Profissional'],
     subItems: [
       { label: 'Clientes', icon: 'fas fa-user', route: '/gestao/clientes' },
-      { label: 'Assinantes', icon: 'fas fa-user-check', route: '/gestao/assinantes' },
-      { label: 'Profissionais', icon: 'fas fa-user-tie', route: '/gestao/profissionais' },
+      { label: 'Atendentes', icon: 'fas fa-user-tie', route: '/gestao/profissionais' },
       { label: 'Usuários', icon: 'fas fa-user-shield', route: '/gestao/gestao-usuarios', roles: ['Administrador'] },
     ],
   },
   {
     label: 'Serviços',
-    icon: 'fas fa-cut',
+    icon: 'fas fa-concierge-bell',
+    route: '/servicos/catalogo',
     roles: ['Administrador', 'Profissional'],
-    subItems: [
-      { label: 'Catálogo', icon: 'fas fa-list', route: '/servicos/catalogo' },
-      { label: 'Planos', icon: 'fas fa-award', route: '/servicos/planos-estabelecimento' },
-    ],
   },
   {
-    label: 'Agendamento Online',
+    label: 'Link de Agendamento',
     icon: 'fas fa-globe',
+    route: '/agendamento-estabelecimento',
     roles: ['Administrador', 'Profissional'],
-    subItems: [
-      {
-        label: 'Link do Cliente',
-        icon: 'fas fa-external-link-alt',
-        route: '/agendamento-estabelecimento',
-      },
-    ],
   },
   {
     label: 'Configurações',
     icon: 'fas fa-cog',
     roles: ['Administrador'],
     subItems: [
-      { label: 'Estabelecimento', icon: 'fas fa-store', route: '/configuracoes/estabelecimento' },
+      { label: 'Empresa', icon: 'fas fa-store', route: '/configuracoes/estabelecimento' },
+      { label: 'Horários', icon: 'fas fa-clock', route: '/configuracoes/horarios' },
       { label: 'WhatsApp', icon: 'fab fa-whatsapp', route: '/configuracoes/whatsapp' },
-      { label: 'Minha Assinatura', icon: 'fas fa-credit-card', route: '/assinatura' },
-      { label: 'Logs do Sistema', icon: 'fas fa-history', route: '/configuracoes/logs' },
+      { label: 'Assinatura', icon: 'fas fa-credit-card', route: '/assinatura' },
+      { label: 'Logs', icon: 'fas fa-history', route: '/configuracoes/logs' },
     ],
   },
   {
@@ -73,7 +64,7 @@ export const VISIBLE_SIDEBAR_MENUS: string[] = [
   'Agenda',
   'Gestão',
   'Serviços',
-  'Agendamento Online',
+  'Link de Agendamento',
   'Configurações',
   'Sair',
 ];

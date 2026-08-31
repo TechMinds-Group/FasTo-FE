@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PlanoGroomEstado } from '../../models/plano-groom-estado.model';
+import { PlanoFasToEstado } from '../../models/plano-fasto-estado.model';
 import { StatusAssinatura } from '../../enums/status-assinatura.enum';
 import { LanguageService } from '../../../../core/services/language.service';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
@@ -21,7 +21,7 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 export class PlanoAtualComponent {
   private readonly languageService = inject(LanguageService);
 
-  readonly plano = input.required<PlanoGroomEstado>();
+  readonly plano = input.required<PlanoFasToEstado>();
 
   /** Expõe o enum ao template para comparações sem strings hardcoded */
   protected readonly StatusAssinatura = StatusAssinatura;

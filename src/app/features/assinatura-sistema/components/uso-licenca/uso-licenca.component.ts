@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
-import { PlanoGroomEstado } from '../../models/plano-groom-estado.model';
+import { PlanoFasToEstado } from '../../models/plano-fasto-estado.model';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 
 @Component({
@@ -11,7 +11,7 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UsoLicencaComponent {
-  readonly plano = input.required<PlanoGroomEstado>();
+  readonly plano = input.required<PlanoFasToEstado>();
   readonly pctProfissionais = input.required<number>();
   readonly pctClientes = input.required<number>();
 

@@ -28,7 +28,8 @@ export class PassoResumoComponent {
     return new Date(ano, mes - 1, dia).toLocaleDateString('pt-BR');
   }
 
-  formatarPreco(preco: number): string {
+  formatarPreco(preco?: number | null): string {
+    if (!preco || preco <= 0) return 'Sob Consulta';
     return preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 }

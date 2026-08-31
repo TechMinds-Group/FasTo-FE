@@ -23,7 +23,7 @@ describe('AppFooterComponent', () => {
   it('deve exibir o copyright com o ano atual e o link do site oficial', () => {
     const texto = fixture.nativeElement.textContent;
     expect(texto).toContain(String(component.anoAtual));
-    expect(texto).toContain('Groom');
+    expect(texto).toContain('FasTo');
     expect(texto).toContain('portal.techminds.net.br');
     const link = fixture.nativeElement.querySelector('a');
     expect(link?.href).toBe('https://portal.techminds.net.br/');

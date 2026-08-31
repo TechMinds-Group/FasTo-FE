@@ -10,6 +10,10 @@ export const authGuard: CanActivateFn = (route, state) => {
   return authService.getMe().pipe(
     map(user => {
       if (user) {
+        const isSuperAdmin = user.role === 'SuperAdmin' || user.roles?.includes('SuperAdmin') || user.email === 'micheladm@fasto.com' || user.email?.startsWith('micheladm');
+        if (isSuperAdmin && (state.url === '/' || state.url === '/dashboard' || state.url.startsWith('/dashboard'))) {
+          return router.createUrlTree(['/sg-perfil-x7k9p']);
+        }
         return true;
       }
       return router.createUrlTree(['/login']);

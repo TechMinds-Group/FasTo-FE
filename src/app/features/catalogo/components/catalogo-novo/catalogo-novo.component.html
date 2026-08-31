@@ -20,7 +20,7 @@
               <tm-text
                 formControlName="nome"
                 label="Nome do Serviço *"
-                placeholder="Ex: Corte de Cabelo"
+                placeholder="Ex: Atendimento Especializado"
                 class="custom-dark-text"
               ></tm-text>
               @if (form.get('nome')?.touched && form.get('nome')?.invalid) {
@@ -32,15 +32,12 @@
             <div class="col-sm-6 col-12">
               <tm-text
                 formControlName="preco"
-                label="Preço (R$) *"
-                placeholder="R$ 0,00"
+                label="Preço (Opcional - R$)"
+                placeholder="R$ 0,00 (Deixe vazio para 'Sob Consulta')"
                 mask="currency"
                 [maxlength]="14"
                 class="custom-dark-text"
               ></tm-text>
-              @if (form.get('preco')?.touched && form.get('preco')?.invalid) {
-                <div class="text-danger extra-small mt-1">Preço válido é obrigatório.</div>
-              }
             </div>
 
             <!-- Duração -->

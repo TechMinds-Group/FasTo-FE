@@ -1,0 +1,174 @@
+<div class="container-fluid container-lg mt-3 mt-sm-4 mt-lg-5 mb-5 px-2 px-sm-3 px-lg-4">
+  <!-- Cabeçalho com botão voltar -->
+  <div class="d-flex align-items-center mb-3 mb-sm-4 gap-2 gap-sm-3">
+    <button
+      (click)="voltar()"
+      type="button"
+      class="btn btn-light shadow-sm p-0 d-flex align-items-center justify-content-center btn-voltar shrink-0"
+      title="Voltar para Configurações"
+    >
+      <i class="fas fa-arrow-left"></i>
+    </button>
+
+    <div class="min-w-0 flex-fill">
+      <h1 class="h5 h4-md mb-0 fw-bold custom-dark-text text-break">
+        Horário de Funcionamento
+      </h1>
+      <span class="text-muted small custom-dark-text d-block text-break lh-sm mt-0.5">
+        Defina os expedientes, dias de atendimento e intervalos da sua empresa para a agenda
+      </span>
+    </div>
+  </div>
+
+  <!-- Bloco de Horário de Funcionamento (Aberto diretamente) -->
+  <div class="card border-0 shadow-sm custom-dark-card rounded-4 mb-4 overflow-hidden">
+    <div class="card-header border-0 bg-transparent p-3 p-md-4 d-flex align-items-center gap-3 border-bottom border-secondary-subtle">
+      <div class="avatar-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center shrink-0">
+        <i class="fas fa-clock fs-4 fs-md-3"></i>
+      </div>
+      <div class="min-w-0 flex-fill">
+        <h2 class="h6 h5-md fw-bold mb-1 custom-dark-text text-break">Expedientes & Intervalos</h2>
+        <p class="text-muted mb-0 custom-dark-text small text-break lh-sm">
+          Horários em que seu estabelecimento está aberto e aceita agendamentos
+        </p>
+      </div>
+    </div>
+
+    <div class="card-body p-3 p-md-4">
+      <!-- Tabela Responsiva de Dias de Funcionamento -->
+      <div class="table-responsive rounded-3 border border-secondary-subtle mb-3 mb-sm-4">
+        <table class="table align-middle mb-0 custom-dark-table">
+          <thead class="bg-body-tertiary">
+            <tr class="text-uppercase extra-small text-muted border-bottom border-secondary-subtle">
+              <th scope="col" style="width: 140px" class="ps-3 py-3 font-weight-bold">Dia da Semana</th>
+              <th scope="col" style="width: 100px" class="text-center py-3 font-weight-bold">Atende?</th>
+              <th scope="col" style="min-width: 280px" class="py-3 font-weight-bold">Horário de Funcionamento</th>
+              <th scope="col" style="min-width: 280px" class="py-3 font-weight-bold">Intervalo de Almoço / Pausa</th>
+              <th scope="col" style="width: 60px" class="text-center pe-3 py-3 font-weight-bold" title="Copiar horários para todos os outros dias">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (dia of diasFuncionamento(); track dia.diaSemana) {
+              <tr class="border-bottom border-secondary-subtle" [class.table-active]="!dia.ativo">
+                <!-- Dia da Semana -->
+                <td class="ps-3 py-3">
+                  <div class="d-flex align-items-center gap-2">
+                    <span
+                      class="badge rounded-pill extra-small font-monospace"
+                      [class.bg-primary]="dia.ativo"
+                      [class.bg-secondary-subtle]="!dia.ativo"
+                      [class.text-muted]="!dia.ativo"
+                    >
+                      {{ DIAS_SEMANA_LABELS[dia.diaSemana].abreviacao }}
+                    </span>
+                    <span class="fw-bold custom-dark-text small">
+                      {{ DIAS_SEMANA_LABELS[dia.diaSemana].label }}
+                    </span>
+                  </div>
+                </td>
+
+                <!-- Switch Ativo / Fechado -->
+                <td class="text-center py-3">
+                  <div class="form-check form-switch d-inline-block m-0">
+                    <input
+                      class="form-check-input cursor-pointer me-0"
+                      type="checkbox"
+                      role="switch"
+                      [id]="'switch-dia-' + dia.diaSemana"
+                      [(ngModel)]="dia.ativo"
+                    />
+                  </div>
+                  <span class="d-block extra-small mt-0.5 fw-semibold" [class.text-success]="dia.ativo" [class.text-muted]="!dia.ativo">
+                    {{ dia.ativo ? 'Aberto' : 'Fechado' }}
+                  </span>
+                </td>
+
+                <!-- Horário Abertura / Fechamento -->
+                <td class="py-3">
+                  @if (dia.ativo) {
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                      <div style="min-width: 120px" class="flex-fill flex-sm-grow-0">
+                        <tm-time [(ngModel)]="dia.horaAbertura"></tm-time>
+                      </div>
+                      <span class="text-muted extra-small align-self-center px-1">até</span>
+                      <div style="min-width: 120px" class="flex-fill flex-sm-grow-0">
+                        <tm-time [(ngModel)]="dia.horaFechamento"></tm-time>
+                      </div>
+                    </div>
+                  } @else {
+                    <span class="text-muted extra-small fst-italic">Estabelecimento fechado neste dia</span>
+                  }
+                </td>
+
+                <!-- Intervalo -->
+                <td class="py-3">
+                  @if (dia.ativo) {
+                    <div class="d-flex flex-column gap-1">
+                      <div class="form-check form-check-inline m-0 mb-1">
+                        <input
+                          class="form-check-input cursor-pointer"
+                          type="checkbox"
+                          [id]="'chk-intervalo-' + dia.diaSemana"
+                          [(ngModel)]="dia.temIntervalo"
+                        />
+                        <label class="form-check-label extra-small cursor-pointer custom-dark-text" [for]="'chk-intervalo-' + dia.diaSemana">
+                          Possui intervalo (ex: almoço)
+                        </label>
+                      </div>
+
+                      @if (dia.temIntervalo) {
+                        <div class="d-flex align-items-center gap-2 flex-wrap mt-1">
+                          <div style="min-width: 120px" class="flex-fill flex-sm-grow-0">
+                            <tm-time [(ngModel)]="dia.intervaloInicio"></tm-time>
+                          </div>
+                          <span class="text-muted extra-small align-self-center px-1">até</span>
+                          <div style="min-width: 120px" class="flex-fill flex-sm-grow-0">
+                            <tm-time [(ngModel)]="dia.intervaloFim"></tm-time>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  } @else {
+                    <span class="text-muted extra-small fst-italic">—</span>
+                  }
+                </td>
+
+                <!-- Botão Copiar -->
+                <td class="text-center pe-3 py-3">
+                  @if (dia.ativo) {
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-secondary rounded-circle shadow-none p-0 d-inline-flex align-items-center justify-content-center"
+                      style="width: 32px; height: 32px"
+                      (click)="copiarParaTodos(dia)"
+                      title="Copiar horários deste dia para todos os outros dias da semana"
+                    >
+                      <i class="fas fa-copy text-primary"></i>
+                    </button>
+                  } @else {
+                    <span class="text-muted extra-small">—</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Footer com Botão Salvar -->
+      <div class="d-flex justify-content-end pt-3 border-top border-secondary-subtle">
+        <button
+          type="button"
+          class="btn btn-primary px-4 py-2 fw-bold rounded-3 btn-action-responsive"
+          (click)="salvar()"
+          [disabled]="salvando()"
+        >
+          @if (salvando()) {
+            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+          }
+          <i class="fas fa-save me-2"></i>Salvar Horários
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

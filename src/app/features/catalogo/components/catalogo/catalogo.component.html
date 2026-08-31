@@ -37,7 +37,13 @@
 
 <ng-template #precoTemplate let-item>
   <div class="text-start">
-    <span class="fw-semibold text-primary">R$ {{ item.preco.toFixed(2).replace('.', ',') }}</span>
+    @if (item.preco && item.preco > 0) {
+      <span class="fw-semibold text-primary">R$ {{ item.preco.toFixed(2).replace('.', ',') }}</span>
+    } @else {
+      <span class="badge bg-info-subtle text-info border border-info-subtle px-2.5 py-1 rounded-pill small fw-semibold">
+        <i class="fas fa-tags me-1"></i>Sob Consulta
+      </span>
+    }
   </div>
 </ng-template>
 

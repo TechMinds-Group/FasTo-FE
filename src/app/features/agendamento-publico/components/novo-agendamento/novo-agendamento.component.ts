@@ -359,7 +359,7 @@ export class NovoAgendamentoComponent implements OnInit, OnDestroy {
     } catch (err: any) {
       const code = err?.error?.code ?? err?.error?.Code;
       if (code === 'Agendamento.ProfissionalSemWhatsApp' || err?.error?.message?.includes('WhatsApp')) {
-        this.errorMessage.set('Este profissional ainda não cadastrou um número de WhatsApp para confirmação de agendamentos. Escolha outro profissional ou solicite o cadastro à barbearia.');
+        this.errorMessage.set('Este profissional ainda não cadastrou um número de WhatsApp para confirmação de agendamentos. Escolha outro profissional ou solicite o cadastro ao estabelecimento.');
       } else if (code === 'Cliente.CadastroIncompleto') {
         await this.abrirFinalizacaoCadastro();
       } else if (code === 'Plano.SemAssinatura') {

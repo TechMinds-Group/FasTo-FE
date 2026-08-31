@@ -7,7 +7,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "Groom-FE": {
+    "FasTo-FE": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -43,7 +43,7 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
-            "outputPath": "dist/groom-fe",
+            "outputPath": "dist/fasto-fe",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
@@ -107,10 +107,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "Groom-FE:build:production"
+              "buildTarget": "FasTo-FE:build:production"
             },
             "development": {
-              "buildTarget": "Groom-FE:build:development"
+              "buildTarget": "FasTo-FE:build:development"
             }
           },
           "defaultConfiguration": "development"

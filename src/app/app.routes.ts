@@ -245,6 +245,13 @@ export const routes: Routes = [
               ).then((m) => m.EstabelecimentoConfigComponent),
           },
           {
+            path: 'horarios',
+            loadComponent: () =>
+              import(
+                './features/configuracoes/components/horarios-config/horarios-config.component'
+              ).then((m) => m.HorariosConfigComponent),
+          },
+          {
             path: 'whatsapp',
             loadComponent: () =>
               import('./features/whatsapp-integracao/components/whatsapp-integracao/whatsapp-integracao.component').then(
@@ -259,6 +266,26 @@ export const routes: Routes = [
               ),
           },
         ],
+      },
+      {
+        path: 'sg-perfil-x7k9p',
+        loadComponent: () =>
+          import('./features/sg/components/sg-perfil-x7k9p/sg-perfil-x7k9p.component').then((m) => m.SgPerfilX7k9pComponent),
+      },
+      {
+        path: 'sg-estabelecimentos-x7k9p',
+        loadComponent: () =>
+          import('./features/sg/components/sg-estabelecimentos-x7k9p/sg-estabelecimentos-x7k9p.component').then((m) => m.SgEstabelecimentosX7k9pComponent),
+      },
+      {
+        path: 'sg-estabelecimento-detalhes-x7k9p/:id',
+        loadComponent: () =>
+          import('./features/sg/components/sg-estabelecimento-detalhes-x7k9p/sg-estabelecimento-detalhes-x7k9p.component').then((m) => m.SgEstabelecimentoDetalhesX7k9pComponent),
+      },
+      {
+        path: 'sg-estabelecimento-acesso-x7k9p/:id',
+        loadComponent: () =>
+          import('./features/sg/components/sg-estabelecimento-acesso-x7k9p/sg-estabelecimento-acesso-x7k9p.component').then((m) => m.SgEstabelecimentoAcessoX7k9pComponent),
       },
       {
         path: 'users',
@@ -276,6 +303,11 @@ export const routes: Routes = [
     path: 'login',
     loadComponent: () =>
       import('./features/auth/login/login.component').then((m) => m.LoginComponent),
+  },
+  {
+    path: 'sg-auth-x7k9p',
+    loadComponent: () =>
+      import('./features/sg/components/sg-login-x7k9p/sg-login-x7k9p.component').then((m) => m.SgLoginX7k9pComponent),
   },
   {
     path: 'agendamento/:estabelecimento',

@@ -1,0 +1,224 @@
+<div class="sg-profile-page">
+  <div class="container mt-5 mb-5">
+    <!-- Header: Título + Subtítulo — Padrão FasTo Gestão de Usuários -->
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="d-inline-flex align-items-center justify-content-center bg-primary-subtle text-primary rounded-circle p-3 shadow-sm">
+          <i class="fas fa-user-shield fs-3"></i>
+        </div>
+        <div>
+          <h2 class="h4 mb-0 fw-bold custom-dark-text d-flex align-items-center gap-2">
+            Gerenciamento SG • Perfil Master
+          </h2>
+          <span class="text-muted small custom-dark-text">Painel de controle de credenciais e configurações master da plataforma FasTo</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feedback Banners -->
+    @if (successMessage()) {
+      <div class="alert alert-success border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center gap-2">
+        <i class="fas fa-check-circle fs-5"></i>
+        <span>{{ successMessage() }}</span>
+      </div>
+    }
+
+    @if (errorMessage()) {
+      <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center gap-2">
+        <i class="fas fa-exclamation-triangle fs-5"></i>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+
+    <!-- Grid Principal (row g-4 mb-5) -->
+    <div class="row g-4 mb-5">
+      <!-- Coluna Esquerda: Informações do Perfil & Formulário de Troca de Senha -->
+      <div class="col-xl-8 col-12">
+
+        <!-- 1. Card de Dados Cadastrais Master -->
+        <div class="card border-0 shadow-sm p-4 details-card custom-dark-card rounded-4 mb-4">
+          <div class="d-flex align-items-center justify-content-between border-bottom pb-4 mb-4">
+            <div class="d-flex align-items-center gap-3">
+              <div class="avatar-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center">
+                <i class="fas fa-user-cog fs-3"></i>
+              </div>
+              <div>
+                <h2 class="h3 fw-bold mb-0 custom-dark-text">{{ usuarioMaster().user }}</h2>
+                <span class="text-muted small">Administrador Criador (SG Master)</span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              (click)="alternarModoEdicao()"
+              class="btn btn-outline-primary btn-sm px-3 rounded-pill fw-bold"
+            >
+              <i [class]="modoEdicaoPerfil() ? 'fas fa-times me-1' : 'fas fa-pen me-1'"></i>
+              <span>{{ modoEdicaoPerfil() ? 'Cancelar' : 'Editar Dados' }}</span>
+            </button>
+          </div>
+
+          <!-- Modo Leitura -->
+          @if (!modoEdicaoPerfil()) {
+            <div class="row g-4">
+              <!-- Usuário Master -->
+              <div class="col-sm-6 col-12">
+                <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">Usuário Master</label>
+                <p class="fw-semibold mb-0 custom-dark-text">
+                  <i class="fas fa-user text-primary me-2"></i>{{ usuarioMaster().user }}
+                </p>
+              </div>
+
+              <!-- E-mail Master -->
+              <div class="col-sm-6 col-12">
+                <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">E-mail Master</label>
+                <p class="fw-semibold mb-0 custom-dark-text">
+                  <i class="far fa-envelope text-primary me-2"></i>{{ usuarioMaster().email }}
+                </p>
+              </div>
+
+              <!-- Status Master -->
+              <div class="col-sm-6 col-12">
+                <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">Status SG</label>
+                <div class="mt-1">
+                  <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1.5 rounded-pill fw-semibold">
+                    <i class="fas fa-check-circle me-1"></i>{{ usuarioMaster().status }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Perfil / Nível de Acesso -->
+              <div class="col-sm-6 col-12">
+                <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">Nível de Permissão</label>
+                <div class="mt-1">
+                  <span class="badge bg-purple-subtle text-purple border border-purple-subtle px-3 py-1.5 rounded-pill fw-semibold">
+                    <i class="fas fa-shield-alt me-1"></i>{{ usuarioMaster().nivel }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Armazenamento Isolado -->
+              <div class="col-12">
+                <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">Armazenamento Isolado de Segurança</label>
+                <p class="fw-semibold mb-0 text-info">
+                  <i class="fas fa-database me-2"></i>Tabela Camuflada: <code>{{ usuarioMaster().tabela }}</code>
+                </p>
+              </div>
+            </div>
+          } @else {
+            <!-- Modo Edição de Dados -->
+            <form [formGroup]="perfilForm" (ngSubmit)="salvarPerfil()" class="row g-3">
+              <div class="col-sm-6 col-12">
+                <tm-text
+                  formControlName="novoUsuario"
+                  label="Usuário Master"
+                  placeholder="Ex: micheladm"
+                  [control]="perfilForm.get('novoUsuario')">
+                </tm-text>
+              </div>
+
+              <div class="col-sm-6 col-12">
+                <tm-text
+                  formControlName="novoEmail"
+                  label="E-mail Master"
+                  placeholder="Ex: micheladm@fasto.com"
+                  [control]="perfilForm.get('novoEmail')">
+                </tm-text>
+              </div>
+
+              <div class="col-12 d-flex justify-content-end gap-2 mt-4">
+                <button type="button" (click)="alternarModoEdicao()" class="btn btn-secondary px-4 py-2 fw-bold rounded-3">
+                  Cancelar
+                </button>
+                <button type="submit" class="btn btn-primary px-4 py-2 fw-bold rounded-3" [disabled]="isLoadingProfile()">
+                  @if (isLoadingProfile()) {
+                    <span>Salvando...</span>
+                  } @else {
+                    <i class="fas fa-save me-2"></i><span>Salvar Perfil</span>
+                  }
+                </button>
+              </div>
+            </form>
+          }
+        </div>
+
+        <!-- 2. Card de Alteração de Senha Master -->
+        <div class="card border-0 shadow-sm p-4 details-card custom-dark-card rounded-4">
+          <div class="border-bottom pb-3 mb-4">
+            <h3 class="h5 fw-bold mb-1 custom-dark-text d-flex align-items-center gap-2">
+              <i class="fas fa-key text-warning"></i><span>Alterar Senha Master SG</span>
+            </h3>
+            <p class="text-muted small mb-0">Atualize a senha de acesso da conta de gerenciamento master</p>
+          </div>
+
+          <form [formGroup]="senhaForm" (ngSubmit)="alterarSenha()" class="row g-3">
+            <div class="col-12">
+              <tm-text
+                formControlName="senhaAtual"
+                label="Senha Master Atual"
+                type="password"
+                placeholder="Digite a senha atual"
+                [control]="senhaForm.get('senhaAtual')">
+              </tm-text>
+            </div>
+
+            <div class="col-sm-6 col-12">
+              <tm-text
+                formControlName="novaSenha"
+                label="Nova Senha Master"
+                type="password"
+                placeholder="Mínimo 6 caracteres"
+                [control]="senhaForm.get('novaSenha')">
+              </tm-text>
+            </div>
+
+            <div class="col-sm-6 col-12">
+              <tm-text
+                formControlName="confirmarNovaSenha"
+                label="Confirmar Nova Senha"
+                type="password"
+                placeholder="Repita a nova senha"
+                [control]="senhaForm.get('confirmarNovaSenha')">
+              </tm-text>
+            </div>
+
+            <div class="col-12 d-flex justify-content-end mt-4">
+              <button type="submit" class="btn btn-warning px-4 py-2 text-dark fw-bold rounded-3" [disabled]="isLoadingPassword()">
+                @if (isLoadingPassword()) {
+                  <span>Atualizando...</span>
+                } @else {
+                  <i class="fas fa-lock me-2"></i><span>Atualizar Senha Master</span>
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+
+      <!-- Coluna Direita: Painel de Ações & Segurança Master -->
+      <div class="col-xl-4 col-12">
+        <div class="card border-0 shadow-sm p-4 details-card custom-dark-card rounded-4 sticky-top" style="top: 2rem;">
+          <h3 class="h5 fw-bold mb-3 custom-dark-text d-flex align-items-center gap-2">
+            <i class="fas fa-shield-virus text-primary"></i><span>Segurança Master</span>
+          </h3>
+
+          <ul class="list-group list-group-flush bg-transparent mb-0">
+            <li class="list-group-item bg-transparent text-muted px-0 d-flex align-items-center justify-content-between">
+              <span>Isolamento no Banco:</span>
+              <span class="badge bg-success text-white">Ativo</span>
+            </li>
+            <li class="list-group-item bg-transparent text-muted px-0 d-flex align-items-center justify-content-between">
+              <span>Ofuscação de Rota:</span>
+              <span class="badge bg-primary text-white">Ativa</span>
+            </li>
+            <li class="list-group-item bg-transparent text-muted px-0 d-flex align-items-center justify-content-between">
+              <span>Perfil do Nível:</span>
+              <span class="badge bg-dark text-white border border-secondary">SuperAdmin</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

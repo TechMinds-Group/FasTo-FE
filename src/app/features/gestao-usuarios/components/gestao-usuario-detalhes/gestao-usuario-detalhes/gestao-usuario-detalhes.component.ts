@@ -10,11 +10,13 @@ import {
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { TmTextComponent, TmToastService } from '@techminds-group/tm-angular-lib';
+import { TmTextComponent, TmSelectComponent, TmToastService } from '@techminds-group/tm-angular-lib';
 import { GestaoUsuariosService } from '../../../../../core/services/gestao-usuarios.service';
 import { Usuario } from '../../../../../core/models/gestao-usuarios/usuario.model';
 import { NivelAcesso } from '../../../../../core/models/gestao-usuarios/nivel-acesso.model';
 import { AuthService } from '../../../../../core/services/auth.service';
+import { ThemeService } from '../../../../../core/services/theme.service';
+import { TranslatePipe } from '../../../../../shared/pipes/translate.pipe';
 import { PerfilBadgePipe } from '../../../pipes/perfil-badge.pipe';
 import { StatusBadgePipe } from '../../../pipes/status-badge.pipe';
 import { GestaoUsuariosHelperService } from '../../../services/gestao-usuarios-helper.service';
@@ -31,6 +33,8 @@ import { UsuarioModalExcluirComponent } from '../../modais/usuario-modal-excluir
     CommonModule,
     ReactiveFormsModule,
     TmTextComponent,
+    TmSelectComponent,
+    TranslatePipe,
     PerfilBadgePipe,
     StatusBadgePipe,
     UsuarioModalAlterarSenhaComponent,
@@ -49,10 +53,13 @@ export class GestaoUsuarioDetalhesComponent implements OnInit {
   protected readonly helper = inject(GestaoUsuariosHelperService);
   private readonly authService = inject(AuthService);
   private readonly toastService = inject(TmToastService);
+  protected readonly themeService = inject(ThemeService);
 
   protected readonly id = signal<string | null>(null);
   protected readonly usuario = signal<Usuario | null>(null);
   protected readonly niveisAcesso = signal<NivelAcesso[]>([]);
+  protected readonly perfilOptions = signal<{ value: string; label: string }[]>([]);
+  protected readonly perfisSelecionados = signal<string[]>([]);
   protected readonly modoEdicao = signal<boolean>(false);
   protected readonly salvando = signal<boolean>(false);
 
@@ -80,6 +87,7 @@ export class GestaoUsuarioDetalhesComponent implements OnInit {
     try {
       const niveis = await this.gestaoUsuariosService.carregarNiveis();
       this.niveisAcesso.set(niveis);
+      this.perfilOptions.set(niveis.map((n) => ({ value: n.id, label: n.nome })));
     } catch {
       // Ignora erro se níveis já carregados
     }
@@ -106,6 +114,19 @@ export class GestaoUsuarioDetalhesComponent implements OnInit {
     this.form.get('status')?.setValue(alvo.checked ? 'Ativo' : 'Inativo');
   }
 
+  protected onPerfisChange(val: unknown): void {
+    if (Array.isArray(val)) {
+      let selected = val as string[];
+      if (selected.length > 2) {
+        selected = selected.slice(0, 2);
+      }
+      if (selected.length === 0 && this.perfilOptions().length > 0) {
+        selected = [this.perfilOptions()[0].value];
+      }
+      this.perfisSelecionados.set(selected);
+    }
+  }
+
   protected async salvarGeral(): Promise<void> {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -119,6 +140,7 @@ export class GestaoUsuarioDetalhesComponent implements OnInit {
     this.salvando.set(true);
     try {
       const raw = this.form.value;
+      const selected = this.perfisSelecionados();
       const digitsTelefone = (raw.telefone ?? '').replace(/\D/g, '');
 
       await this.gestaoUsuariosService.atualizar(userId, {
@@ -126,7 +148,8 @@ export class GestaoUsuarioDetalhesComponent implements OnInit {
         sobrenome: raw.sobrenome,
         email: raw.email,
         telefone: digitsTelefone,
-        nivelAcessoId: raw.nivelAcessoId,
+        nivelAcessoId: selected.length > 0 ? selected[0] : '',
+        secundarioNivelAcessoId: selected.length > 1 ? selected[1] : null,
         status: raw.status,
       });
 
@@ -221,12 +244,39 @@ export class GestaoUsuarioDetalhesComponent implements OnInit {
   }
 
   private preencherFormulario(u: Usuario): void {
+    const selectedValues: string[] = [];
+    if (u.nivelAcessoId) {
+      selectedValues.push(u.nivelAcessoId);
+    }
+    if (u.secundarioNivelAcessoId) {
+      selectedValues.push(u.secundarioNivelAcessoId);
+    }
+
+    if (selectedValues.length === 0) {
+      const userPerfis = (u.perfil || '')
+        .split(',')
+        .map((p) => p.trim())
+        .filter(Boolean);
+
+      for (const pName of userPerfis) {
+        const matched = this.perfilOptions().find((n) => n.label === pName || n.value === pName);
+        if (matched && !selectedValues.includes(matched.value)) {
+          selectedValues.push(matched.value);
+        }
+      }
+    }
+
+    if (selectedValues.length === 0 && this.perfilOptions().length > 0) {
+      selectedValues.push(this.perfilOptions()[0].value);
+    }
+
+    this.perfisSelecionados.set(selectedValues.slice(0, 2));
+
     this.form.patchValue({
       nome: u.nome ?? '',
       sobrenome: u.sobrenome ?? '',
       email: u.email ?? '',
       telefone: this.formatarTelefone(u.telefone ?? ''),
-      nivelAcessoId: u.nivelAcessoId ?? '',
       status: u.status ?? 'Ativo',
     });
   }

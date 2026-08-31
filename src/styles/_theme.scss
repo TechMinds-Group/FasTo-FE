@@ -1,6 +1,6 @@
-@use './tokens' as *;
+﻿@use './tokens' as *;
 
-/* Groom-FE Global Theme Styles */
+/* fasto-FE Global Theme Styles */
 body {
   font-family: var(--tm-font-sans);
   background-color: var(--tm-bg-color);
@@ -62,3 +62,4 @@ body {
     i { color: #0dcaf0 !important; }
   }
 }
+

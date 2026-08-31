@@ -1,4 +1,4 @@
-import { inject, Injectable, signal, computed, OnDestroy } from '@angular/core';
+﻿import { inject, Injectable, signal, computed, OnDestroy } from '@angular/core';
 import { Observable, Subscription, tap } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { MercadoPagoSdkService } from '../../../core/services/mercadopago-sdk.service';
@@ -7,7 +7,7 @@ import { PagamentoPixResponse } from '../../../core/models/assinatura-sistema/pa
 import { StatusPagamentoResponse } from '../../../core/models/assinatura-sistema/status-pagamento-response.model';
 import { PixSessionCache } from '../models/pix-session-cache.model';
 
-const PIX_SESSION_KEY = 'groom_active_pix_session';
+const PIX_SESSION_KEY = 'fasto_active_pix_session';
 const EXPIRATION_TIME_MS = 15 * 60 * 1000; // 15 minutos em ms
 
 /**
@@ -271,3 +271,4 @@ export class CheckoutPixService implements OnDestroy {
     this.subscriptions.unsubscribe();
   }
 }
+

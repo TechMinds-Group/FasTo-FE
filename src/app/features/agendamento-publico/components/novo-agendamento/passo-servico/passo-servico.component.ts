@@ -12,7 +12,8 @@ export class PassoServicoComponent {
   readonly servicos = input.required<ServicoDisponivel[]>();
   readonly selecionado = output<ServicoDisponivel>();
 
-  formatarPreco(preco: number): string {
+  formatarPreco(preco?: number | null): string {
+    if (!preco || preco <= 0) return 'Sob Consulta';
     return preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 }

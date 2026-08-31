@@ -24,7 +24,7 @@ export class CatalogoNovoComponent implements OnInit {
 
   protected readonly form: FormGroup = this.fb.group({
     nome: ['', [Validators.required, Validators.maxLength(60)]],
-    preco: ['', [Validators.required]],
+    preco: [''],
     duracao: [''],
   });
 

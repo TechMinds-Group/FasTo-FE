@@ -15,7 +15,7 @@
           <h2 class="h4 mb-0 fw-bold custom-dark-text d-flex align-items-center gap-2">
             {{ getNomeCompleto(p) }}
           </h2>
-          <span class="text-muted small custom-dark-text">Detalhes do Profissional</span>
+          <span class="text-muted small custom-dark-text">Detalhes do Atendente</span>
         </div>
       </div>
     </div>
@@ -35,7 +35,7 @@
                     @if (fotoVisivel()) {
                       <img
                         [src]="fotoVisivel()"
-                        alt="Foto do profissional"
+                        alt="Foto do atendente"
                         class="rounded-circle border object-fit-cover shadow-sm"
                         style="width: 60px; height: 60px"
                       />
@@ -182,7 +182,7 @@
                       <i class="fas fa-check-circle me-1"></i>{{ servico }}
                     </span>
                   } @empty {
-                    <span class="text-muted small custom-dark-text">Nenhum serviço do catálogo vinculado a este profissional.</span>
+                    <span class="text-muted small custom-dark-text">Nenhum serviço do catálogo vinculado a este atendente.</span>
                   }
                 </div>
               } @else {
@@ -204,7 +204,7 @@
                   [value]="form.get('servicoIds')?.value"
                   [multiple]="true"
                   [searchable]="true"
-                  placeholder="Selecione os serviços que este profissional realiza"
+                  placeholder="Selecione os serviços que este atendente realiza"
                   [darkMode]="themeService.isDarkMode()"
                   class="custom-dark-text"
                   (valueChange)="onServicosChange($event)"
@@ -224,7 +224,7 @@
                       <i class="fas fa-crown me-1"></i>{{ plano }}
                     </span>
                   } @empty {
-                    <span class="text-muted small custom-dark-text">Nenhum plano de assinatura do estabelecimento vinculado a este profissional.</span>
+                    <span class="text-muted small custom-dark-text">Nenhum plano de assinatura do estabelecimento vinculado a este atendente.</span>
                   }
                 </div>
               } @else {
@@ -246,7 +246,7 @@
                   [value]="form.get('planoIds')?.value"
                   [multiple]="true"
                   [searchable]="true"
-                  placeholder="Selecione os planos atendidos por este profissional"
+                  placeholder="Selecione os planos atendidos por este atendente"
                   [darkMode]="themeService.isDarkMode()"
                   class="custom-dark-text"
                   (valueChange)="onPlanosChange($event)"
@@ -263,13 +263,13 @@
               ></app-disponibilidade>
             </div>
 
-            <!-- 6. Opção de Profissional Ativo (Último Campo de Edição) -->
+            <!-- 6. Opção de Atendente Ativo (Último Campo de Edição) -->
             @if (modoEdicao()) {
               <div class="border-top pt-4 mt-4">
                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 p-3 rounded-3 border border-secondary-subtle">
                   <div>
-                    <div class="fw-bold custom-dark-text">Profissional ativo</div>
-                    <div class="small text-muted custom-dark-text">Profissionais inativos não podem ser selecionados em novos agendamentos.</div>
+                    <div class="fw-bold custom-dark-text">Atendente ativo</div>
+                    <div class="small text-muted custom-dark-text">Atendentes inativos não podem ser selecionados em novos agendamentos.</div>
                   </div>
                   <div class="form-check form-switch mb-0 shrink-0">
                     <input
@@ -277,7 +277,7 @@
                       type="checkbox"
                       role="switch"
                       id="switch-status-detalhes"
-                      aria-label="Alternar status do profissional"
+                      aria-label="Alternar status do atendente"
                       [checked]="form.get('status')?.value === 'Ativo'"
                       (change)="alternarStatus($event)"
                     />
@@ -361,7 +361,7 @@
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Carregando...</span>
       </div>
-      <p class="text-muted mt-3">Carregando informações do profissional...</p>
+      <p class="text-muted mt-3">Carregando informações do atendente...</p>
     </div>
   }
 </div>

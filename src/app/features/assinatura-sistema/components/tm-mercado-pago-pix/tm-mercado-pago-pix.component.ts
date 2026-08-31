@@ -1,4 +1,4 @@
-import {
+﻿import {
   ChangeDetectionStrategy,
   Component,
   computed,
@@ -47,7 +47,7 @@ export class TmMercadoPagoPixComponent implements OnInit, OnDestroy {
 
   public readonly meses = input.required<number>();
   public readonly valorTotal = input.required<number>();
-  public readonly nomePlano = input<string>('Groom Essential');
+  public readonly nomePlano = input<string>('fasto Essential');
 
   public readonly pagamentoConfirmado = output<void>();
   public readonly fechar = output<void>();
@@ -298,3 +298,4 @@ export class TmMercadoPagoPixComponent implements OnInit, OnDestroy {
     this.pixService.limparRecursos();
   }
 }
+

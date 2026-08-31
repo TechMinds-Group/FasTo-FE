@@ -41,7 +41,7 @@ export class GestaoUsuariosHelperService {
       } else if (part === 'Operador') {
         badgeClass = 'bg-primary-subtle text-primary border-primary-subtle';
         icon = 'fas fa-desktop';
-      } else if (part === 'Profissional') {
+      } else if (part === 'Profissional' || part === 'Atendente') {
         badgeClass = 'bg-secondary-subtle text-secondary border-secondary-subtle';
         icon = 'fas fa-user-tie';
       }

@@ -1,0 +1,137 @@
+<div class="sg-acesso-page">
+  <div class="container mt-5 mb-5">
+
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
+      <div class="d-flex align-items-center gap-3">
+        <button type="button" (click)="voltar()" class="btn btn-outline-secondary rounded-circle p-2 shadow-sm btn-voltar" title="Voltar">
+          <i class="fas fa-arrow-left custom-dark-text"></i>
+        </button>
+        <div>
+          <h2 class="h4 mb-0 fw-bold custom-dark-text d-flex align-items-center gap-2">
+            Controle de Opções do WhatsApp Bot • {{ nomeEmpresa() }}
+          </h2>
+          <span class="text-muted small custom-dark-text">Arraste os blocos para reordenar. Os números se ajustam automaticamente.</span>
+        </div>
+      </div>
+    </div>
+
+    @if (isLoading()) {
+      <div class="text-center py-5">
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+          <span class="visually-hidden">Carregando menu...</span>
+        </div>
+        <p class="text-muted mt-3 fw-semibold">Carregando opções do WhatsApp Bot...</p>
+      </div>
+    } @else {
+      <div class="row g-4 mb-5">
+        <div class="col-12">
+          <div class="card border-0 shadow-sm p-4 details-card custom-dark-card rounded-4">
+
+            <div class="d-flex align-items-center justify-content-between border-bottom border-secondary pb-4 mb-4">
+              <div class="d-flex align-items-center gap-3">
+                <div class="avatar-circle bg-success-subtle text-success d-flex align-items-center justify-content-center p-3 rounded-circle shadow-sm">
+                  <i class="fab fa-whatsapp fs-2"></i>
+                </div>
+                <div>
+                  <h3 class="h4 fw-bold mb-0 custom-dark-text">Opções do Menu Inicial</h3>
+                  <span class="text-muted small">Arraste para reordenar. A ordem define a posição no menu do WhatsApp.</span>
+                </div>
+              </div>
+            </div>
+
+            <div cdkDropList (cdkDropListDropped)="onDrop($event)" class="d-flex flex-column gap-3">
+              @for (item of fluxos(); track item.chave; let i = $index) {
+                <div cdkDrag class="fluxo-item card border-0 bg-dark p-3 rounded-4 border-secondary" [class.opacity-50]="!item.ativo">
+                  <div class="d-flex align-items-start justify-content-between gap-3">
+                    <div class="d-flex gap-3 align-items-center" style="flex:1;min-width:0;">
+                      <div cdkDragHandle class="d-flex align-items-center justify-content-center me-1 cursor-grab text-muted" style="font-size:1.1rem;user-select:none;" title="Arrastar para reordenar">
+                        <i class="fas fa-grip-vertical"></i>
+                      </div>
+                      <div class="{{ item.badgeBg }} text-white rounded-3 d-flex align-items-center justify-content-center fw-bold"
+                        style="width:48px;height:48px;flex-shrink:0;font-size:1.2rem;">
+                        {{ i + 1 }}
+                      </div>
+                      <div style="min-width:0;">
+                        <h4 class="h5 fw-bold text-white mb-1">{{ i + 1 }}️⃣ {{ item.label }}</h4>
+                        <p class="text-muted small mb-0 text-truncate" style="max-width:500px;">{{ item.descricao }}</p>
+                        <p class="text-info small mb-0 mt-1" style="font-size:0.75rem;opacity:0.85;max-width:500px;">
+                          <i class="fas fa-comment-dots me-1"></i>{{ item.fluxoMensagens }}
+                        </p>
+                      </div>
+                    </div>
+                    <div class="form-check form-switch fs-4 ms-2" style="flex-shrink:0;">
+                      <input class="form-check-input custom-switch cursor-pointer" type="checkbox" role="switch"
+                        [id]="'switch-' + item.chave"
+                        [checked]="item.ativo"
+                        (change)="toggleFluxo(item.chave)" />
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <div class="border-top border-secondary pt-4 mt-4">
+              <h4 class="h5 fw-bold mb-3 custom-dark-text">Automações (não aparecem no menu do cliente)</h4>
+              <div class="row g-3">
+                <div class="col-md-6 col-12">
+                  <div class="card border-0 bg-dark p-3 rounded-4 border-secondary">
+                    <div class="d-flex align-items-start justify-content-between gap-3">
+                      <div class="d-flex gap-3">
+                        <div class="bg-purple text-white rounded-3 p-3 d-flex align-items-center justify-content-center fw-bold" style="width:48px;height:48px;flex-shrink:0;">⏰</div>
+                        <div>
+                          <h5 class="fw-bold text-white mb-1">🔔 Lembretes Automáticos</h5>
+                          <p class="text-muted small mb-0">Dispara lembretes via WhatsApp 24h e 4h antes do atendimento.</p>
+                        </div>
+                      </div>
+                      <div class="form-check form-switch fs-4 ms-2">
+                        <input class="form-check-input custom-switch cursor-pointer" type="checkbox" role="switch"
+                          id="switchLembretes"
+                          [ngModel]="opc4Lembretes()"
+                          (ngModelChange)="opc4Lembretes.set($event)" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6 col-12">
+                  <div class="card border-0 bg-dark p-3 rounded-4 border-secondary">
+                    <div class="d-flex align-items-start justify-content-between gap-3">
+                      <div class="d-flex gap-3">
+                        <div class="bg-secondary text-white rounded-3 p-3 d-flex align-items-center justify-content-center fw-bold" style="width:48px;height:48px;flex-shrink:0;">✅</div>
+                        <div>
+                          <h5 class="fw-bold text-white mb-1">✅ Confirmação Automática</h5>
+                          <p class="text-muted small mb-0">Solicita Sim/Não via WhatsApp e atualiza o status na agenda.</p>
+                        </div>
+                      </div>
+                      <div class="form-check form-switch fs-4 ms-2">
+                        <input class="form-check-input custom-switch cursor-pointer" type="checkbox" role="switch"
+                          id="switchConfirmacao"
+                          [ngModel]="opc5Confirmacao()"
+                          (ngModelChange)="opc5Confirmacao.set($event)" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            @if (isEditing()) {
+              <div class="d-flex justify-content-end gap-2 border-top border-secondary pt-4 mt-4">
+                <button type="button" (click)="descartar()" class="btn btn-secondary px-4 py-2 fw-bold rounded-3">
+                  Cancelar
+                </button>
+                <button type="button" (click)="salvarFluxos()" class="btn btn-primary px-4 py-2 fw-bold rounded-3" [disabled]="isSaving()">
+                  @if (isSaving()) {
+                    <span>Salvando...</span>
+                  } @else {
+                    <i class="fas fa-save me-2"></i><span>Salvar</span>
+                  }
+                </button>
+              </div>
+            }
+
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>

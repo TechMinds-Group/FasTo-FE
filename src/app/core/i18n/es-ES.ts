@@ -72,7 +72,7 @@ export const esES: TranslationSchema = {
   },
   GUIA: {
     TITLE: 'Guía del Sistema',
-    SUBTITLE: 'Todo lo que necesitas saber para usar Groom.',
+    SUBTITLE: 'Todo lo que necesitas saber para usar FasTo.',
     VERSAO: 'Versión',
     NOVIDADES: 'Novedades',
     MUDANCAS: 'Cambios',
@@ -81,11 +81,11 @@ export const esES: TranslationSchema = {
   },
   ASSINATURA: {
     HEADER_TITLE: 'Mi Suscripción',
-    HEADER_SUBTITLE: 'Administre su licencia de uso del sistema Groom, consulte facturas y límites de su cuenta.',
+    HEADER_SUBTITLE: 'Administre su licencia de uso del sistema FasTo, consulte facturas y límites de su cuenta.',
     LOADING: 'Cargando...',
     PLANO_ATUAL: {
       TITLE: 'Plan Actual',
-      SUBTITLE: 'Siga los detalles de su suscripción al sistema Groom.',
+      SUBTITLE: 'Siga los detalles de su suscripción al sistema FasTo.',
       STATUS_PREFIX: 'Su suscripción está',
       PRICE_LABEL: 'Precio',
       VALID_UNTIL: 'Válido hasta',
@@ -105,7 +105,7 @@ export const esES: TranslationSchema = {
     },
     RENOVACAO: {
       TITLE: 'Renovación / Contratación de Plan',
-      SUBTITLE: 'Seleccione el plan deseado para liberar o renovar el uso del sistema Groom por 1 mes. El pago se realiza vía Pix con Mercado Pago.',
+      SUBTITLE: 'Seleccione el plan deseado para liberar o renovar el uso del sistema FasTo por 1 mes. El pago se realiza vía Pix con Mercado Pago.',
       SELECT_PLAN_LABEL: 'Seleccione el Plan Deseado',
       PER_MONTH: '/ mes',
       UP_TO: 'Hasta',
@@ -128,7 +128,7 @@ export const esES: TranslationSchema = {
       START_USING: 'Empezar a Usar',
     },
     PIX_MODAL: {
-      TITLE: 'Suscripción Groom (Pago Pix)',
+      TITLE: 'Suscripción FasTo (Pago Pix)',
       HIRING_TEXT: 'Está contratando',
       MONTH_SINGULAR: 'mes',
       MONTH_PLURAL: 'meses',

@@ -12,6 +12,7 @@ import { ClubesService } from '../../core/services/clubes.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { AgendamentosService } from '../../core/services/agendamentos.service';
 import { GestaoUsuariosService } from '../../core/services/gestao-usuarios.service';
+import { EstabelecimentoService } from '../../core/services/estabelecimento.service';
 
 export type FiltroPeriodo = '7d' | '30d' | '90d' | 'mes' | 'ano';
 export type AbaDashboard = 'desempenho' | 'previsao';
@@ -38,6 +39,10 @@ export class InicioComponent implements OnInit, OnDestroy {
   protected readonly themeService = inject(ThemeService);
   protected readonly agendamentosService = inject(AgendamentosService);
   protected readonly gestaoUsuariosService = inject(GestaoUsuariosService);
+  protected readonly estabelecimentoService = inject(EstabelecimentoService);
+
+  /** Rótulo customizado para atendente */
+  protected readonly rotuloAtendente = signal<string>('Atendente');
 
   /** ABA ATIVA DA DASHBOARD ('desempenho' | 'previsao') */
   public abaAtiva = signal<AbaDashboard>('desempenho');
@@ -139,6 +144,18 @@ export class InicioComponent implements OnInit, OnDestroy {
   protected readonly ticketMedioFormatted = computed(() =>
     `R$ ${this.ticketMedioVal().toFixed(2).replace('.', ',')}`
   );
+
+  /** Total de Agendamentos Marcados para Hoje */
+  protected readonly agendamentosHojeCount = computed(() => {
+    const hoje = new Date();
+    const inicioDia = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), 0, 0, 0);
+    const fimDia = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), 23, 59, 59);
+
+    return this.todosAgendamentos().filter(a =>
+      a.dataInicio >= inicioDia && a.dataInicio <= fimDia &&
+      a.status !== 'cancelado' && a.status !== 'recusado'
+    ).length;
+  });
 
   /** Taxa de Ocupação da Equipe no Dia Atual (%) */
   protected readonly ocupacaoHojePct = computed(() => {
@@ -263,12 +280,11 @@ export class InicioComponent implements OnInit, OnDestroy {
 
   // --- GRÁFICOS CHART.JS COM CORES PADRONIZADAS DO SISTEMA ---
 
-  /** 1. Evolução do Faturamento & Projeção (Line Chart) */
+  /** 1. Evolução do Faturamento dos Atendimentos (Line Chart) */
   protected readonly lineData = computed(() => {
-    const ativos = this.assinantesAtivos();
+    const atendidos = this.agendamentosAtendidos();
     const labels: string[] = [];
-    const dataReal: (number | null)[] = [];
-    const dataProjecao: (number | null)[] = [];
+    const dataReal: number[] = [];
     const hoje = new Date();
 
     for (let i = 5; i >= 0; i--) {
@@ -276,61 +292,36 @@ export class InicioComponent implements OnInit, OnDestroy {
       const label = d.toLocaleDateString('pt-BR', { month: 'short' });
       labels.push(label.charAt(0).toUpperCase() + label.slice(1, 3));
 
-      const fimDoMes = new Date(d.getFullYear(), d.getMonth() + 1, 0);
-      const totalMes = ativos
-        .filter(a => new Date(a.dataInicio) <= fimDoMes)
-        .reduce((sum, a) => sum + a.valor, 0);
+      const inicioMes = new Date(d.getFullYear(), d.getMonth(), 1);
+      const fimDoMes = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
+
+      const totalMes = atendidos
+        .filter(a => a.dataInicio >= inicioMes && a.dataInicio <= fimDoMes)
+        .reduce((sum, a) => sum + (a.preco || 0), 0);
 
       dataReal.push(totalMes);
-      dataProjecao.push(null);
     }
 
-    const valorAtual = dataReal[5] ?? 0;
-    dataProjecao[5] = valorAtual;
-
-    for (let i = 1; i <= 3; i++) {
-      const d = new Date(hoje.getFullYear(), hoje.getMonth() + i, 1);
-      const label = d.toLocaleDateString('pt-BR', { month: 'short' }) + ' (Prev.)';
-      labels.push(label.charAt(0).toUpperCase() + label.slice(1, 3));
-
-      dataReal.push(null);
-      const incremento = Math.round(valorAtual * (1 + (i * 0.08)));
-      dataProjecao.push(incremento);
-    }
-
-    return { labels, dataReal, dataProjecao };
+    return { labels, dataReal };
   });
 
   public lineChartData = computed<ChartData<'line'>>(() => {
     const isDark = this.themeService.isDarkMode();
     const primaryColor = isDark ? '#60a5fa' : '#0d6efd';
-    const forecastColor = '#198754';
-    const { labels, dataReal, dataProjecao } = this.lineData();
+    const { labels, dataReal } = this.lineData();
 
     return {
       labels,
       datasets: [
         {
           data: dataReal,
-          label: 'Faturamento Histórico Real',
+          label: 'Faturamento de Atendimentos (R$)',
           fill: true,
           tension: 0.4,
           borderColor: primaryColor,
           backgroundColor: isDark ? 'rgba(96, 165, 250, 0.15)' : 'rgba(13, 110, 253, 0.08)',
           pointRadius: 4,
           pointHoverRadius: 6
-        },
-        {
-          data: dataProjecao,
-          label: 'Projeção Preditiva',
-          fill: false,
-          tension: 0.4,
-          borderDash: [6, 6],
-          borderColor: forecastColor,
-          backgroundColor: 'transparent',
-          pointRadius: 5,
-          pointHoverRadius: 7,
-          pointBackgroundColor: forecastColor
         }
       ]
     };
@@ -358,7 +349,7 @@ export class InicioComponent implements OnInit, OnDestroy {
     };
   });
 
-  /** 2. Atendimentos vs Cancelamentos vs Faltas (Bar Chart - Cores Padrão) */
+  /** 2. Atendimentos vs Cancelamentos vs Faltas (Bar Chart) */
   public barChartData = computed<ChartData<'bar'>>(() => {
     const agendamentos = this.agendamentosFiltrados();
 
@@ -395,47 +386,16 @@ export class InicioComponent implements OnInit, OnDestroy {
     };
   });
 
-  /** 3. Mix de Receita (Pie Chart - Cores Padrão) */
-  public pieMixChartData = computed<ChartData<'pie'>>(() => {
-    const mrr = this.faturamentoMensalVal();
-    const avulso = this.faturamentoAtendimentosVal();
-
-    return {
-      labels: ['Receita Recorrente (Planos)', 'Receita Avulsa (Serviços)'],
-      datasets: [
-        {
-          data: [mrr, avulso],
-          backgroundColor: ['#0d6efd', '#0dcaf0'],
-          hoverOffset: 6
-        }
-      ]
-    };
-  });
-
-  public pieMixChartOptions = computed<ChartConfiguration['options']>(() => {
-    const isDark = this.themeService.isDarkMode();
-    const textColor = isDark ? '#cbd5e1' : '#64748b';
-
-    return {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { position: 'bottom', labels: { color: textColor } }
-      }
-    };
-  });
-
-  /** 4. Distribuição por Plano (Doughnut Chart - Paleta Padrão) */
+  /** 3. Distribuição por Tipo de Atendimento (Doughnut Chart) */
   public doughnutChartData = computed<ChartData<'doughnut'>>(() => {
-    const clubes = this.clubesService.clubes();
-    const ativos = this.assinantesAtivos();
-    const labels = clubes.map(c => c.nome);
-    const data = clubes.map(c => ativos.filter(a => a.clubeId === c.id).length);
+    const ranking = this.rankingServicos();
+    const labels = ranking.map(s => s.nome);
+    const data = ranking.map(s => s.quantidade);
     const colors = ['#0d6efd', '#198754', '#ffc107', '#ef4444', '#6f42c1', '#0dcaf0'];
 
     return {
-      labels,
-      datasets: [{ data, backgroundColor: colors }]
+      labels: labels.length > 0 ? labels : ['Nenhum atendimento'],
+      datasets: [{ data: data.length > 0 ? data : [1], backgroundColor: colors }]
     };
   });
 
@@ -452,11 +412,20 @@ export class InicioComponent implements OnInit, OnDestroy {
     };
   });
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.assinantesService.carregarAssinantes();
     this.clubesService.carregarClubes().subscribe();
     this.agendamentosService.carregarAgendamentos();
     void this.gestaoUsuariosService.carregarUsuarios();
+
+    try {
+      const info = await this.estabelecimentoService.carregarInfo();
+      if (info && info.rotuloAtendente) {
+        this.rotuloAtendente.set(info.rotuloAtendente);
+      }
+    } catch {
+      // Fallback para 'Atendente'
+    }
   }
 
   ngOnDestroy(): void {}

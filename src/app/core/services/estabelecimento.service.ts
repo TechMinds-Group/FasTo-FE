@@ -30,6 +30,8 @@ export interface EstabelecimentoInfo {
   cidade?: string;
   estado?: string;
   endereco?: string;
+  rotuloAtendente?: string;
+  rotuloServico?: string;
 }
 
 export const ICONES_LOGO_ALEATORIOS = [

@@ -70,7 +70,7 @@ export const ptBR = {
   },
   GUIA: {
     TITLE: 'Guia do Sistema',
-    SUBTITLE: 'Tudo que você precisa saber para usar o Groom.',
+    SUBTITLE: 'Tudo que você precisa saber para usar o FasTo.',
     VERSAO: 'Versão',
     NOVIDADES: 'Novidades',
     MUDANCAS: 'Mudanças',
@@ -79,11 +79,11 @@ export const ptBR = {
   },
   ASSINATURA: {
     HEADER_TITLE: 'Minha Assinatura',
-    HEADER_SUBTITLE: 'Gerencie sua licença de uso do sistema Groom, visualize faturas e limites da sua conta.',
+    HEADER_SUBTITLE: 'Gerencie sua licença de uso do sistema FasTo, visualize faturas e limites da sua conta.',
     LOADING: 'Carregando...',
     PLANO_ATUAL: {
       TITLE: 'Plano Atual',
-      SUBTITLE: 'Acompanhe os detalhes da sua assinatura do sistema Groom.',
+      SUBTITLE: 'Acompanhe os detalhes da sua assinatura do sistema FasTo.',
       STATUS_PREFIX: 'Sua assinatura está',
       PRICE_LABEL: 'Valor',
       VALID_UNTIL: 'Válido até',
@@ -103,7 +103,7 @@ export const ptBR = {
     },
     RENOVACAO: {
       TITLE: 'Renovação / Contratação de Plano',
-      SUBTITLE: 'Selecione o plano desejado para liberar ou renovar o uso do sistema Groom por 1 mês. O pagamento é realizado via Pix com Mercado Pago.',
+      SUBTITLE: 'Selecione o plano desejado para liberar ou renovar o uso do sistema FasTo por 1 mês. O pagamento é realizado via Pix com Mercado Pago.',
       SELECT_PLAN_LABEL: 'Selecione o Plano Desejado',
       PER_MONTH: '/ mês',
       UP_TO: 'Até',
@@ -126,7 +126,7 @@ export const ptBR = {
       START_USING: 'Começar a Usar',
     },
     PIX_MODAL: {
-      TITLE: 'Assinatura Groom (Pagamento Pix)',
+      TITLE: 'Assinatura FasTo (Pagamento Pix)',
       HIRING_TEXT: 'Você está contratando',
       MONTH_SINGULAR: 'mês',
       MONTH_PLURAL: 'meses',

@@ -1,4 +1,4 @@
-import { Injectable, signal, computed } from '@angular/core';
+﻿import { Injectable, signal, computed } from '@angular/core';
 import { formatCurrency } from '@angular/common';
 import { ptBR } from '../i18n/pt-BR';
 import { enUS } from '../i18n/en-US';
@@ -33,7 +33,7 @@ const DICTIONARIES: Record<SupportedLanguage, TranslationSchema> = {
   'es-ES': esES,
 };
 
-const STORAGE_KEY = 'groom_lang';
+const STORAGE_KEY = 'fasto_lang';
 
 @Injectable({
   providedIn: 'root',
@@ -155,3 +155,4 @@ export class LanguageService {
     return 'pt-BR';
   }
 }
+

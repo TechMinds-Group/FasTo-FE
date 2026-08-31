@@ -84,10 +84,10 @@ export class WhatsappIntegracaoComponent implements OnInit {
   protected readonly variaveisDisponiveis = [
     { codigo: '{primeiro_nome}', descricao: 'Primeiro nome do cliente (ex: João)' },
     { codigo: '{nome_completo}', descricao: 'Nome completo do cliente (ex: João Silva)' },
-    { codigo: '{estabelecimento}', descricao: 'Nome de exibição do estabelecimento (ex: Groom Barbershop)' },
+    { codigo: '{estabelecimento}', descricao: 'Nome de exibição do estabelecimento (ex: FasTo Atendimentos)' },
     { codigo: '{link}', descricao: 'Insere o link público de agendamento do estabelecimento' },
-    { codigo: '{profissional}', descricao: 'Nome do profissional (ex: Carlos)' },
-    { codigo: '{servico}', descricao: 'Nome do serviço (ex: Corte Degradê)' },
+    { codigo: '{profissional}', descricao: 'Nome do atendente / profissional (ex: Carlos)' },
+    { codigo: '{servico}', descricao: 'Nome do atendimento / serviço (ex: Consultoria Técnica)' },
     { codigo: '{horario}', descricao: 'Horário do agendamento (ex: 14:30)' },
     { codigo: '{data_horario}', descricao: 'Data e horário do agendamento (ex: 20/08/2026 14:30)' },
   ];
@@ -172,30 +172,37 @@ export class WhatsappIntegracaoComponent implements OnInit {
     this.qrCodeBase64.set(null);
 
     try {
-      const raw = await firstValueFrom(
-        this.http.get<QrCodeData>(`${this.apiUrl}/connect`),
+      const raw: any = await firstValueFrom(
+        this.http.get<any>(`${this.apiUrl}/connect`),
       );
 
-      if (raw.base64) {
-        this.qrCodeBase64.set(raw.base64);
-        this.statusTexto.set('Escaneie o QR Code com o WhatsApp Business');
+      const base64 = raw?.base64 || raw?.qrcode?.base64;
+      const code = raw?.code || raw?.qrcode?.code;
+      const state = raw?.state || raw?.instance?.state || raw?.status;
+
+      if (base64) {
+        const formattedBase64 = base64.startsWith('data:image') ? base64 : `data:image/png;base64,${base64}`;
+        this.qrCodeBase64.set(formattedBase64);
+        this.statusTexto.set('Escaneie o QR Code com o seu WhatsApp');
         this.iniciarPolling();
-      } else if (raw.code) {
-        this.qrCodeBase64.set(raw.code);
-        this.statusTexto.set('Escaneie o QR Code com o WhatsApp Business');
+      } else if (code) {
+        this.qrCodeBase64.set(code);
+        this.statusTexto.set('Escaneie o QR Code com o seu WhatsApp');
         this.iniciarPolling();
-      } else if (raw.status === 'connected' || raw.status === 'open') {
+      } else if (state === 'connected' || state === 'open') {
         this.conectado.set(true);
         this.statusTexto.set('WhatsApp conectado com sucesso!');
         await this.carregarDispositivos();
       } else {
-        this.erro.set('Resposta inesperada da Evolution API. Tente novamente.');
+        this.erro.set(raw?.erro || raw?.message || 'Resposta inesperada do servidor WhatsApp. Tente novamente.');
       }
-    } catch {
-      this.erro.set('Erro ao conectar com o servidor. Verifique sua conexão.');
+    } catch (err: any) {
+      const errorMsg = err?.error?.erro || err?.error?.message || 'Erro ao comunicar com a Evolution API. Verifique se o serviço de WhatsApp está online.';
+      this.erro.set(errorMsg);
     } finally {
       this.conectando.set(false);
       this.carregando.set(false);
+      this.cdr.markForCheck();
     }
   }
 
@@ -268,3 +275,4 @@ export class WhatsappIntegracaoComponent implements OnInit {
     return cleaned;
   }
 }
+

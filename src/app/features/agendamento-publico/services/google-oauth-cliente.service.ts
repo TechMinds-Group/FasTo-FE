@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+﻿import { Injectable, signal } from '@angular/core';
 import { environment } from '../../../../environments/environment';
 
 interface GoogleCredentialResponse {
@@ -17,7 +17,7 @@ type GoogleAccountsApi = {
   };
 };
 
-const SCRIPT_ID = 'groom-gsi-client';
+const SCRIPT_ID = 'fasto-gsi-client';
 
 /** Carrega o Google Identity Services e disponibiliza o idToken do cliente Google (login social). */
 @Injectable({
@@ -100,3 +100,4 @@ export class GoogleOAuthClienteService {
     this._disponivel.set(true);
   }
 }
+

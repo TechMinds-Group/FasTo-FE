@@ -1,7 +1,7 @@
 import { StatusAssinatura } from '../enums/status-assinatura.enum';
 
 /** Estado reativo dos detalhes e limites da assinatura do sistema */
-export interface PlanoGroomEstado {
+export interface PlanoFasToEstado {
   nome: string;
   valor: number;
   ciclo: string;

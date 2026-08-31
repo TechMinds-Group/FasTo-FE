@@ -52,7 +52,7 @@ export class ProfissionaisComponent implements OnInit, AfterViewInit {
   // Administrador vê todos; Profissional não-admin vê apenas a si mesmo.
   protected readonly profissionais = computed(() => {
     const todos = this.gestaoUsuariosService.usuarios().filter((u) =>
-      u.perfil === 'Profissional' || (u.perfil && u.perfil.includes('Profissional'))
+      u.perfil === 'Profissional' || u.perfil === 'Atendente' || (u.perfil && (u.perfil.includes('Profissional') || u.perfil.includes('Atendente')))
     );
 
     if (this.authService.hasAdminRole()) {

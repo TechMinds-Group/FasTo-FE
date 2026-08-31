@@ -33,7 +33,7 @@ import {
 @Component({
   selector: 'app-estabelecimento-config',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TmTimeComponent],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './estabelecimento-config.component.html',
   styleUrl: './estabelecimento-config.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -84,6 +84,8 @@ export class EstabelecimentoConfigComponent implements OnInit {
     cidade: '',
     estado: '',
     endereco: '',
+    rotuloAtendente: 'Atendente',
+    rotuloServico: 'Tipo de Atendimento',
   });
 
   protected readonly estabelecimentoInfoOriginal = signal<EstabelecimentoInfo>({
@@ -102,6 +104,8 @@ export class EstabelecimentoConfigComponent implements OnInit {
     cidade: '',
     estado: '',
     endereco: '',
+    rotuloAtendente: 'Atendente',
+    rotuloServico: 'Tipo de Atendimento',
   });
 
   protected readonly temAlteracoesInfo = computed(() => {
@@ -238,35 +242,8 @@ export class EstabelecimentoConfigComponent implements OnInit {
     this.estabelecimentoInfo.update((prev) => ({ ...prev, endereco: enderecoFormatado }));
   }
 
-  /** Sinal para controle de expansão do bloco colapsável */
-  protected readonly horarioExpandido = signal(false);
-
-  /** Lista de horários em formato 24 horas (00:00 a 23:45 em intervalos de 15 min) */
-  protected readonly OPCOES_HORARIOS: string[] = Array.from({ length: 96 }, (_, i) => {
-    const h = Math.floor(i / 4)
-      .toString()
-      .padStart(2, '0');
-    const m = ((i % 4) * 15).toString().padStart(2, '0');
-    return `${h}:${m}`;
-  });
-
-  protected readonly DIAS_SEMANA_LABELS = DIAS_SEMANA_ESTABELECIMENTO;
-
   async ngOnInit(): Promise<void> {
-    await Promise.all([this.carregarHorarios(), this.carregarInfo()]);
-  }
-
-  protected toggleHorario(): void {
-    this.horarioExpandido.update((v) => !v);
-  }
-
-  protected toggleInfo(): void {
-    this.infoExpandido.update((v) => !v);
-  }
-
-  protected async carregarHorarios(): Promise<void> {
-    const data = await this.estabelecimentoService.carregarHorarios();
-    this.diasFuncionamento.set(structuredClone(data));
+    await this.carregarInfo();
   }
 
   protected async carregarInfo(): Promise<void> {
@@ -409,94 +386,5 @@ export class EstabelecimentoConfigComponent implements OnInit {
 
   protected voltar(): void {
     this.router.navigate(['/configuracoes']);
-  }
-
-  protected copiarParaTodos(diaOrigem: DiaFuncionamento): void {
-    const lista = this.diasFuncionamento();
-    const atualizado = lista.map((d) => ({
-      ...d,
-      ativo: diaOrigem.ativo,
-      horaAbertura: diaOrigem.horaAbertura,
-      horaFechamento: diaOrigem.horaFechamento,
-      temIntervalo: diaOrigem.temIntervalo,
-      intervaloInicio: diaOrigem.intervaloInicio,
-      intervaloFim: diaOrigem.intervaloFim,
-    }));
-    this.diasFuncionamento.set(atualizado);
-    const nomeDia = DIAS_SEMANA_ESTABELECIMENTO[diaOrigem.diaSemana]?.label;
-    this.toastService.success(`Horários de ${nomeDia} copiados para todos os dias!`);
-  }
-
-  protected toggleImportacao(): void {
-    this.importacaoExpandido.update((v) => !v);
-  }
-
-  protected selecionarPlataforma(plat: 'tua-agenda' | null): void {
-    this.plataformaSelecionada.set(plat);
-    this.arquivoSelecionado.set(null);
-    this.resultadoImportacao.set(null);
-  }
-
-  protected selecionarCategoria(cat: 'clientes' | null): void {
-    this.categoriaSelecionada.set(cat);
-    this.arquivoSelecionado.set(null);
-    this.resultadoImportacao.set(null);
-  }
-
-  protected onArquivoCsvSelecionado(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (file) {
-      if (!file.name.toLowerCase().endsWith('.csv')) {
-        this.toastService.error('Selecione um arquivo de formato CSV (.csv).');
-        input.value = '';
-        return;
-      }
-      this.arquivoSelecionado.set(file);
-      this.resultadoImportacao.set(null);
-    }
-  }
-
-  protected limparArquivo(): void {
-    this.arquivoSelecionado.set(null);
-    this.resultadoImportacao.set(null);
-  }
-
-  protected async importarCsv(): Promise<void> {
-    const file = this.arquivoSelecionado();
-    if (!file) {
-      this.toastService.error('Selecione um arquivo CSV para importar.');
-      return;
-    }
-
-    this.importando.set(true);
-    try {
-      const res = await this.clientesService.importarClientesTuaAgenda(file);
-      this.resultadoImportacao.set(res);
-      this.toastService.success(
-        `Importação do Tua Agenda concluída! ${res.totalCriados} novos clientes cadastrados.`,
-      );
-      if (res.clientesDuplicadosPorCelular && res.clientesDuplicadosPorCelular.length > 0) {
-        this.exibirModalDuplicados.set(true);
-      }
-    } catch (err: unknown) {
-      const msg =
-        err instanceof Error ? err.message : 'Falha ao processar arquivo CSV do Tua Agenda.';
-      this.toastService.error(msg);
-    } finally {
-      this.importando.set(false);
-    }
-  }
-
-  protected async salvar(): Promise<void> {
-    this.salvando.set(true);
-    try {
-      await this.estabelecimentoService.salvarHorarios(this.diasFuncionamento());
-      this.toastService.success('Horários salvos com sucesso!');
-    } catch {
-      this.toastService.error('Erro ao salvar horários. Tente novamente.');
-    } finally {
-      this.salvando.set(false);
-    }
   }
 }

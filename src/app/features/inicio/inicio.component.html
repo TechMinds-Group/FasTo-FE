@@ -5,7 +5,7 @@
       <i class="fas fa-chart-line text-primary"></i>Dashboard & Gestão
     </h1>
     <p class="custom-dark-subtitle mb-0">
-      Visão clara do seu faturamento, atendimentos e inteligência de crescimento.
+      Visão clara do seu faturamento, atendimentos e retenção de clientes.
     </p>
   </div>
 
@@ -31,14 +31,14 @@
 
       <div class="col-12 col-md-6">
         <label class="form-label extra-small fw-bold text-uppercase custom-dark-label mb-2 d-flex align-items-center gap-2">
-          <i class="fas fa-user-tie text-primary"></i>Profissional
+          <i class="fas fa-user-tie text-primary"></i>{{ rotuloAtendente() }}
         </label>
         <select
           class="form-select rounded-3 custom-dark-input py-2"
           [ngModel]="filtroProfissionalId()"
           (ngModelChange)="filtroProfissionalId.set($event)"
         >
-          <option value="todos">Todos os Profissionais</option>
+          <option value="todos">Todos(as)</option>
           @for (prof of profissionais(); track prof.id) {
             <option [value]="prof.id">{{ prof.nome }}</option>
           }
@@ -61,7 +61,7 @@
           </div>
           <h3 class="fw-bold text-success mb-2">{{ faturamentoTotalCombinadoFormatted() }}</h3>
           <span class="extra-small custom-dark-muted mt-auto">
-            <i class="fas fa-receipt me-1"></i>Serviços + Assinaturas
+            <i class="fas fa-receipt me-1"></i>Total dos atendimentos
           </span>
         </div>
         <div class="accent-bar bg-success"></div>
@@ -75,31 +75,31 @@
           <div class="d-flex align-items-center justify-content-between mb-3">
             <span class="text-uppercase extra-small fw-bold custom-dark-muted">Atendimentos</span>
             <div class="icon-circle bg-primary-subtle text-primary">
-              <i class="fas fa-cut"></i>
+              <i class="fas fa-concierge-bell"></i>
             </div>
           </div>
           <h3 class="fw-bold text-primary mb-2">{{ agendamentosAtendidos().length }}</h3>
           <span class="extra-small custom-dark-muted mt-auto">
-            <i class="fas fa-check-circle me-1 text-success"></i>Cortes e serviços concluídos
+            <i class="fas fa-check-circle me-1 text-success"></i>Atendimentos concluídos
           </span>
         </div>
         <div class="accent-bar bg-primary"></div>
       </div>
     </div>
 
-    <!-- Card 3: Assinantes Ativos -->
+    <!-- Card 3: Agendamentos Hoje -->
     <div class="col-12 col-lg-6 col-xl-3">
       <div class="card tm-card border-0 shadow-sm rounded-4 h-100 position-relative overflow-hidden custom-dark-card">
         <div class="card-body p-4 d-flex flex-column">
           <div class="d-flex align-items-center justify-content-between mb-3">
-            <span class="text-uppercase extra-small fw-bold custom-dark-muted">Assinantes Ativos</span>
+            <span class="text-uppercase extra-small fw-bold custom-dark-muted">Agendamentos Hoje</span>
             <div class="icon-circle bg-purple-subtle text-purple">
-              <i class="fas fa-users"></i>
+              <i class="fas fa-calendar-check"></i>
             </div>
           </div>
-          <h3 class="fw-bold custom-dark-title mb-2">{{ assinantesAtivos().length }}</h3>
+          <h3 class="fw-bold custom-dark-title mb-2">{{ agendamentosHojeCount() }}</h3>
           <span class="extra-small custom-dark-muted mt-auto">
-            Ticket médio: <strong>{{ ticketMedioFormatted() }}</strong>
+            <i class="fas fa-clock me-1 text-primary"></i>Agendamentos marcados para hoje
           </span>
         </div>
         <div class="accent-bar bg-purple"></div>
@@ -126,395 +126,242 @@
     </div>
   </div>
 
-  <!-- NAVEGAÇÃO POR ABAS (TABS LIMPAS E ELEGANTES) -->
-  <div class="dash-tabs-wrapper mb-4">
-    <div class="d-flex gap-2 border-bottom pb-2">
-      <button
-        type="button"
-        class="btn btn-tab-pill rounded-pill px-4 py-2 fw-semibold small transition-all"
-        [class.active]="abaAtiva() === 'desempenho'"
-        (click)="abaAtiva.set('desempenho')"
-      >
-        <i class="fas fa-chart-bar me-2"></i>Desempenho & Operação
-      </button>
-
-      <button
-        type="button"
-        class="btn btn-tab-pill rounded-pill px-4 py-2 fw-semibold small transition-all"
-        [class.active]="abaAtiva() === 'previsao'"
-        (click)="abaAtiva.set('previsao')"
-      >
-        <i class="fas fa-wand-magic-sparkles me-2"></i>Previsão & Simulador
-      </button>
+  <!-- CONTEÚDO PRINCIPAL DA DASHBOARD -->
+  <div class="row g-4 mb-4">
+    <!-- Line Chart: Evolução do Faturamento -->
+    <div class="col-12 col-lg-8">
+      <div class="card tm-card border-0 shadow-sm rounded-4 h-100 custom-dark-card">
+        <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+          <h5 class="fw-bold custom-dark-title mb-1">Evolução do Faturamento</h5>
+          <p class="custom-dark-muted extra-small mb-0">Histórico de receita dos atendimentos no período</p>
+        </div>
+        <div class="card-body p-4">
+          <div style="height: 290px;">
+            <canvas baseChart [data]="lineChartData()" [options]="lineChartOptions()" [type]="'line'"></canvas>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <!-- CONTEÚDO DA ABA 1: DESEMPENHO & OPERAÇÃO -->
-  @if (abaAtiva() === 'desempenho') {
-    <div class="row g-4 mb-4">
-      <!-- Line Chart: Evolução do Faturamento -->
-      <div class="col-12 col-lg-8">
-        <div class="card tm-card border-0 shadow-sm rounded-4 h-100 custom-dark-card">
-          <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
-            <h5 class="fw-bold custom-dark-title mb-1">Evolução do Faturamento & Projeção</h5>
-            <p class="custom-dark-muted extra-small mb-0">Histórico dos últimos meses e curva de tendência</p>
-          </div>
-          <div class="card-body p-4">
-            <div style="height: 290px;">
-              <canvas baseChart [data]="lineChartData()" [options]="lineChartOptions()" [type]="'line'"></canvas>
-            </div>
+    <!-- Doughnut Chart: Distribuição por Tipo de Atendimento -->
+    <div class="col-12 col-lg-4">
+      <div class="card tm-card border-0 shadow-sm rounded-4 h-100 custom-dark-card">
+        <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+          <h5 class="fw-bold custom-dark-title mb-1">Tipos de Atendimento</h5>
+          <p class="custom-dark-muted extra-small mb-0">Proporção por categoria de serviço</p>
+        </div>
+        <div class="card-body p-4 d-flex flex-column align-items-center justify-content-center">
+          <div style="height: 240px; width: 100%;">
+            <canvas baseChart [data]="doughnutChartData()" [options]="doughnutChartOptions()" [type]="'doughnut'"></canvas>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Pie Chart: Mix de Receita -->
-      <div class="col-12 col-lg-4">
-        <div class="card tm-card border-0 shadow-sm rounded-4 h-100 custom-dark-card">
-          <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
-            <h5 class="fw-bold custom-dark-title mb-1">Origem da Receita</h5>
-            <p class="custom-dark-muted extra-small mb-0">Assinaturas vs Serviços Avulsos</p>
-          </div>
-          <div class="card-body p-4 d-flex flex-column align-items-center justify-content-center">
-            <div style="height: 240px; width: 100%;">
-              <canvas baseChart [data]="pieMixChartData()" [options]="pieMixChartOptions()" [type]="'pie'"></canvas>
-            </div>
+    <!-- Bar Chart: Status de Agendamentos -->
+    <div class="col-12 col-lg-6">
+      <div class="card tm-card border-0 shadow-sm rounded-4 h-100 custom-dark-card">
+        <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+          <h5 class="fw-bold custom-dark-title mb-1">Status dos Agendamentos</h5>
+          <p class="custom-dark-muted extra-small mb-0">Concluídos, Cancelamentos e Faltas</p>
+        </div>
+        <div class="card-body p-4">
+          <div style="height: 250px;">
+            <canvas baseChart [data]="barChartData()" [options]="barChartOptions()" [type]="'bar'"></canvas>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Bar Chart: Status de Agendamentos -->
-      <div class="col-12 col-lg-6">
-        <div class="card tm-card border-0 shadow-sm rounded-4 h-100 custom-dark-card">
-          <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
-            <h5 class="fw-bold custom-dark-title mb-1">Status dos Agendamentos</h5>
-            <p class="custom-dark-muted extra-small mb-0">Concluídos, Cancelamentos e Faltas</p>
+    <!-- Ranking de Atendentes / Recursos -->
+    <div class="col-12 col-lg-6">
+      <div class="card tm-card border-0 shadow-sm rounded-4 h-100 custom-dark-card">
+        <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0 d-flex align-items-center justify-content-between">
+          <div>
+            <h5 class="fw-bold custom-dark-title mb-1">Ranking de {{ rotuloAtendente() }}s</h5>
+            <p class="custom-dark-muted extra-small mb-0">Desempenho no período selecionado</p>
           </div>
-          <div class="card-body p-4">
-            <div style="height: 250px;">
-              <canvas baseChart [data]="barChartData()" [options]="barChartOptions()" [type]="'bar'"></canvas>
-            </div>
-          </div>
+          <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1.5 fw-bold extra-small">
+            <i class="fas fa-trophy me-1"></i>Destaques
+          </span>
         </div>
-      </div>
-
-      <!-- Ranking de Profissionais -->
-      <div class="col-12 col-lg-6">
-        <div class="card tm-card border-0 shadow-sm rounded-4 h-100 custom-dark-card">
-          <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0 d-flex align-items-center justify-content-between">
-            <div>
-              <h5 class="fw-bold custom-dark-title mb-1">Ranking de Profissionais</h5>
-              <p class="custom-dark-muted extra-small mb-0">Desempenho da equipe no período</p>
-            </div>
-            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1.5 fw-bold extra-small">
-              <i class="fas fa-trophy me-1"></i>Top Profissionais
-            </span>
-          </div>
-          <div class="card-body p-4">
-            @if (rankingProfissionais().length === 0) {
-              <p class="custom-dark-muted text-center py-4 my-auto">Nenhum atendimento registrado no período.</p>
-            } @else {
-              <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0 custom-dark-table">
-                  <thead>
-                    <tr class="extra-small text-uppercase">
-                      <th>Profissional</th>
-                      <th class="text-center">Atendimentos</th>
-                      <th class="text-end">Receita Gerada</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (p of rankingProfissionais(); track p.id; let i = $index) {
-                      <tr>
-                        <td>
-                          <div class="d-flex align-items-center gap-3">
-                            <span
-                              class="rank-circle flex-shrink-0 me-1"
-                              [class.rank-gold]="i === 0"
-                              [class.rank-normal]="i > 0"
-                            >
-                              {{ i + 1 }}
-                            </span>
-                            <span class="fw-semibold custom-dark-title">{{ p.nome }}</span>
-                          </div>
-                        </td>
-                        <td class="text-center fw-bold custom-dark-title">{{ p.quantidade }}</td>
-                        <td class="text-end fw-bold text-success">R$ {{ p.faturamento.toFixed(2).replace('.', ',') }}</td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
-            }
-          </div>
-        </div>
-      </div>
-
-      <!-- Top Serviços Procurados (Espaço Interno Expandido & Visual Limpo) -->
-      <div class="col-12">
-        <div class="card tm-card border-0 shadow-sm rounded-4 custom-dark-card">
-          <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
-            <h5 class="fw-bold custom-dark-title mb-1">Serviços Mais Procurados</h5>
-            <p class="custom-dark-muted extra-small mb-0">Principais cortes e procedimentos realizados</p>
-          </div>
-          <div class="card-body p-4">
-            @if (rankingServicos().length === 0) {
-              <p class="custom-dark-muted text-center py-3 my-auto">Nenhum serviço registrado.</p>
-            } @else {
-              <div class="row g-4">
-                @for (s of rankingServicos(); track s.nome) {
-                  <div class="col-12 col-sm-6 col-lg-4">
-                    <div class="p-4 rounded-4 border custom-dark-card h-100 d-flex flex-column justify-content-between servico-card shadow-sm">
-                      <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
-                        <div class="d-flex align-items-center gap-3 overflow-hidden">
-                          <div class="icon-circle-sm bg-primary-subtle text-primary flex-shrink-0">
-                            <i class="fas fa-cut"></i>
-                          </div>
-                          <span class="fw-bold custom-dark-title text-truncate" [title]="s.nome">{{ s.nome }}</span>
+        <div class="card-body p-4">
+          @if (rankingProfissionais().length === 0) {
+            <p class="custom-dark-muted text-center py-4 my-auto">Nenhum atendimento registrado no período.</p>
+          } @else {
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0 custom-dark-table">
+                <thead>
+                  <tr class="extra-small text-uppercase">
+                    <th>{{ rotuloAtendente() }}</th>
+                    <th class="text-center">Atendimentos</th>
+                    <th class="text-end">Receita Gerada</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (p of rankingProfissionais(); track p.id; let i = $index) {
+                    <tr>
+                      <td>
+                        <div class="d-flex align-items-center gap-3">
+                          <span
+                            class="rank-circle flex-shrink-0 me-1"
+                            [class.rank-gold]="i === 0"
+                            [class.rank-normal]="i > 0"
+                          >
+                            {{ i + 1 }}
+                          </span>
+                          <span class="fw-semibold custom-dark-title">{{ p.nome }}</span>
                         </div>
-                        <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1.5 extra-small fw-bold flex-shrink-0">
-                          {{ s.quantidade }}x
-                        </span>
+                      </td>
+                      <td class="text-center fw-bold custom-dark-title">{{ p.quantidade }}</td>
+                      <td class="text-end fw-bold text-success">R$ {{ p.faturamento.toFixed(2).replace('.', ',') }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Tipos de Atendimento Mais Procurados -->
+    <div class="col-12">
+      <div class="card tm-card border-0 shadow-sm rounded-4 custom-dark-card">
+        <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+          <h5 class="fw-bold custom-dark-title mb-1">Tipos de Atendimento Mais Procurados</h5>
+          <p class="custom-dark-muted extra-small mb-0">Principais categorias de serviço agendadas</p>
+        </div>
+        <div class="card-body p-4">
+          @if (rankingServicos().length === 0) {
+            <p class="custom-dark-muted text-center py-3 my-auto">Nenhum atendimento registrado.</p>
+          } @else {
+            <div class="row g-4">
+              @for (s of rankingServicos(); track s.nome) {
+                <div class="col-12 col-sm-6 col-lg-4">
+                  <div class="p-4 rounded-4 border custom-dark-card h-100 d-flex flex-column justify-content-between servico-card shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
+                      <div class="d-flex align-items-center gap-3 overflow-hidden">
+                        <div class="icon-circle-sm bg-primary-subtle text-primary flex-shrink-0">
+                          <i class="fas fa-concierge-bell"></i>
+                        </div>
+                        <span class="fw-bold custom-dark-title text-truncate" [title]="s.nome">{{ s.nome }}</span>
                       </div>
-                      <div class="d-flex justify-content-between align-items-center extra-small pt-3 border-top border-light-subtle">
-                        <span class="custom-dark-muted">Total gerado no período:</span>
-                        <strong class="text-success fw-bold fs-6">R$ {{ s.faturamento.toFixed(2).replace('.', ',') }}</strong>
-                      </div>
+                      <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1.5 extra-small fw-bold flex-shrink-0">
+                        {{ s.quantidade }}x
+                      </span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center extra-small pt-3 border-top border-light-subtle">
+                      <span class="custom-dark-muted">Total gerado no período:</span>
+                      <strong class="text-success fw-bold fs-6">R$ {{ s.faturamento.toFixed(2).replace('.', ',') }}</strong>
                     </div>
                   </div>
-                }
-              </div>
-            }
-          </div>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- CONTEÚDO DA ABA 2: PREVISÃO & SIMULADOR -->
-  @if (abaAtiva() === 'previsao') {
-    <div class="row g-4 mb-4">
-      <!-- Simulador de Metas & Crescimento -->
-      <div class="col-12 col-lg-7">
-        <div class="card tm-card border-0 shadow-sm rounded-4 h-100 custom-dark-card">
-          <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
-            <h5 class="fw-bold text-primary mb-1 d-flex align-items-center gap-2">
-              <i class="fas fa-calculator text-primary"></i>Simulador de Metas de Crescimento
-            </h5>
-            <p class="custom-dark-muted extra-small mb-0">Projete o impacto financeiro de novos assinantes na sua receita</p>
-          </div>
-          <div class="card-body p-4">
-            <div class="row g-4 mb-4">
-              <div class="col-12 col-md-6">
-                <label class="form-label fw-semibold small custom-dark-title d-flex justify-content-between mb-2">
-                  <span>Novos Assinantes / Mês:</span>
-                  <span class="fw-bold text-primary">+{{ simularNovosAssinantes() }}</span>
-                </label>
-                <input
-                  type="range"
-                  class="form-range"
-                  min="0"
-                  max="50"
-                  step="1"
-                  [ngModel]="simularNovosAssinantes()"
-                  (ngModelChange)="simularNovosAssinantes.set($event)"
-                />
-              </div>
-
-              <div class="col-12 col-md-6">
-                <label class="form-label fw-semibold small custom-dark-title d-flex justify-content-between mb-2">
-                  <span>Reajuste no Ticket:</span>
-                  <span
-                    class="fw-bold"
-                    [class.text-success]="simularAumentoTicketPct() > 0"
-                    [class.text-danger]="simularAumentoTicketPct() < 0"
-                    [class.custom-dark-muted]="simularAumentoTicketPct() === 0"
-                  >
-                    {{ simularAumentoTicketPct() > 0 ? '+' : '' }}{{ simularAumentoTicketPct() }}%
-                  </span>
-                </label>
-                <input
-                  type="range"
-                  class="form-range"
-                  min="-30"
-                  max="50"
-                  step="5"
-                  [ngModel]="simularAumentoTicketPct()"
-                  (ngModelChange)="simularAumentoTicketPct.set($event)"
-                />
-              </div>
-            </div>
-
-            <!-- Projeções da Simulação -->
-            <div class="row g-3">
-              <div class="col-12 col-sm-4">
-                <div class="py-3 px-2.5 rounded-4 bg-primary-subtle text-primary border border-primary-subtle text-center h-100 d-flex flex-column justify-content-center">
-                  <span class="extra-small fw-bold text-uppercase d-block mb-1">MRR Projetado</span>
-                  <h4 class="fw-bold mb-0 fs-5">{{ resultadoSimulacao().mrrProjetadoFormatted }}</h4>
-                </div>
-              </div>
-
-              <div class="col-12 col-sm-4">
-                <div class="py-3 px-2.5 rounded-4 bg-success-subtle text-success border border-success-subtle text-center h-100 d-flex flex-column justify-content-center">
-                  <span class="extra-small fw-bold text-uppercase d-block mb-1">Projeção 6 Meses</span>
-                  <h4 class="fw-bold mb-0 fs-5">{{ resultadoSimulacao().projecao6MesesFormatted }}</h4>
-                </div>
-              </div>
-
-              <div class="col-12 col-sm-4">
-                <div class="py-3 px-2.5 rounded-4 bg-purple-subtle text-purple border border-purple-subtle text-center h-100 d-flex flex-column justify-content-center">
-                  <span class="extra-small fw-bold text-uppercase d-block mb-1">ARR Anual</span>
-                  <h4 class="fw-bold mb-0 fs-5">{{ resultadoSimulacao().projecao12MesesFormatted }}</h4>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Receita Garantida & Distribuição de Planos -->
-      <div class="col-12 col-lg-5">
-        <div class="card tm-card border-0 shadow-sm rounded-4 h-100 custom-dark-card">
-          <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
-            <h5 class="fw-bold custom-dark-title mb-1">Receita Futura Garantida</h5>
-            <p class="custom-dark-muted extra-small mb-0">Agendamentos confirmados e distribuição de assinantes</p>
-          </div>
-          <div class="card-body p-4 d-flex flex-column gap-3">
-            <div class="p-3 rounded-4 border custom-dark-card d-flex align-items-center justify-content-between">
-              <div class="d-flex align-items-center gap-3">
-                <div class="icon-circle-sm bg-success-subtle text-success flex-shrink-0">
-                  <i class="fas fa-calendar-check"></i>
-                </div>
-                <div>
-                  <span class="extra-small custom-dark-muted d-block">Agendamentos Confirmados</span>
-                  <h5 class="fw-bold text-success mb-0">{{ agendamentosFuturosConfirmados().valorFormatted }}</h5>
-                </div>
-              </div>
-              <span class="badge bg-success-subtle text-success rounded-pill px-3 py-1.5 fw-bold extra-small flex-shrink-0">
-                {{ agendamentosFuturosConfirmados().qtd }} horário(s)
-              </span>
-            </div>
-
-            <div class="p-3 rounded-4 border custom-dark-card d-flex align-items-center justify-content-between">
-              <div class="d-flex align-items-center gap-3">
-                <div class="icon-circle-sm bg-purple-subtle text-purple flex-shrink-0">
-                  <i class="fas fa-sync-alt"></i>
-                </div>
-                <div>
-                  <span class="extra-small custom-dark-muted d-block">Renovações em 30 Dias</span>
-                  <h5 class="fw-bold text-purple mb-0">{{ renovacoesProximos30Dias().valorFormatted }}</h5>
-                </div>
-              </div>
-              <span class="badge bg-purple-subtle text-purple rounded-pill px-3 py-1.5 fw-bold extra-small flex-shrink-0">
-                {{ renovacoesProximos30Dias().qtd }} cliente(s)
-              </span>
-            </div>
-
-            <div style="height: 170px; width: 100%;" class="mt-auto">
-              <canvas baseChart [data]="doughnutChartData()" [options]="doughnutChartOptions()" [type]="'doughnut'"></canvas>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Reincidência de Faltas (Retenção de Clientes) -->
-      <div class="col-12">
-        <div class="card tm-card border-0 shadow-sm rounded-4 custom-dark-card">
-          <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0 d-flex align-items-center justify-content-between">
-            <div>
-              <h5 class="fw-bold custom-dark-title mb-1">Clientes Reincidentes em Faltas</h5>
-              <p class="custom-dark-muted extra-small mb-0">Acompanhamento de faltas e cancelamentos para retenção</p>
-            </div>
-            <div class="d-flex align-items-center gap-2 position-relative">
-              <span class="badge bg-warning-subtle text-warning rounded-pill px-3 py-1.5 fw-bold extra-small">
-                <i class="fas fa-user-shield me-1"></i>Retenção de Clientes
-              </span>
-              <button
-                type="button"
-                class="btn btn-sm rounded-circle custom-dark-card border-0 shadow-sm p-0 d-inline-flex align-items-center justify-content-center"
-                style="width: 32px; height: 32px;"
-                (click)="toggleAjudaReincidencia($event)"
-                title="Para que serve esta tabela?"
-              >
-                <i class="fas fa-question-circle text-primary"></i>
-              </button>
-
-              <!-- Popover Interativo Explicativo -->
-              @if (exibeAjudaReincidencia()) {
-                <div
-                  class="popover-help-card shadow-lg rounded-4 p-3 position-absolute end-0 top-100 mt-2 custom-dark-card z-3"
-                  style="width: 320px; border: 1px solid var(--tm-border-color);"
-                  (click)="$event.stopPropagation()"
-                >
-                  <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom border-light-subtle">
-                    <h6 class="fw-bold custom-dark-title mb-0 d-flex align-items-center gap-2 small">
-                      <i class="fas fa-info-circle text-primary"></i>Para que serve esta tabela?
-                    </h6>
-                    <button
-                      type="button"
-                      class="btn-close extra-small"
-                      (click)="exibeAjudaReincidencia.set(false)"
-                    ></button>
-                  </div>
-                  <p class="extra-small custom-dark-subtitle mb-2">
-                    Esta tabela identifica automaticamente os clientes com histórico recente de <strong>faltas (sem avisar)</strong> ou <strong>cancelamentos reincidentes</strong>.
-                  </p>
-                  <p class="extra-small custom-dark-subtitle mb-0">
-                    <i class="fab fa-whatsapp text-success me-1"></i>Utilize o botão do WhatsApp para entrar em contato direto, entender o motivo, remarcar o horário e evitar perder o cliente!
-                  </p>
                 </div>
               }
             </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Reincidência de Faltas (Retenção de Clientes) -->
+    <div class="col-12">
+      <div class="card tm-card border-0 shadow-sm rounded-4 custom-dark-card">
+        <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0 d-flex align-items-center justify-content-between">
+          <div>
+            <h5 class="fw-bold custom-dark-title mb-1">Clientes com Faltas ou Cancelamentos</h5>
+            <p class="custom-dark-muted extra-small mb-0">Acompanhamento para contato rápido e remarcação de horários</p>
           </div>
-          <div class="card-body p-4">
-            @if (clientesFaltasECancelamentos().length === 0) {
-              <p class="custom-dark-muted text-center py-3 my-auto">Nenhum histórico de faltas reincidentes.</p>
-            } @else {
-              <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0 custom-dark-table">
-                  <thead>
-                    <tr class="extra-small text-uppercase">
-                      <th>Cliente</th>
-                      <th class="text-center">Faltas</th>
-                      <th class="text-center">Cancelamentos</th>
-                      <th class="text-end">Contato</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (c of clientesFaltasECancelamentos(); track c.nome) {
-                      <tr>
-                        <td class="fw-semibold custom-dark-title">{{ c.nome }}</td>
-                        <td class="text-center">
-                          <span class="badge bg-danger-subtle text-danger fw-bold rounded-pill px-2.5 py-1">
-                            {{ c.faltas }}
-                          </span>
-                        </td>
-                        <td class="text-center">
-                          <span class="badge bg-warning-subtle text-warning fw-bold rounded-pill px-2.5 py-1">
-                            {{ c.cancelamentos }}
-                          </span>
-                        </td>
-                        <td class="text-end">
-                          @if (c.telefone) {
-                            <a
-                              [href]="'https://wa.me/' + c.telefone.replace('+', '')"
-                              target="_blank"
-                              class="btn btn-outline-success btn-sm rounded-pill py-1 px-3 extra-small fw-semibold"
-                            >
-                              <i class="fab fa-whatsapp me-1"></i>WhatsApp
-                            </a>
-                          } @else {
-                            <span class="custom-dark-muted extra-small">—</span>
-                          }
-                        </td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
+          <div class="d-flex align-items-center gap-2 position-relative">
+            <span class="badge bg-warning-subtle text-warning rounded-pill px-3 py-1.5 fw-bold extra-small">
+              <i class="fas fa-user-shield me-1"></i>Retenção de Clientes
+            </span>
+            <button
+              type="button"
+              class="btn btn-sm rounded-circle custom-dark-card border-0 shadow-sm p-0 d-inline-flex align-items-center justify-content-center"
+              style="width: 32px; height: 32px;"
+              (click)="toggleAjudaReincidencia($event)"
+              title="Para que serve esta tabela?"
+            >
+              <i class="fas fa-question-circle text-primary"></i>
+            </button>
+
+            <!-- Popover Interativo Explicativo -->
+            @if (exibeAjudaReincidencia()) {
+              <div
+                class="popover-help-card shadow-lg rounded-4 p-3 position-absolute end-0 top-100 mt-2 custom-dark-card z-3"
+                style="width: 320px; border: 1px solid var(--tm-border-color);"
+                (click)="$event.stopPropagation()"
+              >
+                <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom border-light-subtle">
+                  <h6 class="fw-bold custom-dark-title mb-0 d-flex align-items-center gap-2 small">
+                    <i class="fas fa-info-circle text-primary"></i>Para que serve esta tabela?
+                  </h6>
+                  <button
+                    type="button"
+                    class="btn-close extra-small"
+                    (click)="exibeAjudaReincidencia.set(false)"
+                  ></button>
+                </div>
+                <p class="extra-small custom-dark-subtitle mb-2">
+                  Esta tabela identifica os clientes com histórico recente de <strong>faltas ou cancelamentos</strong>.
+                </p>
+                <p class="extra-small custom-dark-subtitle mb-0">
+                  <i class="fab fa-whatsapp text-success me-1"></i>Utilize o botão do WhatsApp para entrar em contato direto, entender o motivo, remarcar o horário e evitar perder o cliente!
+                </p>
               </div>
             }
           </div>
         </div>
+        <div class="card-body p-4">
+          @if (clientesFaltasECancelamentos().length === 0) {
+            <p class="custom-dark-muted text-center py-3 my-auto">Nenhum histórico de faltas registrado.</p>
+          } @else {
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0 custom-dark-table">
+                <thead>
+                  <tr class="extra-small text-uppercase">
+                    <th>Cliente</th>
+                    <th class="text-center">Faltas</th>
+                    <th class="text-center">Cancelamentos</th>
+                    <th class="text-end">Contato Direto</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (c of clientesFaltasECancelamentos(); track c.nome) {
+                    <tr>
+                      <td class="fw-semibold custom-dark-title">{{ c.nome }}</td>
+                      <td class="text-center">
+                        <span class="badge bg-danger-subtle text-danger fw-bold rounded-pill px-2.5 py-1">
+                          {{ c.faltas }}
+                        </span>
+                      </td>
+                      <td class="text-center">
+                        <span class="badge bg-warning-subtle text-warning fw-bold rounded-pill px-2.5 py-1">
+                          {{ c.cancelamentos }}
+                        </span>
+                      </td>
+                      <td class="text-end">
+                        @if (c.telefone) {
+                          <a
+                            [href]="'https://wa.me/' + c.telefone.replace('+', '')"
+                            target="_blank"
+                            class="btn btn-outline-success btn-sm rounded-pill py-1 px-3 extra-small fw-semibold"
+                          >
+                            <i class="fab fa-whatsapp me-1"></i>WhatsApp
+                          </a>
+                        } @else {
+                          <span class="custom-dark-muted extra-small">—</span>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
       </div>
     </div>
-  }
+  </div>
 </div>

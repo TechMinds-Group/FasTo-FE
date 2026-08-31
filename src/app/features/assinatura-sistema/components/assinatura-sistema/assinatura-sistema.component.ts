@@ -10,7 +10,7 @@ import { PlanoAssinatura } from '../../../../core/models/assinatura-sistema/plan
 import { LanguageService } from '../../../../core/services/language.service';
 import { AssinaturaSistemaService } from '../../../../core/services/assinatura-sistema.service';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
-import { PlanoGroomEstado } from '../../models/plano-groom-estado.model';
+import { PlanoFasToEstado } from '../../models/plano-fasto-estado.model';
 import { StatusAssinatura } from '../../enums/status-assinatura.enum';
 import { PlanoAtualComponent } from '../plano-atual/plano-atual.component';
 import { UsoLicencaComponent } from '../uso-licenca/uso-licenca.component';
@@ -33,7 +33,7 @@ export class AssinaturaSistemaComponent implements OnInit {
   private readonly assinaturaService = inject(AssinaturaSistemaService);
   private readonly languageService = inject(LanguageService);
 
-  protected readonly planoGroom = signal<PlanoGroomEstado>({
+  protected readonly planoFasTo = signal<PlanoFasToEstado>({
     nome: this.languageService.translate('ASSINATURA.LOADING'),
     valor: 0,
     ciclo: '',
@@ -57,12 +57,12 @@ export class AssinaturaSistemaComponent implements OnInit {
   });
 
   protected readonly pctProfissionais = computed<number>(() => {
-    const e = this.planoGroom();
+    const e = this.planoFasTo();
     return e.limiteProfissionais > 0 ? (e.usoProfissionais / e.limiteProfissionais) * 100 : 0;
   });
 
   protected readonly pctClientes = computed<number>(() => {
-    const e = this.planoGroom();
+    const e = this.planoFasTo();
     return e.limiteClientes > 0 ? (e.usoClientes / e.limiteClientes) * 100 : 0;
   });
 
@@ -79,7 +79,7 @@ export class AssinaturaSistemaComponent implements OnInit {
           const lang = this.languageService.currentLang();
           dataValidadeStr = new Date(plano.validoAte).toLocaleDateString(lang);
         }
-        this.planoGroom.set({
+        this.planoFasTo.set({
           nome: plano.nome,
           valor: plano.valor,
           ciclo: plano.ciclo,
@@ -104,13 +104,13 @@ export class AssinaturaSistemaComponent implements OnInit {
       next: (planos: PlanoAssinatura[]) => {
         if (Array.isArray(planos) && planos.length > 0) {
           this.planosDisponiveis.set(planos);
-          const planoAtual = planos.find((p) => p.nome === this.planoGroom().nome) || planos[0];
+          const planoAtual = planos.find((p) => p.nome === this.planoFasTo().nome) || planos[0];
           this.planoSelecionado.set(planoAtual);
         }
       },
       error: () => {
         if (this.planosDisponiveis().length === 0) {
-          const e = this.planoGroom();
+          const e = this.planoFasTo();
           const fallback: PlanoAssinatura = {
             id: '1',
             nome: e.nome,
