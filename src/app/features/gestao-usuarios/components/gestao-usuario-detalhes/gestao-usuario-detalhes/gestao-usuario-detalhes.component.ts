@@ -73,8 +73,8 @@ export class GestaoUsuarioDetalhesComponent implements OnInit {
     nome: ['', [Validators.required, Validators.maxLength(60)]],
     sobrenome: ['', [Validators.maxLength(60)]],
     email: ['', [Validators.required, Validators.email]],
-    telefone: ['', [Validators.required, Validators.maxLength(15)]],
-    nivelAcessoId: ['', [Validators.required]],
+    telefone: ['', [Validators.maxLength(15)]],
+    nivelAcessoId: [''],
     status: ['Ativo'],
   });
 

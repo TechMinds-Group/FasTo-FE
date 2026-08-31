@@ -85,14 +85,16 @@
     }
   </div>
   <tm-modal
-    [open]="showDeleteModal()"
+    [show]="showDeleteModal()"
     (confirm)="excluir()"
-    (close)="showDeleteModal.set(false)"
-    [confirmLabel]="'Excluir'"
-    [cancelLabel]="'Cancelar'"
-    [title]="'Excluir Plano'"
-    [disabled]="isDeleting()"
+    (cancel)="showDeleteModal.set(false)"
+    confirmLabel="Excluir"
+    cancelLabel="Cancelar"
+    title="Excluir Plano"
+    confirmClass="btn-danger"
   >
-    <p class="text-white">Tem certeza que deseja excluir o plano <strong>{{ planoToDelete()?.nome }}</strong>?</p>
+    <div class="p-1">
+      <p class="mb-0 text-white">Tem certeza que deseja excluir o plano <strong>{{ planoToDelete()?.nome }}</strong>?</p>
+    </div>
   </tm-modal>
 </div>

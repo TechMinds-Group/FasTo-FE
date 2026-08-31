@@ -1,26 +1,21 @@
 <div class="container-fluid p-4 mb-5 pb-5">
-  <!-- Header Principal da Dashboard -->
   <div class="mb-4">
     <h1 class="h2 text-primary fw-bold mb-1 custom-dark-title d-flex align-items-center gap-2">
       <i class="fas fa-chart-line text-primary"></i>Dashboard & Gestão
     </h1>
     <p class="custom-dark-subtitle mb-0">
-      Visão clara do seu faturamento, atendimentos e retenção de clientes.
+      Visão clara dos seus atendimentos e agendamentos.
     </p>
   </div>
 
-  <!-- Barra de Filtros Enxuta -->
   <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 custom-dark-card dash-filter-bar">
     <div class="row g-3 align-items-center">
       <div class="col-12 col-md-6">
         <label class="form-label extra-small fw-bold text-uppercase custom-dark-label mb-2 d-flex align-items-center gap-2">
           <i class="far fa-calendar-alt text-primary"></i>Período de Análise
         </label>
-        <select
-          class="form-select rounded-3 custom-dark-input py-2"
-          [ngModel]="filtroPeriodo()"
-          (ngModelChange)="filtroPeriodo.set($event)"
-        >
+        <select class="form-select rounded-3 custom-dark-input py-2"
+          [ngModel]="filtroPeriodo()" (ngModelChange)="filtroPeriodo.set($event)">
           <option value="7d">Últimos 7 Dias</option>
           <option value="30d">Últimos 30 Dias</option>
           <option value="90d">Últimos 90 Dias</option>
@@ -28,16 +23,12 @@
           <option value="ano">Ano Atual</option>
         </select>
       </div>
-
       <div class="col-12 col-md-6">
         <label class="form-label extra-small fw-bold text-uppercase custom-dark-label mb-2 d-flex align-items-center gap-2">
           <i class="fas fa-user-tie text-primary"></i>{{ rotuloAtendente() }}
         </label>
-        <select
-          class="form-select rounded-3 custom-dark-input py-2"
-          [ngModel]="filtroProfissionalId()"
-          (ngModelChange)="filtroProfissionalId.set($event)"
-        >
+        <select class="form-select rounded-3 custom-dark-input py-2"
+          [ngModel]="filtroProfissionalId()" (ngModelChange)="filtroProfissionalId.set($event)">
           <option value="todos">Todos(as)</option>
           @for (prof of profissionais(); track prof.id) {
             <option [value]="prof.id">{{ prof.nome }}</option>
@@ -47,33 +38,12 @@
     </div>
   </div>
 
-  <!-- OS 4 KPIS ESSENCIAIS DO TOPO -->
   <div class="row g-4 mb-4">
-    <!-- Card 1: Faturamento Total -->
-    <div class="col-12 col-lg-6 col-xl-3">
+    <div class="col-12 col-lg-6 col-xl-4">
       <div class="card tm-card border-0 shadow-sm rounded-4 h-100 position-relative overflow-hidden custom-dark-card">
         <div class="card-body p-4 d-flex flex-column">
           <div class="d-flex align-items-center justify-content-between mb-3">
-            <span class="text-uppercase extra-small fw-bold custom-dark-muted">Faturamento Total</span>
-            <div class="icon-circle bg-success-subtle text-success">
-              <i class="fas fa-dollar-sign"></i>
-            </div>
-          </div>
-          <h3 class="fw-bold text-success mb-2">{{ faturamentoTotalCombinadoFormatted() }}</h3>
-          <span class="extra-small custom-dark-muted mt-auto">
-            <i class="fas fa-receipt me-1"></i>Total dos atendimentos
-          </span>
-        </div>
-        <div class="accent-bar bg-success"></div>
-      </div>
-    </div>
-
-    <!-- Card 2: Atendimentos Realizados -->
-    <div class="col-12 col-lg-6 col-xl-3">
-      <div class="card tm-card border-0 shadow-sm rounded-4 h-100 position-relative overflow-hidden custom-dark-card">
-        <div class="card-body p-4 d-flex flex-column">
-          <div class="d-flex align-items-center justify-content-between mb-3">
-            <span class="text-uppercase extra-small fw-bold custom-dark-muted">Atendimentos</span>
+            <span class="text-uppercase extra-small fw-bold custom-dark-muted">Atendimentos Realizados</span>
             <div class="icon-circle bg-primary-subtle text-primary">
               <i class="fas fa-concierge-bell"></i>
             </div>
@@ -87,8 +57,7 @@
       </div>
     </div>
 
-    <!-- Card 3: Agendamentos Hoje -->
-    <div class="col-12 col-lg-6 col-xl-3">
+    <div class="col-12 col-lg-6 col-xl-4">
       <div class="card tm-card border-0 shadow-sm rounded-4 h-100 position-relative overflow-hidden custom-dark-card">
         <div class="card-body p-4 d-flex flex-column">
           <div class="d-flex align-items-center justify-content-between mb-3">
@@ -106,8 +75,7 @@
       </div>
     </div>
 
-    <!-- Card 4: Ocupação da Agenda Hoje -->
-    <div class="col-12 col-lg-6 col-xl-3">
+    <div class="col-12 col-lg-6 col-xl-4">
       <div class="card tm-card border-0 shadow-sm rounded-4 h-100 position-relative overflow-hidden custom-dark-card">
         <div class="card-body p-4 d-flex flex-column">
           <div class="d-flex align-items-center justify-content-between mb-3">
@@ -126,14 +94,12 @@
     </div>
   </div>
 
-  <!-- CONTEÚDO PRINCIPAL DA DASHBOARD -->
   <div class="row g-4 mb-4">
-    <!-- Line Chart: Evolução do Faturamento -->
     <div class="col-12 col-lg-8">
       <div class="card tm-card border-0 shadow-sm rounded-4 h-100 custom-dark-card">
         <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
-          <h5 class="fw-bold custom-dark-title mb-1">Evolução do Faturamento</h5>
-          <p class="custom-dark-muted extra-small mb-0">Histórico de receita dos atendimentos no período</p>
+          <h5 class="fw-bold custom-dark-title mb-1">Evolução de Atendimentos</h5>
+          <p class="custom-dark-muted extra-small mb-0">Quantidade de atendimentos realizados por mês</p>
         </div>
         <div class="card-body p-4">
           <div style="height: 290px;">
@@ -143,7 +109,6 @@
       </div>
     </div>
 
-    <!-- Doughnut Chart: Distribuição por Tipo de Atendimento -->
     <div class="col-12 col-lg-4">
       <div class="card tm-card border-0 shadow-sm rounded-4 h-100 custom-dark-card">
         <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
@@ -158,7 +123,6 @@
       </div>
     </div>
 
-    <!-- Bar Chart: Status de Agendamentos -->
     <div class="col-12 col-lg-6">
       <div class="card tm-card border-0 shadow-sm rounded-4 h-100 custom-dark-card">
         <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
@@ -173,7 +137,6 @@
       </div>
     </div>
 
-    <!-- Ranking de Atendentes / Recursos -->
     <div class="col-12 col-lg-6">
       <div class="card tm-card border-0 shadow-sm rounded-4 h-100 custom-dark-card">
         <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0 d-flex align-items-center justify-content-between">
@@ -195,7 +158,6 @@
                   <tr class="extra-small text-uppercase">
                     <th>{{ rotuloAtendente() }}</th>
                     <th class="text-center">Atendimentos</th>
-                    <th class="text-end">Receita Gerada</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -203,18 +165,14 @@
                     <tr>
                       <td>
                         <div class="d-flex align-items-center gap-3">
-                          <span
-                            class="rank-circle flex-shrink-0 me-1"
-                            [class.rank-gold]="i === 0"
-                            [class.rank-normal]="i > 0"
-                          >
+                          <span class="rank-circle flex-shrink-0 me-1"
+                            [class.rank-gold]="i === 0" [class.rank-normal]="i > 0">
                             {{ i + 1 }}
                           </span>
                           <span class="fw-semibold custom-dark-title">{{ p.nome }}</span>
                         </div>
                       </td>
                       <td class="text-center fw-bold custom-dark-title">{{ p.quantidade }}</td>
-                      <td class="text-end fw-bold text-success">R$ {{ p.faturamento.toFixed(2).replace('.', ',') }}</td>
                     </tr>
                   }
                 </tbody>
@@ -225,7 +183,6 @@
       </div>
     </div>
 
-    <!-- Tipos de Atendimento Mais Procurados -->
     <div class="col-12">
       <div class="card tm-card border-0 shadow-sm rounded-4 custom-dark-card">
         <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
@@ -251,10 +208,6 @@
                         {{ s.quantidade }}x
                       </span>
                     </div>
-                    <div class="d-flex justify-content-between align-items-center extra-small pt-3 border-top border-light-subtle">
-                      <span class="custom-dark-muted">Total gerado no período:</span>
-                      <strong class="text-success fw-bold fs-6">R$ {{ s.faturamento.toFixed(2).replace('.', ',') }}</strong>
-                    </div>
                   </div>
                 </div>
               }
@@ -264,7 +217,6 @@
       </div>
     </div>
 
-    <!-- Reincidência de Faltas (Retenção de Clientes) -->
     <div class="col-12">
       <div class="card tm-card border-0 shadow-sm rounded-4 custom-dark-card">
         <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0 d-flex align-items-center justify-content-between">
@@ -272,46 +224,10 @@
             <h5 class="fw-bold custom-dark-title mb-1">Clientes com Faltas ou Cancelamentos</h5>
             <p class="custom-dark-muted extra-small mb-0">Acompanhamento para contato rápido e remarcação de horários</p>
           </div>
-          <div class="d-flex align-items-center gap-2 position-relative">
-            <span class="badge bg-warning-subtle text-warning rounded-pill px-3 py-1.5 fw-bold extra-small">
-              <i class="fas fa-user-shield me-1"></i>Retenção de Clientes
-            </span>
-            <button
-              type="button"
-              class="btn btn-sm rounded-circle custom-dark-card border-0 shadow-sm p-0 d-inline-flex align-items-center justify-content-center"
-              style="width: 32px; height: 32px;"
-              (click)="toggleAjudaReincidencia($event)"
-              title="Para que serve esta tabela?"
-            >
-              <i class="fas fa-question-circle text-primary"></i>
-            </button>
-
-            <!-- Popover Interativo Explicativo -->
-            @if (exibeAjudaReincidencia()) {
-              <div
-                class="popover-help-card shadow-lg rounded-4 p-3 position-absolute end-0 top-100 mt-2 custom-dark-card z-3"
-                style="width: 320px; border: 1px solid var(--tm-border-color);"
-                (click)="$event.stopPropagation()"
-              >
-                <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom border-light-subtle">
-                  <h6 class="fw-bold custom-dark-title mb-0 d-flex align-items-center gap-2 small">
-                    <i class="fas fa-info-circle text-primary"></i>Para que serve esta tabela?
-                  </h6>
-                  <button
-                    type="button"
-                    class="btn-close extra-small"
-                    (click)="exibeAjudaReincidencia.set(false)"
-                  ></button>
-                </div>
-                <p class="extra-small custom-dark-subtitle mb-2">
-                  Esta tabela identifica os clientes com histórico recente de <strong>faltas ou cancelamentos</strong>.
-                </p>
-                <p class="extra-small custom-dark-subtitle mb-0">
-                  <i class="fab fa-whatsapp text-success me-1"></i>Utilize o botão do WhatsApp para entrar em contato direto, entender o motivo, remarcar o horário e evitar perder o cliente!
-                </p>
-              </div>
-            }
-          </div>
+          <button type="button" class="btn btn-sm rounded-circle custom-dark-card border-0 shadow-sm p-0 d-inline-flex align-items-center justify-content-center"
+            style="width: 32px; height: 32px;" (click)="toggleAjudaReincidencia($event)" title="Para que serve esta tabela?">
+            <i class="fas fa-question-circle text-primary"></i>
+          </button>
         </div>
         <div class="card-body p-4">
           @if (clientesFaltasECancelamentos().length === 0) {
@@ -332,22 +248,15 @@
                     <tr>
                       <td class="fw-semibold custom-dark-title">{{ c.nome }}</td>
                       <td class="text-center">
-                        <span class="badge bg-danger-subtle text-danger fw-bold rounded-pill px-2.5 py-1">
-                          {{ c.faltas }}
-                        </span>
+                        <span class="badge bg-danger-subtle text-danger fw-bold rounded-pill px-2.5 py-1">{{ c.faltas }}</span>
                       </td>
                       <td class="text-center">
-                        <span class="badge bg-warning-subtle text-warning fw-bold rounded-pill px-2.5 py-1">
-                          {{ c.cancelamentos }}
-                        </span>
+                        <span class="badge bg-warning-subtle text-warning fw-bold rounded-pill px-2.5 py-1">{{ c.cancelamentos }}</span>
                       </td>
                       <td class="text-end">
                         @if (c.telefone) {
-                          <a
-                            [href]="'https://wa.me/' + c.telefone.replace('+', '')"
-                            target="_blank"
-                            class="btn btn-outline-success btn-sm rounded-pill py-1 px-3 extra-small fw-semibold"
-                          >
+                          <a [href]="'https://wa.me/' + c.telefone.replace('+', '')" target="_blank"
+                            class="btn btn-outline-success btn-sm rounded-pill py-1 px-3 extra-small fw-semibold">
                             <i class="fab fa-whatsapp me-1"></i>WhatsApp
                           </a>
                         } @else {

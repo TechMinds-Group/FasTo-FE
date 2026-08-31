@@ -212,6 +212,18 @@ export class AuthService {
     });
   }
 
+  updateSgEmpresa(id: string, data: any): Observable<any> {
+    return this.http.put<any>(`${environment.apiUrl}/sg-empresas/${id}`, data, {
+      withCredentials: true
+    });
+  }
+
+  deleteSgEmpresa(id: string): Observable<any> {
+    return this.http.delete<any>(`${environment.apiUrl}/sg-empresas/${id}`, {
+      withCredentials: true
+    });
+  }
+
   logout(): Observable<any> {
     return this.http.post<any>(`${environment.apiUrl}/logout`, {}, {
       withCredentials: true

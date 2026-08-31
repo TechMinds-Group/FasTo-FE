@@ -1,245 +1,282 @@
-<div class="sg-detalhes-page">
-  <div class="container mt-5 mb-5">
+<div class="container mt-5 mb-5">
+  @if (empresa(); as emp) {
     <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
       <div class="d-flex align-items-center gap-3">
-        <button type="button" (click)="voltar()" class="btn btn-outline-secondary rounded-circle p-2 shadow-sm" title="Voltar">
-          <i class="fas fa-arrow-left fs-5"></i>
+        <button (click)="voltar()" class="btn btn-light shadow-sm rounded-circle p-0 d-flex align-items-center justify-content-center btn-voltar" title="Voltar">
+          <i class="fas fa-arrow-left custom-dark-text"></i>
         </button>
         <div>
           <h2 class="h4 mb-0 fw-bold custom-dark-text d-flex align-items-center gap-2">
-            Detalhes do Estabelecimento • {{ empresa()?.nomeExibicao || empresa()?.nome || 'SG' }}
+            {{ emp.nomeExibicao || emp.nome }}
           </h2>
-          <span class="text-muted small custom-dark-text">Visão completa e estatísticas do tenant cadastrado no FasTo</span>
+          <span class="text-muted small custom-dark-text">Detalhes do Estabelecimento</span>
         </div>
       </div>
-
-      <button type="button" (click)="voltar()" class="btn btn-outline-primary px-4 py-2 fw-bold rounded-3">
-        <i class="fas fa-list me-2"></i><span>Voltar para Lista</span>
-      </button>
     </div>
 
-    @if (errorMessage()) {
-      <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center gap-2">
-        <i class="fas fa-exclamation-triangle fs-5"></i>
-        <span>{{ errorMessage() }}</span>
-      </div>
-    }
-
-    @if (isLoading()) {
-      <div class="text-center py-5">
-        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
-          <span class="visually-hidden">Carregando detalhes...</span>
-        </div>
-        <p class="text-muted mt-3 fw-semibold">Carregando dados da empresa...</p>
-      </div>
-    } @else if (empresa()) {
-      <div class="row g-4 mb-4">
-        <div class="col-md-4 col-12">
-          <div class="card border-0 shadow-sm p-4 custom-dark-card rounded-4 d-flex flex-row align-items-center gap-3">
-            <div class="stat-icon bg-primary-subtle text-primary rounded-3 p-3">
-              <i class="fas fa-users fs-3"></i>
-            </div>
-            <div>
-              <span class="text-muted small text-uppercase fw-bold">Total Usuários</span>
-              <h3 class="h3 fw-bold mb-0 text-white">{{ empresa().totalUsuarios || 0 }}</h3>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-4 col-12">
-          <div class="card border-0 shadow-sm p-4 custom-dark-card rounded-4 d-flex flex-row align-items-center gap-3">
-            <div class="stat-icon bg-success-subtle text-success rounded-3 p-3">
-              <i class="fas fa-calendar-check fs-3"></i>
-            </div>
-            <div>
-              <span class="text-muted small text-uppercase fw-bold">Total Agendamentos</span>
-              <h3 class="h3 fw-bold mb-0 text-white">{{ empresa().totalAgendamentos || 0 }}</h3>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-4 col-12">
-          <div class="card border-0 shadow-sm p-4 custom-dark-card rounded-4 d-flex flex-row align-items-center gap-3">
-            <div class="stat-icon bg-info-subtle text-info rounded-3 p-3">
-              <i class="fas fa-user-friends fs-3"></i>
-            </div>
-            <div>
-              <span class="text-muted small text-uppercase fw-bold">Total Clientes</span>
-              <h3 class="h3 fw-bold mb-0 text-white">{{ empresa().totalClientes || 0 }}</h3>
-            </div>
-          </div>
-        </div>
-      </div>
-
+    <form [formGroup]="form">
       <div class="row g-4 mb-5">
-        <div class="col-lg-8 col-12">
-          <div class="card border-0 shadow-sm p-4 custom-dark-card rounded-4">
-            <div class="border-bottom border-secondary pb-3 mb-4 d-flex align-items-center justify-content-between">
-              <h3 class="h5 fw-bold mb-0 custom-dark-text d-flex align-items-center gap-2">
-                <i class="fas fa-building text-primary"></i><span>Dados Cadastrais da Empresa</span>
-              </h3>
-              <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1.5 rounded-pill fw-bold">
-                {{ empresa().statusAssinatura || 'Ativo' }}
-              </span>
-            </div>
+        <div [class]="modoEdicao() ? 'col-12' : 'col-xl-8 col-12'">
+          <div class="card border-0 shadow-sm p-4 details-card custom-dark-card rounded-4">
 
-            <div class="row g-4">
-              <div class="col-sm-6 col-12">
-                <label class="form-label small fw-bold text-muted text-uppercase">Nome Oficial</label>
-                <p class="fw-semibold mb-0 text-white">{{ empresa().nome }}</p>
+            <div class="d-flex align-items-center gap-3 border-bottom pb-4 mb-4">
+              <div class="avatar-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center">
+                <i class="fas fa-store fs-3"></i>
               </div>
-
-              <div class="col-sm-6 col-12">
-                <label class="form-label small fw-bold text-muted text-uppercase">Nome de Exibição</label>
-                <p class="fw-semibold mb-0 text-white">{{ empresa().nomeExibicao || 'Não informado' }}</p>
-              </div>
-
-              <div class="col-sm-6 col-12">
-                <label class="form-label small fw-bold text-muted text-uppercase">Link / Slug de Agendamento</label>
-                <p class="fw-semibold mb-0 text-info">
-                  <i class="fas fa-link me-1"></i>/{{ empresa().linkAgendamento || 'Sem slug' }}
-                </p>
-              </div>
-
-              <div class="col-sm-6 col-12">
-                <label class="form-label small fw-bold text-muted text-uppercase">CNPJ</label>
-                <p class="fw-semibold mb-0 text-white">{{ empresa().cnpj || 'Não informado' }}</p>
-              </div>
-
-              <div class="col-sm-6 col-12">
-                <label class="form-label small fw-bold text-muted text-uppercase">Telefone / WhatsApp</label>
-                <p class="fw-semibold mb-0 text-white">{{ empresa().telefone || 'Não informado' }}</p>
-              </div>
-
-              <div class="col-sm-6 col-12">
-                <label class="form-label small fw-bold text-muted text-uppercase">Data de Cadastro</label>
-                <p class="fw-semibold mb-0 text-white">{{ empresa().createdAtUtc | date: 'dd/MM/yyyy HH:mm' }}</p>
+              <div>
+                <h2 class="h3 fw-bold mb-0 custom-dark-text">{{ emp.nomeExibicao || emp.nome }}</h2>
               </div>
             </div>
-          </div>
 
-          <!-- Seção de Usuários -->
-          <div class="card border-0 shadow-sm p-4 custom-dark-card rounded-4 mt-4">
-            <div class="border-bottom border-secondary pb-3 mb-4 d-flex align-items-center justify-content-between">
-              <h3 class="h5 fw-bold mb-0 custom-dark-text d-flex align-items-center gap-2">
-                <i class="fas fa-user-shield text-success"></i><span>Usuários do Estabelecimento</span>
-              </h3>
-              <button type="button" (click)="novoUsuario()" class="btn btn-success px-3 py-1 fw-bold rounded-3 d-inline-flex align-items-center gap-1 shadow-sm" style="font-size:0.85rem;">
-                <i class="fas fa-user-plus"></i><span>Novo Usuário</span>
-              </button>
-            </div>
-
-            @if (usuarios().length === 0) {
-              <div class="text-center py-4">
-                <i class="fas fa-users-slash fs-2 text-muted mb-2"></i>
-                <p class="text-muted small mb-0">Nenhum usuário cadastrado neste estabelecimento.</p>
+            @if (!modoEdicao()) {
+              <div class="row g-4 mb-2">
+                <div class="col-sm-6 col-12">
+                  <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">Nome Oficial</label>
+                  <p class="fw-semibold mb-0 custom-dark-text">{{ emp.nome }}</p>
+                </div>
+                <div class="col-sm-6 col-12">
+                  <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">Nome de Exibição</label>
+                  <p class="fw-semibold mb-0 custom-dark-text">{{ emp.nomeExibicao || '—' }}</p>
+                </div>
+                <div class="col-sm-6 col-12">
+                  <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">CNPJ</label>
+                  <p class="fw-semibold mb-0 custom-dark-text">{{ emp.cnpj || '—' }}</p>
+                </div>
+                <div class="col-sm-6 col-12">
+                  <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">Telefone / WhatsApp</label>
+                  <p class="fw-semibold mb-0 custom-dark-text">{{ emp.telefone || '—' }}</p>
+                </div>
+                @if (emp.descricao) {
+                  <div class="col-12">
+                    <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">Descrição</label>
+                    <p class="fw-semibold mb-0 custom-dark-text">{{ emp.descricao }}</p>
+                  </div>
+                }
+                <div class="col-sm-6 col-12">
+                  <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">CEP</label>
+                  <p class="fw-semibold mb-0 custom-dark-text">{{ emp.cep || '—' }}</p>
+                </div>
+                <div class="col-sm-6 col-12">
+                  <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">Logradouro</label>
+                  <p class="fw-semibold mb-0 custom-dark-text">{{ emp.logradouro || '—' }}</p>
+                </div>
+                <div class="col-sm-4 col-12">
+                  <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">Número</label>
+                  <p class="fw-semibold mb-0 custom-dark-text">{{ emp.numero || '—' }}</p>
+                </div>
+                <div class="col-sm-4 col-12">
+                  <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">Complemento</label>
+                  <p class="fw-semibold mb-0 custom-dark-text">{{ emp.complemento || '—' }}</p>
+                </div>
+                <div class="col-sm-4 col-12">
+                  <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">Bairro</label>
+                  <p class="fw-semibold mb-0 custom-dark-text">{{ emp.bairro || '—' }}</p>
+                </div>
+                <div class="col-sm-6 col-12">
+                  <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">Cidade</label>
+                  <p class="fw-semibold mb-0 custom-dark-text">{{ emp.cidade || '—' }}</p>
+                </div>
+                <div class="col-sm-6 col-12">
+                  <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">Estado</label>
+                  <p class="fw-semibold mb-0 custom-dark-text">{{ emp.estado || '—' }}</p>
+                </div>
               </div>
             } @else {
-              <div class="table-responsive">
-                <table class="table table-dark table-borderless align-middle mb-0">
-                  <thead class="text-muted small text-uppercase">
-                    <tr>
-                      <th class="py-2 ps-0">Usuário</th>
-                      <th class="py-2">E-mail</th>
-                      <th class="py-2">Telefone</th>
-                      <th class="py-2">Perfil</th>
-                      <th class="py-2 text-end pe-0">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (user of usuarios(); track user.id) {
-                      <tr class="border-top border-secondary">
-                        <td class="py-3 ps-0 fw-semibold text-white">{{ user.nome }} {{ user.sobrenome }}</td>
-                        <td class="py-3 text-muted">{{ user.email }}</td>
-                        <td class="py-3 text-muted">{{ user.telefone || '-' }}</td>
-                        <td class="py-3">
-                          <span class="badge d-inline-flex align-items-center gap-1 px-2 py-1 rounded-pill fw-normal"
-                            [style.background]="user.nivelAcesso?.corHex || '#6c757d'"
-                            style="color:white;">
-                            <i class="{{ user.nivelAcesso?.iconeClass || 'fas fa-user' }}"></i>
-                            {{ user.nivelAcesso?.nome || 'Sem perfil' }}
-                          </span>
-                        </td>
-                        <td class="py-3 text-end pe-0">
-                          @if (user.status === 'Ativo') {
-                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill fw-normal">
-                              <i class="fas fa-circle me-1" style="font-size:0.5rem;"></i>Ativo
-                            </span>
-                          } @else {
-                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 rounded-pill fw-normal">
-                              <i class="fas fa-circle me-1" style="font-size:0.5rem;"></i>Inativo
-                            </span>
-                          }
-                        </td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
+              <div class="row g-3 mb-4">
+                <div class="col-sm-6 col-12">
+                  <tm-text formControlName="nome" label="Nome Oficial *" placeholder="Ex: MINHAEMPRESA" class="custom-dark-text"></tm-text>
+                </div>
+                <div class="col-sm-6 col-12">
+                  <tm-text formControlName="nomeExibicao" label="Nome de Exibição" placeholder="Ex: Minha Empresa Ltda" class="custom-dark-text"></tm-text>
+                </div>
+                <div class="col-sm-6 col-12">
+                  <tm-text formControlName="cnpj" label="CNPJ" placeholder="00.000.000/0000-00" [maxlength]="18" class="custom-dark-text"></tm-text>
+                </div>
+                <div class="col-sm-6 col-12">
+                  <tm-text formControlName="telefone" label="Telefone / WhatsApp" placeholder="(11) 99999-9999" mask="phone" [maxlength]="20" class="custom-dark-text"></tm-text>
+                </div>
+                <div class="col-12">
+                  <tm-text formControlName="descricao" label="Descrição" placeholder="Breve descrição do estabelecimento..." class="custom-dark-text"></tm-text>
+                </div>
+                <div class="col-sm-4 col-12">
+                  <tm-text formControlName="cep" label="CEP" placeholder="00000-000" class="custom-dark-text"></tm-text>
+                </div>
+                <div class="col-sm-8 col-12">
+                  <tm-text formControlName="logradouro" label="Logradouro" placeholder="Rua, Avenida..." class="custom-dark-text"></tm-text>
+                </div>
+                <div class="col-sm-4 col-12">
+                  <tm-text formControlName="numero" label="Número" placeholder="123" class="custom-dark-text"></tm-text>
+                </div>
+                <div class="col-sm-4 col-12">
+                  <tm-text formControlName="complemento" label="Complemento" placeholder="Sala, Bloco..." class="custom-dark-text"></tm-text>
+                </div>
+                <div class="col-sm-4 col-12">
+                  <tm-text formControlName="bairro" label="Bairro" placeholder="Centro" class="custom-dark-text"></tm-text>
+                </div>
+                <div class="col-sm-6 col-12">
+                  <tm-text formControlName="cidade" label="Cidade" placeholder="São Paulo" class="custom-dark-text"></tm-text>
+                </div>
+                <div class="col-sm-6 col-12">
+                  <tm-text formControlName="estado" label="Estado" placeholder="SP" class="custom-dark-text"></tm-text>
+                </div>
               </div>
-            }
-          </div>
-        </div>
-
-        <div class="col-lg-4 col-12">
-          <div class="card border-0 shadow-sm p-4 custom-dark-card rounded-4">
-            <div class="border-bottom border-secondary pb-3 mb-4">
-              <h3 class="h5 fw-bold mb-0 custom-dark-text d-flex align-items-center gap-2">
-                <i class="fas fa-crown text-warning"></i><span>Plano de Assinatura</span>
-              </h3>
-            </div>
-
-            <div class="mb-3">
-              <label class="form-label small fw-bold text-muted text-uppercase mb-2">Plano Atual</label>
-              <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1.5 rounded-pill fw-bold d-inline-block mb-2">
-                {{ empresa().planoAssinatura || 'Sem plano' }}
-              </span>
-              <p class="text-muted small mb-0">Validade: {{ empresa().assinaturaValidaAte ? (empresa().assinaturaValidaAte | date:'dd/MM/yyyy') : 'Não definida' }}</p>
-            </div>
-
-            @if (planosOptions().length > 0) {
-              <div class="mb-3">
-                <label class="form-label small fw-bold text-muted text-uppercase mb-2">Alterar Plano</label>
-                <div class="d-flex flex-column gap-2">
-                  <tm-select
-                    [label]="'Selecione um plano'"
-                    [options]="[{ value: '', label: 'Nenhum' }, ...planosOptions()]"
-                    [value]="selectedPlanoId()"
-                    (valueChange)="selectedPlanoId.set($event)"
-                    [darkMode]="themeService.isDarkMode()"
-                    class="custom-dark-text"
-                  ></tm-select>
-                  @if (selectedPlanoId() !== (empresa().planoSistemaId || '')) {
-                    <button type="button" (click)="salvarPlano()" class="btn btn-success btn-sm fw-bold rounded-3" [disabled]="savingPlano()">
-                      @if (savingPlano()) {
-                        <span class="spinner-border spinner-border-sm me-1"></span>Salvando...
-                      } @else {
-                        <i class="fas fa-save me-1"></i>Salvar Plano
-                      }
-                    </button>
-                  }
+              <div class="border-top pt-4 mt-4">
+                <h5 class="fw-bold mb-3 custom-dark-text"><i class="fas fa-crown text-warning me-2"></i>Plano de Assinatura</h5>
+                <div class="row g-3">
+                  <div class="col-sm-6 col-12">
+                    <tm-select formControlName="planoSistemaId" label="Selecione um plano" [options]="planosOptionsComNenhum()" [darkMode]="themeService.isDarkMode()" class="custom-dark-text"></tm-select>
+                  </div>
+                  <div class="col-sm-3 col-12">
+                    <tm-date formControlName="assinaturaValidaInicio" label="Início da Vigência" class="custom-dark-text"></tm-date>
+                  </div>
+                  <div class="col-sm-3 col-12">
+                    <tm-date formControlName="assinaturaValidaAte" label="Fim da Vigência" class="custom-dark-text"></tm-date>
+                  </div>
                 </div>
               </div>
             }
 
-            <ul class="list-group list-group-flush bg-transparent mb-0">
-              <li class="list-group-item bg-transparent text-muted px-0 py-2.5">
-                <span class="d-block small text-uppercase fw-bold mb-1">Status</span>
-                <span class="badge {{ empresa().statusAssinatura === 'Ativo' ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-warning-subtle text-warning' }} px-3 py-1.5 rounded-pill fw-bold">
-                  {{ empresa().statusAssinatura || 'Ativo' }}
-                </span>
-              </li>
-              <li class="list-group-item bg-transparent text-muted px-0 py-2.5">
-                <span class="d-block small text-uppercase fw-bold mb-1">Tenant ID</span>
-                <code class="text-info bg-dark px-2 py-1 rounded small d-block text-truncate">{{ empresa().tenantId }}</code>
-              </li>
-              <li class="list-group-item bg-transparent text-muted px-0 py-2.5">
-                <span class="d-block small text-uppercase fw-bold mb-1">Empresa ID</span>
-                <code class="text-info bg-dark px-2 py-1 rounded small d-block text-truncate">{{ empresa().id }}</code>
-              </li>
-            </ul>
+            @if (modoEdicao()) {
+              <div class="border-top pt-4 mt-4 d-flex align-items-center justify-content-end gap-3">
+                <button type="button" class="btn btn-outline-secondary px-4 py-2.5 rounded-3 fw-bold" (click)="cancelarEdicao()" [disabled]="salvando()">
+                  <i class="fas fa-times me-2"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-primary px-4 py-2.5 rounded-3 fw-bold shadow-sm" (click)="salvarGeral()" [disabled]="salvando()">
+                  @if (salvando()) {
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>Salvando...
+                  } @else {
+                    <i class="fas fa-save me-2"></i>Salvar
+                  }
+                </button>
+              </div>
+            }
+
           </div>
         </div>
+
+        @if (!modoEdicao()) {
+          <div class="col-xl-4 col-12">
+            <div class="card border-0 shadow-sm p-4 actions-card custom-dark-card">
+              <h4 class="h5 fw-bold mb-4 custom-dark-text">
+                <i class="fas fa-sliders-h me-2 text-primary"></i>Ações Rápidas
+              </h4>
+              <div class="d-grid gap-3">
+                <button type="button" (click)="habilitarEdicao()" class="btn btn-primary py-2.5 fw-bold w-100 transition-all custom-action-btn">
+                  <i class="fas fa-edit me-2"></i>Editar
+                </button>
+                <button type="button" (click)="excluir()" class="btn btn-outline-danger py-2.5 fw-bold w-100 transition-all custom-action-btn">
+                  <i class="fas fa-trash-can me-2"></i>Excluir
+                </button>
+              </div>
+            </div>
+
+            <!-- Card de Plano -->
+            <div class="card border-0 shadow-sm p-4 actions-card custom-dark-card mt-4">
+              <h4 class="h5 fw-bold mb-4 custom-dark-text">
+                <i class="fas fa-crown text-warning me-2"></i>Plano de Assinatura
+              </h4>
+              <div class="mb-3">
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1.5 rounded-pill fw-bold d-inline-block mb-2">
+                  {{ emp.planoAssinatura || 'Sem plano' }}
+                </span>
+                @if (emp.assinaturaValidaInicio) {
+                  <p class="text-muted small mb-0"><span class="text-white">Início:</span> {{ emp.assinaturaValidaInicio | date:'dd/MM/yyyy' }}</p>
+                }
+                @if (emp.assinaturaValidaAte) {
+                  <p class="text-muted small mb-0"><span class="text-white">Término:</span> {{ emp.assinaturaValidaAte | date:'dd/MM/yyyy' }}</p>
+                }
+                @if (!emp.assinaturaValidaInicio && !emp.assinaturaValidaAte) {
+                  <p class="text-muted small mb-0">Período não definido</p>
+                }
+              </div>
+            </div>
+          </div>
+        }
       </div>
-    }
-  </div>
+    </form>
+
+    <!-- Seção Usuários -->
+    <div class="card border-0 shadow-sm p-4 custom-dark-card rounded-4 mb-5">
+      <div class="border-bottom border-secondary pb-3 mb-4 d-flex align-items-center justify-content-between">
+        <h3 class="h5 fw-bold mb-0 custom-dark-text d-flex align-items-center gap-2">
+          <i class="fas fa-user-shield text-success"></i><span>Usuários do Estabelecimento</span>
+        </h3>
+        <button type="button" (click)="novoUsuario()" class="btn btn-success px-3 py-1 fw-bold rounded-3 d-inline-flex align-items-center gap-1 shadow-sm" style="font-size:0.85rem;">
+          <i class="fas fa-user-plus"></i><span>Novo Usuário</span>
+        </button>
+      </div>
+
+      @if (usuarios().length === 0) {
+        <div class="text-center py-4">
+          <i class="fas fa-users-slash fs-2 text-muted mb-2"></i>
+          <p class="text-muted small mb-0">Nenhum usuário cadastrado neste estabelecimento.</p>
+        </div>
+      } @else {
+        <div class="table-responsive">
+          <table class="table table-dark table-borderless align-middle mb-0">
+            <thead class="text-muted small text-uppercase">
+              <tr>
+                <th class="py-2 ps-0">Usuário</th>
+                <th class="py-2">E-mail</th>
+                <th class="py-2">Telefone</th>
+                <th class="py-2">Perfil</th>
+                <th class="py-2 text-end pe-0">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (user of usuarios(); track user.id) {
+                <tr class="border-top border-secondary">
+                  <td class="py-3 ps-0 fw-semibold text-white">{{ user.nome }} {{ user.sobrenome }}</td>
+                  <td class="py-3 text-muted">{{ user.email }}</td>
+                  <td class="py-3 text-muted">{{ user.telefone || '-' }}</td>
+                  <td class="py-3">
+                    <span class="badge d-inline-flex align-items-center gap-1 px-2 py-1 rounded-pill fw-normal"
+                      [style.background]="user.nivelAcesso?.corHex || '#6c757d'" style="color:white;">
+                      <i class="{{ user.nivelAcesso?.iconeClass || 'fas fa-user' }}"></i>
+                      {{ user.nivelAcesso?.nome || 'Sem perfil' }}
+                    </span>
+                  </td>
+                  <td class="py-3 text-end pe-0">
+                    @if (user.status === 'Ativo') {
+                      <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill fw-normal">
+                        <i class="fas fa-circle me-1" style="font-size:0.5rem;"></i>Ativo
+                      </span>
+                    } @else {
+                      <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 rounded-pill fw-normal">
+                        <i class="fas fa-circle me-1" style="font-size:0.5rem;"></i>Inativo
+                      </span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Carregando...</span>
+      </div>
+      <p class="text-muted mt-3">Carregando informações do estabelecimento...</p>
+    </div>
+  }
 </div>
+
+<tm-modal
+  [show]="showDeleteConfirmModal()"
+  (confirm)="confirmarExcluir()"
+  (cancel)="cancelarExcluir()"
+  confirmLabel="Excluir"
+  cancelLabel="Cancelar"
+  title="Excluir Estabelecimento"
+  confirmClass="btn-danger"
+>
+  <div class="p-1">
+    <p class="mb-0 text-white">Tem certeza que deseja excluir o estabelecimento <strong>{{ empresa()?.nomeExibicao || empresa()?.nome }}</strong>?</p>
+    <p class="text-danger small mt-2 mb-0">
+      <i class="fas fa-exclamation-triangle me-1"></i>Todos os dados associados (usuários, agendamentos, clientes) serão excluídos permanentemente.
+    </p>
+  </div>
+</tm-modal>
