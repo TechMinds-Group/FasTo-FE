@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
+
 @Component({
   selector: 'app-sg-estabelecimento-detalhes-x7k9p',
   standalone: true,
@@ -15,6 +16,7 @@ export class SgEstabelecimentoDetalhesX7k9pComponent implements OnInit {
   private authService = inject(AuthService);
 
   protected empresa = signal<any | null>(null);
+  protected usuarios = signal<any[]>([]);
   protected isLoading = signal<boolean>(true);
   protected errorMessage = signal<string | null>(null);
 
@@ -35,6 +37,9 @@ export class SgEstabelecimentoDetalhesX7k9pComponent implements OnInit {
     this.authService.getSgEmpresaById(id).subscribe({
       next: (data) => {
         this.empresa.set(data);
+        if (data.usuarios) {
+          this.usuarios.set(data.usuarios);
+        }
         this.isLoading.set(false);
       },
       error: (err) => {
@@ -46,5 +51,12 @@ export class SgEstabelecimentoDetalhesX7k9pComponent implements OnInit {
 
   voltar(): void {
     this.router.navigate(['/sg-estabelecimentos-x7k9p']);
+  }
+
+  novoUsuario(): void {
+    const id = this.empresa()?.id;
+    if (id) {
+      this.router.navigate(['/sg-usuario-novo-x7k9p', id]);
+    }
   }
 }

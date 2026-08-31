@@ -156,6 +156,25 @@ export class AuthService {
     });
   }
 
+  createSgEmpresa(data: any): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/sg-empresas`, data, {
+      withCredentials: true
+    });
+  }
+
+  getSgNiveisAcesso(empresaId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiUrl}/sg-empresas/${empresaId}/niveis-acesso`, {
+      withCredentials: true
+    });
+  }
+
+  createSgUsuario(empresaId: string, data: any): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/sg-empresas/${empresaId}/usuarios`, data, {
+      withCredentials: true,
+      headers: { 'X-Skip-Error-Toast': 'true' }
+    });
+  }
+
   logout(): Observable<any> {
     return this.http.post<any>(`${environment.apiUrl}/logout`, {}, {
       withCredentials: true

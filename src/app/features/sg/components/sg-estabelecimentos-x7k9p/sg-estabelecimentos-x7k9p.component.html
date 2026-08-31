@@ -14,20 +14,25 @@
         </div>
       </div>
 
-      <!-- Barra de Pesquisa -->
-      <div class="search-box">
-        <div class="input-group shadow-sm rounded-3">
-          <span class="input-group-text bg-dark border-secondary text-muted">
-            <i class="fas fa-search"></i>
-          </span>
-          <input
-            type="text"
-            class="form-control bg-dark text-white border-secondary"
-            placeholder="Buscar por nome, slug ou CNPJ..."
-            [ngModel]="searchTerm()"
-            (ngModelChange)="searchTerm.set($event)"
-          />
+      <!-- Barra de Pesquisa e Botão Cadastrar -->
+      <div class="d-flex align-items-center gap-3">
+        <div class="search-box">
+          <div class="input-group shadow-sm rounded-3">
+            <span class="input-group-text bg-dark border-secondary text-muted">
+              <i class="fas fa-search"></i>
+            </span>
+            <input
+              type="text"
+              class="form-control bg-dark text-white border-secondary"
+              placeholder="Buscar por nome, slug ou CNPJ..."
+              [ngModel]="searchTerm()"
+              (ngModelChange)="searchTerm.set($event)"
+            />
+          </div>
         </div>
+        <button type="button" (click)="novoCadastro()" class="btn btn-primary px-4 py-2 fw-bold rounded-3 shadow-sm d-inline-flex align-items-center gap-2" style="white-space:nowrap;">
+          <i class="fas fa-plus-circle"></i><span>Cadastrar</span>
+        </button>
       </div>
     </div>
 

@@ -56,4 +56,8 @@ export class SgEstabelecimentosX7k9pComponent implements OnInit {
   abrirDetalhes(empresa: any): void {
     this.router.navigate(['/sg-estabelecimento-detalhes-x7k9p', empresa.id]);
   }
+
+  novoCadastro(): void {
+    this.router.navigate(['/sg-estabelecimento-novo-x7k9p']);
+  }
 }

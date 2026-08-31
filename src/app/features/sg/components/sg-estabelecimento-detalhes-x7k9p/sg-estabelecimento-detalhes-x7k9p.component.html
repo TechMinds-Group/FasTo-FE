@@ -1,6 +1,5 @@
 <div class="sg-detalhes-page">
   <div class="container mt-5 mb-5">
-    <!-- Header com botão voltar -->
     <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
       <div class="d-flex align-items-center gap-3">
         <button type="button" (click)="voltar()" class="btn btn-outline-secondary rounded-circle p-2 shadow-sm" title="Voltar">
@@ -19,7 +18,6 @@
       </button>
     </div>
 
-    <!-- Error State -->
     @if (errorMessage()) {
       <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center gap-2">
         <i class="fas fa-exclamation-triangle fs-5"></i>
@@ -27,7 +25,6 @@
       </div>
     }
 
-    <!-- Loading State -->
     @if (isLoading()) {
       <div class="text-center py-5">
         <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
@@ -36,7 +33,6 @@
         <p class="text-muted mt-3 fw-semibold">Carregando dados da empresa...</p>
       </div>
     } @else if (empresa()) {
-      <!-- Cards de Métricas e Estatísticas Rápidas -->
       <div class="row g-4 mb-4">
         <div class="col-md-4 col-12">
           <div class="card border-0 shadow-sm p-4 custom-dark-card rounded-4 d-flex flex-row align-items-center gap-3">
@@ -75,7 +71,6 @@
         </div>
       </div>
 
-      <!-- Detalhes do Tenant e da Empresa -->
       <div class="row g-4 mb-5">
         <div class="col-lg-8 col-12">
           <div class="card border-0 shadow-sm p-4 custom-dark-card rounded-4">
@@ -121,6 +116,67 @@
                 <p class="fw-semibold mb-0 text-white">{{ empresa().createdAtUtc | date: 'dd/MM/yyyy HH:mm' }}</p>
               </div>
             </div>
+          </div>
+
+          <!-- Seção de Usuários -->
+          <div class="card border-0 shadow-sm p-4 custom-dark-card rounded-4 mt-4">
+            <div class="border-bottom border-secondary pb-3 mb-4 d-flex align-items-center justify-content-between">
+              <h3 class="h5 fw-bold mb-0 custom-dark-text d-flex align-items-center gap-2">
+                <i class="fas fa-user-shield text-success"></i><span>Usuários do Estabelecimento</span>
+              </h3>
+              <button type="button" (click)="novoUsuario()" class="btn btn-success px-3 py-1 fw-bold rounded-3 d-inline-flex align-items-center gap-1 shadow-sm" style="font-size:0.85rem;">
+                <i class="fas fa-user-plus"></i><span>Novo Usuário</span>
+              </button>
+            </div>
+
+            @if (usuarios().length === 0) {
+              <div class="text-center py-4">
+                <i class="fas fa-users-slash fs-2 text-muted mb-2"></i>
+                <p class="text-muted small mb-0">Nenhum usuário cadastrado neste estabelecimento.</p>
+              </div>
+            } @else {
+              <div class="table-responsive">
+                <table class="table table-dark table-borderless align-middle mb-0">
+                  <thead class="text-muted small text-uppercase">
+                    <tr>
+                      <th class="py-2 ps-0">Usuário</th>
+                      <th class="py-2">E-mail</th>
+                      <th class="py-2">Telefone</th>
+                      <th class="py-2">Perfil</th>
+                      <th class="py-2 text-end pe-0">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (user of usuarios(); track user.id) {
+                      <tr class="border-top border-secondary">
+                        <td class="py-3 ps-0 fw-semibold text-white">{{ user.nome }} {{ user.sobrenome }}</td>
+                        <td class="py-3 text-muted">{{ user.email }}</td>
+                        <td class="py-3 text-muted">{{ user.telefone || '-' }}</td>
+                        <td class="py-3">
+                          <span class="badge d-inline-flex align-items-center gap-1 px-2 py-1 rounded-pill fw-normal"
+                            [style.background]="user.nivelAcesso?.corHex || '#6c757d'"
+                            style="color:white;">
+                            <i class="{{ user.nivelAcesso?.iconeClass || 'fas fa-user' }}"></i>
+                            {{ user.nivelAcesso?.nome || 'Sem perfil' }}
+                          </span>
+                        </td>
+                        <td class="py-3 text-end pe-0">
+                          @if (user.status === 'Ativo') {
+                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill fw-normal">
+                              <i class="fas fa-circle me-1" style="font-size:0.5rem;"></i>Ativo
+                            </span>
+                          } @else {
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 rounded-pill fw-normal">
+                              <i class="fas fa-circle me-1" style="font-size:0.5rem;"></i>Inativo
+                            </span>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
           </div>
         </div>
 

@@ -1,0 +1,117 @@
+<div class="sg-acesso-page">
+  <div class="container mt-5 mb-5">
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <button (click)="voltar()" class="btn btn-outline-secondary rounded-circle p-2 shadow-sm btn-voltar" title="Cancelar cadastro">
+        <i class="fas fa-arrow-left custom-dark-text"></i>
+      </button>
+      <div>
+        <h1 class="h2 fw-bold mb-1 custom-dark-text">Novo Usuário</h1>
+        <p class="text-muted small mb-0 custom-dark-text">Cadastrar novo usuário para {{ nomeEmpresa() }}</p>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-12">
+        <div class="card border-0 shadow-sm p-4 custom-dark-card rounded-4">
+          <form [formGroup]="form" (ngSubmit)="salvar()">
+            <div class="row g-3">
+
+              <div class="col-sm-6 col-12">
+                <tm-text
+                  formControlName="nome"
+                  [label]="'Nome *'"
+                  placeholder="Digite o nome"
+                  class="custom-dark-text"
+                ></tm-text>
+                @if (form.get('nome')?.touched && form.get('nome')?.invalid) {
+                  <div class="text-danger extra-small mt-1">Nome é obrigatório.</div>
+                }
+              </div>
+
+              <div class="col-sm-6 col-12">
+                <tm-text
+                  formControlName="sobrenome"
+                  [label]="'Sobrenome *'"
+                  placeholder="Digite o sobrenome"
+                  class="custom-dark-text"
+                ></tm-text>
+                @if (form.get('sobrenome')?.touched && form.get('sobrenome')?.invalid) {
+                  <div class="text-danger extra-small mt-1">Sobrenome é obrigatório.</div>
+                }
+              </div>
+
+              <div class="col-sm-6 col-12">
+                <tm-text
+                  formControlName="email"
+                  [label]="'E-mail *'"
+                  placeholder="email@exemplo.com"
+                  type="email"
+                  class="custom-dark-text"
+                ></tm-text>
+                @if (form.get('email')?.touched && form.get('email')?.invalid) {
+                  <div class="text-danger extra-small mt-1">E-mail válido é obrigatório.</div>
+                }
+              </div>
+
+              <div class="col-sm-6 col-12">
+                <tm-text
+                  formControlName="senha"
+                  [label]="'Senha *'"
+                  placeholder="Mínimo 6 caracteres"
+                  type="password"
+                  class="custom-dark-text"
+                ></tm-text>
+                @if (form.get('senha')?.touched && form.get('senha')?.invalid) {
+                  <div class="text-danger extra-small mt-1">Senha é obrigatória.</div>
+                }
+              </div>
+
+              <div class="col-sm-6 col-12">
+                <tm-text
+                  formControlName="telefone"
+                  [label]="'Telefone / WhatsApp *'"
+                  placeholder="(11) 99999-9999"
+                  mask="phone"
+                  [maxlength]="15"
+                  class="custom-dark-text"
+                ></tm-text>
+                @if (form.get('telefone')?.touched && form.get('telefone')?.invalid) {
+                  <div class="text-danger extra-small mt-1">Telefone é obrigatório.</div>
+                }
+              </div>
+
+              <div class="col-sm-6 col-12">
+                <tm-select
+                  [label]="'Perfil de Acesso * (Até 2 perfis)'"
+                  [options]="perfilOptions()"
+                  [multiple]="true"
+                  [value]="perfisSelecionados()"
+                  (valueChange)="onPerfisChange($event)"
+                  [darkMode]="themeService.isDarkMode()"
+                  class="custom-dark-text"
+                ></tm-select>
+                @if (form.get('perfil')?.touched && form.get('perfil')?.invalid) {
+                  <div class="text-danger extra-small mt-1">Perfil de acesso é obrigatório.</div>
+                }
+              </div>
+
+            </div>
+
+            <div class="d-flex gap-3 mt-4 justify-content-end flex-column flex-sm-row">
+              <button type="button" class="btn btn-outline-secondary fw-semibold px-4 py-2 rounded-3" (click)="voltar()">
+                Cancelar
+              </button>
+              <button type="submit" class="btn btn-primary fw-bold px-4 py-2 rounded-3" [disabled]="salvando()">
+                @if (salvando()) {
+                  <span class="spinner-border spinner-border-sm me-2" role="status"></span>Salvando...
+                } @else {
+                  <i class="fas fa-user-plus me-2"></i>Cadastrar
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

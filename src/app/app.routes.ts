@@ -288,6 +288,16 @@ export const routes: Routes = [
           import('./features/sg/components/sg-estabelecimento-acesso-x7k9p/sg-estabelecimento-acesso-x7k9p.component').then((m) => m.SgEstabelecimentoAcessoX7k9pComponent),
       },
       {
+        path: 'sg-estabelecimento-novo-x7k9p',
+        loadComponent: () =>
+          import('./features/sg/components/sg-estabelecimento-novo-x7k9p/sg-estabelecimento-novo-x7k9p.component').then((m) => m.SgEstabelecimentoNovoX7k9pComponent),
+      },
+      {
+        path: 'sg-usuario-novo-x7k9p/:id',
+        loadComponent: () =>
+          import('./features/sg/components/sg-usuario-novo-x7k9p/sg-usuario-novo-x7k9p.component').then((m) => m.SgUsuarioNovoX7k9pComponent),
+      },
+      {
         path: 'users',
         redirectTo: 'gestao/gestao-usuarios',
         pathMatch: 'full',
