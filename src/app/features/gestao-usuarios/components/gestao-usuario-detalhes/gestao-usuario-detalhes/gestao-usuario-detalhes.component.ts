@@ -10,7 +10,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { TmTextComponent, TmSelectComponent, TmToastService } from '@techminds-group/tm-angular-lib';
+import { TmTextComponent, TmSelectComponent, TmModalComponent, TmToastService } from '@techminds-group/tm-angular-lib';
 import { GestaoUsuariosService } from '../../../../../core/services/gestao-usuarios.service';
 import { Usuario } from '../../../../../core/models/gestao-usuarios/usuario.model';
 import { NivelAcesso } from '../../../../../core/models/gestao-usuarios/nivel-acesso.model';
@@ -34,6 +34,7 @@ import { UsuarioModalExcluirComponent } from '../../modais/usuario-modal-excluir
     ReactiveFormsModule,
     TmTextComponent,
     TmSelectComponent,
+    TmModalComponent,
     TranslatePipe,
     PerfilBadgePipe,
     StatusBadgePipe,
@@ -68,6 +69,8 @@ export class GestaoUsuarioDetalhesComponent implements OnInit {
 
   protected readonly showChangePasswordModal = signal<boolean>(false);
   protected readonly showDeleteConfirmModal = signal<boolean>(false);
+  protected readonly showConfirmarAgendamentosFuturosModal = signal<boolean>(false);
+  protected readonly mensagemConfirmacaoFuturos = signal<string>('');
 
   protected readonly form: FormGroup = this.fb.group({
     nome: ['', [Validators.required, Validators.maxLength(60)]],
@@ -195,16 +198,24 @@ export class GestaoUsuarioDetalhesComponent implements OnInit {
     this.showDeleteConfirmModal.set(true);
   }
 
-  async confirmarExcluir(): Promise<void> {
+  async confirmarExcluir(confirmarFuturos = false): Promise<void> {
     if (!this.id()) return;
     try {
-      await this.gestaoUsuariosService.remover(this.id()!);
+      await this.gestaoUsuariosService.remover(this.id()!, confirmarFuturos);
       this.showDeleteConfirmModal.set(false);
+      this.showConfirmarAgendamentosFuturosModal.set(false);
       this.toastService.success('Usuário excluído com sucesso!', 'Sucesso');
       this.voltar();
-    } catch (err) {
+    } catch (err: unknown) {
+      this.showDeleteConfirmModal.set(false);
+      if (typeof err === 'object' && err !== null && 'requiresConfirmation' in err) {
+        this.mensagemConfirmacaoFuturos.set((err as any).message || '');
+        this.showConfirmarAgendamentosFuturosModal.set(true);
+        return;
+      }
+      const mensagem = err instanceof Error ? err.message : 'Erro ao remover usuário.';
       console.error('Erro ao remover usuário', err);
-      this.toastService.error('Erro ao remover usuário.', 'Erro');
+      this.toastService.error(mensagem, 'Erro');
     }
   }
 

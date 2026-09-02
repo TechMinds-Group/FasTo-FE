@@ -246,5 +246,28 @@
 <app-usuario-modal-excluir
   [(show)]="showDeleteConfirmModal"
   [nomeUsuario]="(usuario()?.nome || '') + (usuario()?.sobrenome ? ' ' + usuario()?.sobrenome : '')"
-  (confirm)="confirmarExcluir()"
-/>
+  (confirm)="confirmarExcluir(false)"
+  (cancel)="showDeleteConfirmModal.set(false)"
+></app-usuario-modal-excluir>
+
+<tm-modal
+  title="Confirmar Exclusão com Agendamentos Futuros"
+  icon="fas fa-calendar-times"
+  iconClass="text-warning"
+  confirmClass="btn-warning text-dark fw-bold"
+  confirmLabel="Sim, Excluir e Cancelar Agendamentos"
+  cancelLabel="Cancelar"
+  [show]="showConfirmarAgendamentosFuturosModal()"
+  (cancel)="showConfirmarAgendamentosFuturosModal.set(false)"
+  (confirm)="confirmarExcluir(true)"
+>
+  <div class="p-1">
+    <p class="mb-2 text-main">
+      {{ mensagemConfirmacaoFuturos() }}
+    </p>
+    <p class="text-muted small mb-0">
+      <i class="fas fa-info-circle me-1 text-warning"></i>
+      Os agendamentos futuros serão cancelados e os clientes notificados via WhatsApp para reagendar com outro profissional.
+    </p>
+  </div>
+</tm-modal>

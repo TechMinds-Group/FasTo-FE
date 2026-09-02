@@ -1,10 +1,10 @@
 .avatar-circle {
-  width: 48px !important;
-  height: 48px !important;
-  min-width: 48px !important;
-  min-height: 48px !important;
-  max-width: 48px !important;
-  max-height: 48px !important;
+  width: 56px !important;
+  height: 56px !important;
+  min-width: 56px !important;
+  min-height: 56px !important;
+  max-width: 56px !important;
+  max-height: 56px !important;
   border-radius: 50% !important;
   flex-shrink: 0 !important;
   aspect-ratio: 1 / 1 !important;
@@ -74,11 +74,16 @@
   }
 }
 
-/* Redimensionamento e ajuste visual do componente tm-time */
+/* O tm-time da lib tem min-width fixo de 120px; aqui os pares ficam em col-md-6 e precisam poder encolher */
 tm-time {
   ::ng-deep .tm-time-container {
     min-width: 0;
   }
+}
+
+/* Alinha a coluna do intervalo com a linha de abertura/fechamento. */
+.intervalo-col-padding {
+  padding-top: 15.5px;
 }
 
 @media (max-width: 1399.98px) {
@@ -123,7 +128,7 @@ tm-time {
   }
 }
 
-/* Estilos para Tema Escuro ([data-theme='dark']) */
+/* Regras de Tema Escuro Baseadas no Bloco de Horários */
 :host-context([data-theme='dark']) {
   .btn-voltar {
     background-color: #21262d !important;
@@ -212,36 +217,5 @@ tm-time {
       box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
     }
   }
-
-  .custom-dark-table {
-    color: #ffffff !important;
-
-    thead {
-      background-color: #0d1117 !important;
-
-      tr th {
-        background-color: #0d1117 !important;
-        color: #8b949e !important;
-        border-color: rgba(255, 255, 255, 0.12) !important;
-      }
-    }
-
-    tbody {
-      tr {
-        &.table-active {
-          background-color: rgba(255, 255, 255, 0.02) !important;
-        }
-
-        td {
-          border-color: rgba(255, 255, 255, 0.08) !important;
-          color: #ffffff !important;
-          background-color: transparent !important;
-        }
-
-        &:hover td {
-          background-color: rgba(255, 255, 255, 0.04) !important;
-        }
-      }
-    }
-  }
 }
+

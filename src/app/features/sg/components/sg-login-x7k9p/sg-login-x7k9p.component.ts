@@ -27,17 +27,12 @@ export class SgLoginX7k9pComponent implements OnInit {
   errorMessage = signal<string | null>(null);
 
   sgLoginForm = this.fb.group({
-    usuario: ['micheladm', [Validators.required]],
+    usuario: ['', [Validators.required]],
     password: ['', [Validators.required]],
     rememberMe: [true],
   });
 
-  ngOnInit(): void {
-    const savedUser = sessionStorage.getItem('sg_login_usuario');
-    if (savedUser) {
-      this.sgLoginForm.patchValue({ usuario: savedUser });
-    }
-  }
+  ngOnInit(): void {}
 
   onSubmit(): void {
     if (this.sgLoginForm.invalid) {

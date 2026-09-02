@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -37,9 +37,20 @@ export class GestaoUsuariosService {
     await this.carregarUsuarios();
   }
 
-  async remover(id: string): Promise<void> {
-    await firstValueFrom(this.http.delete(`${this.apiUrl}/${id}`, { withCredentials: true }));
-    await this.carregarUsuarios();
+  async remover(id: string, confirmarAgendamentosFuturos = false): Promise<void> {
+    try {
+      await firstValueFrom(this.http.delete(`${this.apiUrl}/${id}?confirmarAgendamentosFuturos=${confirmarAgendamentosFuturos}`, { withCredentials: true }));
+      await this.carregarUsuarios();
+    } catch (err: unknown) {
+      if (err instanceof HttpErrorResponse) {
+        const body = err.error as { message?: string; detail?: string; requiresConfirmation?: boolean } | null;
+        if (err.status === 409 && body?.requiresConfirmation) {
+          throw { requiresConfirmation: true, message: body.message };
+        }
+        throw new Error(body?.message ?? body?.detail ?? 'Erro ao remover usuário.');
+      }
+      throw err;
+    }
   }
 
   async resetarSenha(id: string): Promise<string> {

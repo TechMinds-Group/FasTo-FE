@@ -32,12 +32,6 @@ export const ALL_SIDEBAR_MENU_ITEMS: MenuItem[] = [
     roles: ['Administrador', 'Profissional'],
   },
   {
-    label: 'Link de Agendamento',
-    icon: 'fas fa-globe',
-    route: '/agendamento-estabelecimento',
-    roles: ['Administrador', 'Profissional'],
-  },
-  {
     label: 'Configurações',
     icon: 'fas fa-cog',
     roles: ['Administrador'],
@@ -64,7 +58,6 @@ export const VISIBLE_SIDEBAR_MENUS: string[] = [
   'Agenda',
   'Gestão',
   'Serviços',
-  'Link de Agendamento',
   'Configurações',
   'Sair',
 ];
