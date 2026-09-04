@@ -76,7 +76,7 @@ export class AuthService {
 
   sgLogin(emailOrUsername: string, password: string, rememberMe = true): Observable<any> {
     const body = { emailOrUsername, password, rememberMe };
-    return this.http.post<any>(`${environment.apiUrl}/api/sg-login?useCookies=true&useSessionCookies=${!rememberMe}`, body, {
+    return this.http.post<any>(`${this.baseApiUrl}/sg-login?useCookies=true&useSessionCookies=${!rememberMe}`, body, {
       withCredentials: true
     }).pipe(
       switchMap(() => this.getMe()),
