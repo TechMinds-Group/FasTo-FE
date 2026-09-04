@@ -1,3 +1,10 @@
 :host {
   display: contents;
 }
+
+::ng-deep .header-container {
+  .header-text {
+    margin-top: 12px !important;
+  }
+}
+

@@ -60,8 +60,8 @@ export class SidebarComponent implements OnInit {
     const isSuperAdmin = role === 'SuperAdmin' || roles.includes('SuperAdmin') || currentUser?.email === 'micheladm@fasto.com' || currentUser?.email?.startsWith('micheladm') || path.includes('/sg-');
 
     if (isSuperAdmin) {
-      if (path.includes('/sg-estabelecimento-detalhes-x7k9p') || path.includes('/sg-estabelecimento-acesso-x7k9p')) {
-        const match = path.match(/\/sg-estabelecimento-(?:detalhes|acesso)-x7k9p\/([a-f0-9-]+)/i);
+      if (path.includes('/sg-estabelecimento-')) {
+        const match = path.match(/\/sg-estabelecimento-(?:detalhes|usuarios|usuario-novo|usuario-detalhes|usuario-editar)-x7k9p\/([a-f0-9-]+)/i);
         const empId = match ? match[1] : '';
 
         return [
@@ -71,9 +71,9 @@ export class SidebarComponent implements OnInit {
             route: '/sg-estabelecimentos-x7k9p',
           },
           {
-            label: 'Acesso',
-            icon: 'fas fa-key',
-            route: empId ? `/sg-estabelecimento-acesso-x7k9p/${empId}` : '#',
+            label: 'Usuários',
+            icon: 'fas fa-users',
+            route: empId ? `/sg-estabelecimento-usuarios-x7k9p/${empId}` : '#',
           },
           {
             label: 'Sair',
@@ -93,6 +93,11 @@ export class SidebarComponent implements OnInit {
           label: 'Planos',
           icon: 'fas fa-crown',
           route: '/sg-planos-x7k9p',
+        },
+        {
+          label: 'Pagamentos',
+          icon: 'fas fa-wallet',
+          route: '/sg-pagamentos-x7k9p',
         },
         {
           label: 'Perfil',

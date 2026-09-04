@@ -76,7 +76,7 @@ export class AuthService {
 
   sgLogin(emailOrUsername: string, password: string, rememberMe = true): Observable<any> {
     const body = { emailOrUsername, password, rememberMe };
-    return this.http.post<any>(`${environment.apiUrl}/sg-login?useCookies=true&useSessionCookies=${!rememberMe}`, body, {
+    return this.http.post<any>(`${environment.apiUrl}/api/sg-login?useCookies=true&useSessionCookies=${!rememberMe}`, body, {
       withCredentials: true
     }).pipe(
       switchMap(() => this.getMe()),
@@ -220,6 +220,66 @@ export class AuthService {
 
   deleteSgEmpresa(id: string): Observable<any> {
     return this.http.delete<any>(`${environment.apiUrl}/sg-empresas/${id}`, {
+      withCredentials: true
+    });
+  }
+
+  getSgUsuarios(empresaId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiUrl}/sg-empresas/${empresaId}/usuarios`, {
+      withCredentials: true
+    });
+  }
+
+  getSgUsuarioById(id: string): Observable<any> {
+    return this.http.get<any>(`${environment.apiUrl}/sg-usuarios/${id}`, {
+      withCredentials: true
+    });
+  }
+
+  updateSgUsuario(id: string, data: any): Observable<any> {
+    return this.http.put<any>(`${environment.apiUrl}/sg-usuarios/${id}`, data, {
+      withCredentials: true
+    });
+  }
+
+  deleteSgUsuario(id: string): Observable<any> {
+    return this.http.delete<any>(`${environment.apiUrl}/sg-usuarios/${id}`, {
+      withCredentials: true
+    });
+  }
+
+  toggleSgUsuarioStatus(id: string): Observable<any> {
+    return this.http.put<any>(`${environment.apiUrl}/sg-usuarios/${id}/toggle-status`, {}, {
+      withCredentials: true
+    });
+  }
+
+  getSgPagamentosConfig(): Observable<any> {
+    return this.http.get<any>(`${environment.apiUrl}/sg-pagamentos-config`, {
+      withCredentials: true
+    });
+  }
+
+  updateSgPagamentosConfig(data: any): Observable<any> {
+    return this.http.put<any>(`${environment.apiUrl}/sg-pagamentos-config`, data, {
+      withCredentials: true
+    });
+  }
+
+  getAvisoAssinaturaStatus(): Observable<any> {
+    return this.http.get<any>(`${environment.apiUrl}/aviso-assinatura-status`, {
+      withCredentials: true
+    });
+  }
+
+  registraExibicaoAviso(slotId: string): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/registra-exibicao-aviso`, { slotId }, {
+      withCredentials: true
+    });
+  }
+
+  resetSgExibicoesAvisos(): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/sg-pagamentos-reset-exibicoes`, {}, {
       withCredentials: true
     });
   }
