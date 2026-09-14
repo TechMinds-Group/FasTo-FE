@@ -1,0 +1,273 @@
+<div class="container mt-4 mb-5">
+  @if (isLoading()) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status" style="width: 3.5rem; height: 3.5rem;">
+        <span class="visually-hidden">Carregando...</span>
+      </div>
+      <p class="text-white mt-3 fw-semibold fs-5">Carregando detalhes do preset...</p>
+    </div>
+  } @else if (errorMessage()) {
+    <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center gap-2 p-3">
+      <i class="fas fa-exclamation-triangle fs-4"></i>
+      <span class="fw-medium">{{ errorMessage() }}</span>
+    </div>
+  } @else {
+    <!-- Top Header: Voltar + Nome do Preset + Subtítulo -->
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between mb-4 gap-3 border-bottom border-secondary border-opacity-25 pb-3">
+      <div class="d-flex align-items-center gap-3">
+        <button (click)="voltar()" class="btn btn-light shadow-sm rounded-circle p-0 d-flex align-items-center justify-content-center btn-voltar" title="Voltar">
+          <i class="fas fa-arrow-left custom-dark-text"></i>
+        </button>
+
+        <div>
+          <h2 class="h4 mb-0 fw-bold text-white d-flex align-items-center gap-2 flex-wrap">
+            <span>{{ isNovo() ? '✨ Criar Novo Preset de Segmento' : preset()?.nome }}</span>
+          </h2>
+          <span class="text-contrast-muted small">Portal SG Admin — Detalhes do Preset</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Wrapper / Grid Principal -->
+    <form [formGroup]="form">
+      <div class="row g-4 mb-5">
+        <div [class]="modoEdicao() ? 'col-12' : 'col-xl-8 col-12'">
+          <div class="card border-0 shadow-sm p-4 details-card custom-dark-card rounded-4">
+
+            <!-- 1. Header do Perfil / Preset -->
+            <div class="d-flex align-items-center gap-3 border-bottom border-secondary border-opacity-25 pb-4 mb-4">
+              <div class="avatar-circle bg-warning-subtle text-warning d-flex align-items-center justify-content-center fs-2 border border-warning-subtle">
+                {{ isNovo() ? (form.get('icone')?.value || '🏢') : (preset()?.icone || '🏢') }}
+              </div>
+              <div>
+                <h2 class="h3 fw-bold mb-1 text-white d-flex align-items-center gap-2 flex-wrap">
+                  <span>{{ isNovo() ? 'Novo Preset' : preset()?.nome }}</span>
+                  @if (preset()?.isPadraoSistema) {
+                    <span class="badge bg-secondary text-white font-tiny">Nativo FasTo</span>
+                  } @else if (preset()) {
+                    <span class="badge bg-success-subtle text-success border border-success-subtle font-tiny">Customizado</span>
+                  }
+                </h2>
+                <p class="text-contrast-muted small mb-0">{{ isNovo() ? 'Preencha as configurações abaixo' : (preset()?.descricao || 'Preset reutilizável para estabelecimentos') }}</p>
+              </div>
+            </div>
+
+            <!-- 2. Informações Cadastrais (Leitura vs Edição) -->
+            @if (!modoEdicao()) {
+              <div class="row g-4 mb-4">
+                <div class="col-sm-6 col-12">
+                  <label class="form-label small fw-bold text-contrast-muted text-uppercase tracking-wider">Nome do Preset</label>
+                  <p class="fw-semibold mb-0 text-white fs-6">{{ preset()?.nome }}</p>
+                </div>
+                <div class="col-sm-6 col-12">
+                  <label class="form-label small fw-bold text-contrast-muted text-uppercase tracking-wider">Ícone / Emoji</label>
+                  <p class="fw-semibold mb-0 text-white fs-5">{{ preset()?.icone || '🏢' }}</p>
+                </div>
+                <div class="col-12">
+                  <label class="form-label small fw-bold text-contrast-muted text-uppercase tracking-wider">Descrição</label>
+                  <p class="fw-semibold mb-0 text-white">{{ preset()?.descricao || 'Sem descrição cadastrada.' }}</p>
+                </div>
+              </div>
+
+              <!-- Fluxos Ativos no Preset -->
+              <div class="p-4 rounded-4 bg-dark border border-secondary border-opacity-50 mb-4">
+                <h5 class="fw-bold fs-6 text-warning mb-3 d-flex align-items-center gap-2">
+                  <i class="fas fa-route"></i>Fluxos de WhatsApp Ativos neste Preset
+                </h5>
+                <div class="row g-3">
+                  @for (fluxo of fluxos(); track fluxo.key) {
+                    <div class="col-12 col-md-6">
+                      <div class="p-3 rounded-3 border d-flex align-items-center justify-content-between" [class.border-success]="fluxo.ativo" [class.bg-success-subtle]="fluxo.ativo" [class.border-secondary]="!fluxo.ativo" [class.opacity-50]="!fluxo.ativo">
+                        <div class="d-flex align-items-center gap-2.5 me-2">
+                          <span class="fs-5">{{ fluxo.icone }}</span>
+                          <span class="small fw-bold text-white">{{ fluxo.label }}</span>
+                        </div>
+                        @if (fluxo.ativo) {
+                          <span class="badge bg-success text-white font-tiny text-nowrap"><i class="fas fa-check me-1"></i>Ativo</span>
+                        } @else {
+                          <span class="badge bg-secondary text-white font-tiny text-nowrap">Inativo</span>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Mensagens Padrão -->
+              <div class="d-flex flex-column gap-3">
+                <h5 class="fw-bold fs-6 text-success mb-1 d-flex align-items-center gap-2">
+                  <i class="fab fa-whatsapp"></i>Mensagens Padrão do Bot de WhatsApp
+                </h5>
+                <div>
+                  <label class="form-label font-tiny text-uppercase tracking-wider fw-bold text-warning mb-1">Boas-Vindas</label>
+                  <div class="msg-preview-box font-monospace">{{ preset()?.whatsAppBoasVindas || 'Padrão do sistema' }}</div>
+                </div>
+                <div>
+                  <label class="form-label font-tiny text-uppercase tracking-wider fw-bold text-warning mb-1">Encerramento</label>
+                  <div class="msg-preview-box font-monospace">{{ preset()?.whatsAppEncerramento || 'Padrão do sistema' }}</div>
+                </div>
+                <div>
+                  <label class="form-label font-tiny text-uppercase tracking-wider fw-bold text-warning mb-1">Lembrete (1 Dia Antes)</label>
+                  <div class="msg-preview-box font-monospace">{{ preset()?.whatsAppLembrete1Dia || 'Padrão do sistema' }}</div>
+                </div>
+              </div>
+            } @else {
+              <!-- Formulário Inline de Edição -->
+              <div class="d-flex flex-column gap-3 mb-4">
+                <div>
+                  <label class="form-label text-white fw-bold">Nome do Preset *</label>
+                  <input type="text" formControlName="nome" class="form-control custom-dark-input" placeholder="Ex: Advocacia Trabalhista Modelo">
+                </div>
+
+                <div class="row g-3">
+                  <div class="col-12 col-sm-4">
+                    <label class="form-label text-white fw-bold">Ícone / Emoji</label>
+                    <input type="text" formControlName="icone" class="form-control custom-dark-input text-center fs-5" placeholder="🏢">
+                  </div>
+                  <div class="col-12 col-sm-8">
+                    <label class="form-label text-white fw-bold">Descrição</label>
+                    <input type="text" formControlName="descricao" class="form-control custom-dark-input" placeholder="Resumo do segmento...">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lista de Switches dos Fluxos Automatizados do WhatsApp -->
+              <div class="p-4 rounded-4 bg-dark border border-secondary mb-4">
+                <h5 class="fw-bold fs-6 text-warning mb-3 d-flex align-items-center gap-2">
+                  <i class="fas fa-route"></i>Selecione os Fluxos de WhatsApp Ativos neste Preset
+                </h5>
+                <div class="row g-3">
+                  @for (fluxo of fluxos(); track fluxo.key) {
+                    <div class="col-12 col-md-6">
+                      <div class="p-3 rounded-3 border transition-all fluxo-switch-card" [class.border-success]="fluxo.ativo" [class.bg-success-subtle]="fluxo.ativo" [class.border-secondary]="!fluxo.ativo">
+                        <div class="form-check form-switch d-flex align-items-center justify-content-between ps-0 mb-0">
+                          <label class="form-check-label fw-bold text-white cursor-pointer d-flex align-items-center gap-2" [for]="'det_sw_' + fluxo.key">
+                            <span class="fs-5">{{ fluxo.icone }}</span>
+                            <span class="small text-white">{{ fluxo.label }}</span>
+                          </label>
+                          <input class="form-check-input ms-2 cursor-pointer" type="checkbox" [id]="'det_sw_' + fluxo.key" [checked]="fluxo.ativo" (change)="toggleFluxo(fluxo.key)">
+                        </div>
+                        <p class="font-tiny text-contrast-muted mb-0 mt-1 ps-4">{{ fluxo.descricao }}</p>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Mensagens Padrão do WhatsApp (Edição) -->
+              <div class="d-flex flex-column gap-3">
+                <h5 class="fw-bold fs-6 text-success mb-1 d-flex align-items-center gap-2">
+                  <i class="fab fa-whatsapp"></i>Mensagens Padrão do Bot
+                </h5>
+                <div>
+                  <label class="form-label text-white fw-bold small mb-1">Boas-Vindas</label>
+                  <textarea formControlName="whatsAppBoasVindas" class="form-control custom-dark-input" rows="3"></textarea>
+                </div>
+                <div>
+                  <label class="form-label text-white fw-bold small mb-1">Encerramento</label>
+                  <textarea formControlName="whatsAppEncerramento" class="form-control custom-dark-input" rows="2"></textarea>
+                </div>
+                <div>
+                  <label class="form-label text-white fw-bold small mb-1">Lembrete (1 Dia Antes)</label>
+                  <textarea formControlName="whatsAppLembrete1Dia" class="form-control custom-dark-input" rows="2"></textarea>
+                </div>
+
+                <!-- Tabela de Variáveis Disponíveis (Padrão Groom) -->
+                <div class="mt-3 border-top border-secondary border-opacity-25 pt-3">
+                  <div class="text-white small mb-1 fw-bold d-flex align-items-center gap-2">
+                    <i class="fas fa-code text-warning"></i><span>Palavras-chave (Variáveis Disponíveis)</span>
+                  </div>
+                  <p class="font-tiny text-contrast-muted mb-3">Substituídas automaticamente pelos dados do agendamento durante o disparo.</p>
+                  <div class="table-responsive">
+                    <table class="table table-dark table-sm table-bordered mb-0 small rounded-3 overflow-hidden">
+                      <thead>
+                        <tr>
+                          <th class="fw-semibold text-warning" style="width: 35%;">Palavra-chave</th>
+                          <th class="fw-semibold text-warning">Descrição / O que faz</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><code class="text-success">&#123;primeiro_nome&#125;</code></td>
+                          <td class="text-white">Primeiro nome do cliente (ex: João)</td>
+                        </tr>
+                        <tr>
+                          <td><code class="text-success">&#123;estabelecimento&#125;</code></td>
+                          <td class="text-white">Nome de exibição do estabelecimento</td>
+                        </tr>
+                        <tr>
+                          <td><code class="text-success">&#123;profissional&#125;</code></td>
+                          <td class="text-white">Nome do profissional responsável pelo atendimento</td>
+                        </tr>
+                        <tr>
+                          <td><code class="text-success">&#123;horario&#125;</code></td>
+                          <td class="text-white">Data e horário do agendamento (ex: 14/09 às 15:00)</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Barra de Salvar / Cancelar (Exibida APENAS se houver alterações) -->
+              @if (temAlteracoes()) {
+                <div class="border-top border-secondary border-opacity-25 pt-4 mt-4 d-flex align-items-center justify-content-end gap-3">
+                  <button type="button" class="btn btn-outline-secondary px-4 py-2.5 rounded-3 fw-bold text-white" (click)="cancelarEdicao()" [disabled]="salvando()">
+                    <i class="fas fa-times me-2"></i>Cancelar
+                  </button>
+
+                  <button type="button" class="btn btn-primary px-4 py-2.5 rounded-3 fw-bold shadow-sm" (click)="salvarGeral()" [disabled]="salvando()">
+                    @if (salvando()) {
+                      <span class="spinner-border spinner-border-sm me-2" role="status"></span>Salvando...
+                    } @else {
+                      <i class="fas fa-save me-2"></i>Salvar
+                    }
+                  </button>
+                </div>
+              }
+            }
+
+          </div>
+        </div>
+
+        <!-- Coluna Direita: Card Ações Rápidas -->
+        @if (!modoEdicao()) {
+          <div class="col-xl-4 col-12">
+            <div class="card border-0 shadow-sm p-4 actions-card custom-dark-card rounded-4">
+              <h4 class="h5 fw-bold mb-4 text-white d-flex align-items-center">
+                <i class="fas fa-sliders-h me-2 text-primary"></i>Ações Rápidas
+              </h4>
+
+              <div class="d-grid gap-3">
+                <button type="button" (click)="habilitarEdicao()" class="btn btn-primary py-2.5 fw-bold w-100 transition-all custom-action-btn rounded-3">
+                  <i class="fas fa-edit me-2"></i>Editar
+                </button>
+
+                <button type="button" (click)="excluir()" class="btn btn-outline-danger py-2.5 fw-bold w-100 transition-all custom-action-btn rounded-3">
+                  <i class="fas fa-trash-can me-2"></i>Excluir
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </form>
+  }
+</div>
+
+<tm-modal
+  [show]="showDeleteModal()"
+  (confirm)="confirmarExcluir()"
+  (cancel)="cancelarExcluir()"
+  confirmLabel="Excluir"
+  cancelLabel="Cancelar"
+  title="Excluir Preset"
+  confirmClass="btn-danger"
+>
+  <div class="p-1">
+    <p class="mb-0 text-white">Tem certeza que deseja excluir o preset <strong>{{ preset()?.nome }}</strong>?</p>
+    <p class="text-danger small mt-2 mb-0">
+      <i class="fas fa-exclamation-triangle me-1"></i>Esta ação não afetará os estabelecimentos que já estão utilizando este preset.
+    </p>
+  </div>
+</tm-modal>

@@ -8,6 +8,7 @@ import { HorarioDisponivel } from '../models/agendamento-publico/agendamento-pub
 /** DTO de agendamento retornado pela API (camelCase) — exportado para reuso em mapeamentos de outros services. */
 export interface AgendamentoApi {
   id: string;
+  clienteId?: string;
   clienteNome: string;
   clienteTelefone?: string;
   profissionalId: string;
@@ -23,6 +24,7 @@ export interface AgendamentoApi {
   dataFim: string;
   status: string;
   observacoes?: string;
+  naoCompareceuNotificado?: boolean;
 }
 
 const STATUS_VALIDOS = [
@@ -50,6 +52,7 @@ function normalizarStatus(status: string): Agendamento['status'] {
 export function mapearAgendamento(api: AgendamentoApi): Agendamento {
   return {
     id: api.id,
+    clienteId: api.clienteId,
     clienteNome: api.clienteNome,
     clienteTelefone: api.clienteTelefone ?? '',
     servicoNome: api.servicoNome,
@@ -63,6 +66,7 @@ export function mapearAgendamento(api: AgendamentoApi): Agendamento {
     tipo: api.tipo ?? 'servico',
     planoId: api.planoId,
     planoNome: api.planoNome,
+    naoCompareceuNotificado: api.naoCompareceuNotificado ?? false,
   };
 }
 
@@ -100,6 +104,7 @@ export class AgendamentosService {
   }
 
   async criarManual(dados: {
+    clienteId?: string;
     clienteNome: string;
     clienteTelefone: string;
     profissionalId: string;
@@ -118,7 +123,7 @@ export class AgendamentosService {
     dados: {
       servicoId?: string;
       dataInicio?: string;
-      status: 'confirmado' | 'recusado' | 'nao_compareceu' | 'concluido';
+      status?: 'confirmado' | 'recusado' | 'nao_compareceu' | 'concluido';
       observacoes?: string;
     },
   ): Promise<Agendamento> {
@@ -131,6 +136,22 @@ export class AgendamentosService {
   async cancelar(id: string, motivo?: string): Promise<void> {
     await firstValueFrom(
       this.http.put(`${this.apiUrl}/${id}/cancelar`, { motivo }, { withCredentials: true }),
+    );
+  }
+
+  async remover(id: string): Promise<void> {
+    await firstValueFrom(
+      this.http.delete(`${this.apiUrl}/${id}`, { withCredentials: true }),
+    );
+  }
+
+  async notificarNaoCompareceu(id: string): Promise<{ enviado: boolean }> {
+    return firstValueFrom(
+      this.http.post<{ enviado: boolean }>(
+        `${this.apiUrl}/${id}/notificar-nao-compareceu`,
+        {},
+        { withCredentials: true },
+      ),
     );
   }
 }

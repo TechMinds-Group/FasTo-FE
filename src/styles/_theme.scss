@@ -1,4 +1,4 @@
-﻿@use './tokens' as *;
+@use './tokens' as *;
 
 /* fasto-FE Global Theme Styles */
 body {
@@ -26,6 +26,10 @@ body {
 }
 
 [data-theme='dark'] {
+  .text-contrast-light {
+    color: #ffffff !important;
+  }
+
   body .custom-dark-text,
   body .custom-dark-text label,
   body .custom-dark-text input,

@@ -101,6 +101,12 @@ const FLUXO_DEFS: Record<string, Omit<FluxoItem, 'ativo'>> = {
     descricao: 'Cliente informa parâmetros para orçamento estimado.',
     fluxoMensagens: '➜ Pergunta configurável ➜ Cliente informa detalhes ➜ Nome (se novo) ➜ Salva e notifica equipe',
     badgeBg: 'bg-purple', icon: 'fas fa-calculator'
+  },
+  triagem_advocacia: {
+    chave: 'triagem_advocacia', label: 'Triagem Jurídica por Área',
+    descricao: 'Triagem interativa por áreas jurídicas (Trabalhista, Família, Cível, Previdenciário, Urgências).',
+    fluxoMensagens: '➜ Pergunta área jurídica ➜ Pergunta situação do caso ➜ Coleta resumo/documentos ➜ Encaminha atendimento qualificado',
+    badgeBg: 'bg-warning', icon: 'fas fa-balance-scale'
   }
 };
 
@@ -117,7 +123,8 @@ const CHAVE_TO_PROP: Record<string, string> = {
   enviar_documentos: 'opc9EnviarDocumentos',
   consultar_estoque: 'opc10ConsultarEstoque',
   agendar_visita: 'opc11AgendarVisita',
-  simular: 'opc12Simular'
+  simular: 'opc12Simular',
+  triagem_advocacia: 'opc13TriagemAdvocacia'
 };
 
 interface FluxosSnapshot {

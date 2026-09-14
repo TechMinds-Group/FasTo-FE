@@ -21,7 +21,7 @@ export const ALL_SIDEBAR_MENU_ITEMS: MenuItem[] = [
     roles: ['Administrador', 'Profissional'],
     subItems: [
       { label: 'Clientes', icon: 'fas fa-user', route: '/gestao/clientes' },
-      { label: 'Atendentes', icon: 'fas fa-user-tie', route: '/gestao/profissionais' },
+      { label: 'Profissionais', icon: 'fas fa-user-tie', route: '/gestao/profissionais' },
       { label: 'Usuários', icon: 'fas fa-user-shield', route: '/gestao/gestao-usuarios', roles: ['Administrador'] },
     ],
   },

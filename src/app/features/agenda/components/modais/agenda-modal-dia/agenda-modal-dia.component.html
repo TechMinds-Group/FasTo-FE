@@ -142,90 +142,148 @@
       </div>
 
       <!-- Ações de decisão (botões grandes, confortáveis para toque em mobile) -->
-      @if (podeDecidir()) {
-        @if (confirmandoRecusa()) {
-          <div class="alert alert-warning small py-2 px-3 mb-2 d-flex align-items-center gap-2">
-            <i class="fas fa-exclamation-triangle"></i>
-            <span>{{ 'AGENDA_MODAL.DETALHES.CONFIRM_RECUSA_MSG' | translate }}</span>
-          </div>
-          <div class="detalhe-acoes d-flex flex-column flex-md-row gap-3 mb-3">
-            <tm-button
-              variant="primary"
-              icon="fas fa-arrow-left"
-              [isFullWidth]="true"
-              [label]="'AGENDA_MODAL.DETALHES.BTN_NAO' | translate"
-              [disabled]="salvando()"
-              (onClick)="confirmandoRecusa.set(false)"
-            ></tm-button>
-            <tm-button
-              class="acao-recusar"
-              variant="outline-danger"
-              icon="fas fa-times"
-              [isFullWidth]="true"
-              [label]="'AGENDA_MODAL.DETALHES.BTN_SIM' | translate"
-              [disabled]="salvando()"
-              (onClick)="salvarDecisao('recusado')"
-            ></tm-button>
-          </div>
-        } @else {
-          <div class="detalhe-acoes d-flex flex-column flex-md-row gap-3 mb-3">
-            @if (podeConfirmar()) {
+      @if (confirmandoRemocao()) {
+        <div class="alert alert-danger small py-2 px-3 mb-2 d-flex align-items-center gap-2">
+          <i class="fas fa-exclamation-triangle"></i>
+          <span>Deseja remover este agendamento permanentemente? Ele sumirá da agenda.</span>
+        </div>
+        <div class="detalhe-acoes d-flex flex-column flex-md-row gap-3 mb-3">
+          <tm-button
+            variant="outline-secondary"
+            icon="fas fa-arrow-left"
+            [isFullWidth]="true"
+            [label]="'Não, cancelar'"
+            [disabled]="salvando()"
+            (onClick)="confirmandoRemocao.set(false)"
+          ></tm-button>
+          <tm-button
+            class="acao-recusar"
+            variant="danger"
+            icon="fas fa-trash-alt"
+            [isFullWidth]="true"
+            [label]="'Sim, remover'"
+            [loading]="salvando()"
+            (onClick)="removerAgendamentoDetalhes(detalhe.id)"
+          ></tm-button>
+        </div>
+      } @else {
+        <!-- Ações de decisão (botões grandes, confortáveis para toque em mobile) -->
+        @if (podeDecidir()) {
+          @if (confirmandoRecusa()) {
+            <div class="alert alert-warning small py-2 px-3 mb-2 d-flex align-items-center gap-2">
+              <i class="fas fa-exclamation-triangle"></i>
+              <span>{{ 'AGENDA_MODAL.DETALHES.CONFIRM_RECUSA_MSG' | translate }}</span>
+            </div>
+            <div class="detalhe-acoes d-flex flex-column flex-md-row gap-3 mb-3">
               <tm-button
-                class="acao-confirmar"
-                variant="success"
-                icon="fas fa-check"
+                variant="primary"
+                icon="fas fa-arrow-left"
                 [isFullWidth]="true"
-                [label]="'AGENDA_MODAL.DETALHES.BTN_CONFIRMAR' | translate"
+                [label]="'AGENDA_MODAL.DETALHES.BTN_NAO' | translate"
                 [disabled]="salvando()"
-                (onClick)="salvarDecisao('confirmado')"
+                (onClick)="confirmandoRecusa.set(false)"
               ></tm-button>
-            }
-            @if (podeMarcarNaoCompareceu(detalhe)) {
-              <tm-button
-                class="acao-nao-compareceu"
-                variant="outline-warning"
-                icon="fas fa-user-slash"
-                [isFullWidth]="true"
-                [label]="'Não Compareceu'"
-                [disabled]="salvando()"
-                (onClick)="salvarDecisao('nao_compareceu')"
-              ></tm-button>
-            }
-            @if (podeRecusar(detalhe)) {
               <tm-button
                 class="acao-recusar"
                 variant="outline-danger"
                 icon="fas fa-times"
                 [isFullWidth]="true"
-                [label]="'AGENDA_MODAL.DETALHES.BTN_RECUSAR' | translate"
+                [label]="'AGENDA_MODAL.DETALHES.BTN_SIM' | translate"
                 [disabled]="salvando()"
-                (onClick)="confirmandoRecusa.set(true)"
+                (onClick)="salvarDecisao('recusado')"
               ></tm-button>
-            }
+            </div>
+          } @else {
+            <div class="detalhe-acoes d-flex flex-column flex-md-row gap-3 mb-3">
+              @if (exibeNotificarNaoCompareceu()) {
+                @if (detalhe.naoCompareceuNotificado) {
+                  <tm-button
+                    class="acao-notificar-cliente"
+                    variant="outline-secondary"
+                    icon="fas fa-check-circle"
+                    [isFullWidth]="true"
+                    [label]="'Notificado'"
+                    [disabled]="true"
+                  ></tm-button>
+                } @else {
+                  <tm-button
+                    class="acao-notificar-cliente"
+                    variant="outline-warning"
+                    icon="fab fa-whatsapp"
+                    [isFullWidth]="true"
+                    [label]="'Notificar Cliente'"
+                    [loading]="notificando()"
+                    (onClick)="notificarNaoCompareceu()"
+                  ></tm-button>
+                }
+              } @else {
+                @if (podeConfirmar()) {
+                  <tm-button
+                    class="acao-confirmar"
+                    variant="success"
+                    icon="fas fa-check"
+                    [isFullWidth]="true"
+                    [label]="'AGENDA_MODAL.DETALHES.BTN_CONFIRMAR' | translate"
+                    [disabled]="salvando()"
+                    (onClick)="salvarDecisao('confirmado')"
+                  ></tm-button>
+                }
+                @if (podeMarcarNaoCompareceu(detalhe)) {
+                  <tm-button
+                    class="acao-nao-compareceu"
+                    variant="outline-warning"
+                    icon="fas fa-user-slash"
+                    [isFullWidth]="true"
+                    [label]="'Não Compareceu'"
+                    [disabled]="salvando()"
+                    (onClick)="salvarDecisao('nao_compareceu')"
+                  ></tm-button>
+                }
+                @if (podeRecusar(detalhe)) {
+                  <tm-button
+                    class="acao-recusar"
+                    variant="outline-danger"
+                    icon="fas fa-times"
+                    [isFullWidth]="true"
+                    [label]="'AGENDA_MODAL.DETALHES.BTN_RECUSAR' | translate"
+                    [disabled]="salvando()"
+                    (onClick)="confirmandoRecusa.set(true)"
+                  ></tm-button>
+                }
+              }
+            </div>
+          }
+        } @else {
+          <div class="alert alert-warning small py-2 px-3 mb-3">
+            <i class="fas fa-lock me-1"></i>{{ 'AGENDA_MODAL.DETALHES.STATUS_FINAL_MSG' | translate }}
           </div>
         }
-      } @else {
-        <div class="alert alert-warning small py-2 px-3 mb-3">
-          <i class="fas fa-lock me-1"></i>{{ 'AGENDA_MODAL.DETALHES.STATUS_FINAL_MSG' | translate }}
+
+        <div class="detalhe-acoes d-flex flex-column flex-md-row gap-3">
+          <tm-button
+            variant="outline-secondary"
+            icon="fas fa-pen"
+            [isFullWidth]="true"
+            [label]="'AGENDA_MODAL.DETALHES.BTN_EDITAR' | translate"
+            (onClick)="abrirEdicao(detalhe)"
+          ></tm-button>
+          <tm-button
+            variant="outline-danger"
+            icon="fas fa-trash-alt"
+            [isFullWidth]="true"
+            [label]="'Remover'"
+            [disabled]="salvando()"
+            (onClick)="confirmandoRemocao.set(true)"
+          ></tm-button>
+          <tm-button
+            variant="outline-secondary"
+            icon="fas fa-arrow-left"
+            [isFullWidth]="true"
+            [label]="'AGENDA_MODAL.DETALHES.BTN_VOLTAR' | translate"
+            (onClick)="fecharDetalhes()"
+          ></tm-button>
         </div>
       }
-
-      <div class="detalhe-acoes d-flex flex-column flex-md-row gap-3">
-        <tm-button
-          variant="outline-secondary"
-          icon="fas fa-pen"
-          [isFullWidth]="true"
-          [label]="'AGENDA_MODAL.DETALHES.BTN_EDITAR' | translate"
-          (onClick)="abrirEdicao(detalhe)"
-        ></tm-button>
-        <tm-button
-          variant="outline-secondary"
-          icon="fas fa-arrow-left"
-          [isFullWidth]="true"
-          [label]="'AGENDA_MODAL.DETALHES.BTN_VOLTAR' | translate"
-          (onClick)="fecharDetalhes()"
-        ></tm-button>
-      </div>
     } @else if (!exibeForm()) {
       <!-- Cabeçalho da lista -->
       <div

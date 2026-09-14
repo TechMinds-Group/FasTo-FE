@@ -200,6 +200,43 @@ export class AuthService {
     });
   }
 
+  // Presets de Segmento SG
+  getSgPresets(): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiUrl}/sg-presets`, {
+      withCredentials: true
+    });
+  }
+
+  getSgPresetById(id: string): Observable<any> {
+    return this.http.get<any>(`${environment.apiUrl}/sg-presets/${id}`, {
+      withCredentials: true
+    });
+  }
+
+  createSgPreset(data: any): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/sg-presets`, data, {
+      withCredentials: true
+    });
+  }
+
+  updateSgPreset(id: string, data: any): Observable<any> {
+    return this.http.put<any>(`${environment.apiUrl}/sg-presets/${id}`, data, {
+      withCredentials: true
+    });
+  }
+
+  deleteSgPreset(id: string): Observable<any> {
+    return this.http.delete<any>(`${environment.apiUrl}/sg-presets/${id}`, {
+      withCredentials: true
+    });
+  }
+
+  aplicarSgPreset(empresaId: string, presetId: string): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/sg-empresas/${empresaId}/aplicar-preset/${presetId}`, {}, {
+      withCredentials: true
+    });
+  }
+
   deleteSgPlano(id: string): Observable<any> {
     return this.http.delete<any>(`${environment.apiUrl}/sg-planos/${id}`, {
       withCredentials: true

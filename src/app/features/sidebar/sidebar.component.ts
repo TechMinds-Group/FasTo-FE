@@ -27,7 +27,7 @@ export class SidebarComponent implements OnInit {
   protected isCollapsed = signal(false);
   protected avatarColor = signal('0D8ABC');
   protected showIdiomaModal = signal(false);
-  protected rotuloAtendentePlural = signal<string>('Atendentes');
+  protected rotuloAtendentePlural = signal<string>('Profissionais');
   protected currentPath = signal<string>(window.location.pathname);
   @ViewChild(TmSidebarComponent) sidebar!: TmSidebarComponent;
 
@@ -48,7 +48,7 @@ export class SidebarComponent implements OnInit {
         this.rotuloAtendentePlural.set(plural);
       }
     } catch {
-      // Fallback para 'Atendentes'
+      // Fallback para 'Profissionais'
     }
   }
 
@@ -71,6 +71,26 @@ export class SidebarComponent implements OnInit {
             route: '/sg-estabelecimentos-x7k9p',
           },
           {
+            label: 'Dados & Presets',
+            icon: 'fas fa-store',
+            route: empId ? `/sg-estabelecimento-detalhes-x7k9p/${empId}?aba=dados` : '#',
+          },
+          {
+            label: 'Menus do Painel',
+            icon: 'fas fa-sliders-h',
+            route: empId ? `/sg-estabelecimento-detalhes-x7k9p/${empId}?aba=menus` : '#',
+          },
+          {
+            label: 'WhatsApp & Bot',
+            icon: 'fab fa-whatsapp',
+            route: empId ? `/sg-estabelecimento-detalhes-x7k9p/${empId}?aba=whatsapp` : '#',
+          },
+          {
+            label: 'Gerenciador Presets',
+            icon: 'fas fa-layer-group',
+            route: empId ? `/sg-estabelecimento-detalhes-x7k9p/${empId}?aba=presets` : '#',
+          },
+          {
             label: 'Usuários',
             icon: 'fas fa-users',
             route: empId ? `/sg-estabelecimento-usuarios-x7k9p/${empId}` : '#',
@@ -88,6 +108,11 @@ export class SidebarComponent implements OnInit {
           label: 'Estabelecimentos',
           icon: 'fas fa-store',
           route: '/sg-estabelecimentos-x7k9p',
+        },
+        {
+          label: 'Presets / Combos',
+          icon: 'fas fa-layer-group',
+          route: '/sg-presets-x7k9p',
         },
         {
           label: 'Planos',
@@ -166,12 +191,8 @@ export class SidebarComponent implements OnInit {
   }
 
   handleItemClick(item: MenuItem): void {
-    if (item.label === 'Acesso') {
-      const path = this.currentPath();
-      const match = path.match(/\/sg-estabelecimento-(?:detalhes|acesso)-x7k9p\/([a-f0-9-]+)/i);
-      if (match && match[1]) {
-        this.router.navigate(['/sg-estabelecimento-acesso-x7k9p', match[1]]);
-      }
+    if (item.route && item.route !== '#') {
+      this.router.navigateByUrl(item.route);
       return;
     }
     if (item.label === 'Voltar') {

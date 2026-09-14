@@ -331,6 +331,20 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'sg-presets-x7k9p',
+        loadComponent: () =>
+          import('./features/sg/components/sg-presets-x7k9p/sg-presets-x7k9p.component').then(
+            (m) => m.SgPresetsX7k9pComponent,
+          ),
+      },
+      {
+        path: 'sg-preset-detalhes-x7k9p/:id',
+        loadComponent: () =>
+          import('./features/sg/components/sg-preset-detalhes-x7k9p/sg-preset-detalhes-x7k9p.component').then(
+            (m) => m.SgPresetDetalhesX7k9pComponent,
+          ),
+      },
+      {
         path: 'sg-perfil-x7k9p',
         loadComponent: () =>
           import('./features/sg/components/sg-perfil-x7k9p/sg-perfil-x7k9p.component').then(

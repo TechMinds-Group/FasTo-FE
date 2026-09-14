@@ -1,6 +1,10 @@
-# Groom FE
+# FasTo FE
 
-Frontend web do Groom (Angular + TypeScript). Sistema de gestão de agendamentos de barbearia, com agendamento online para clientes e integração WhatsApp.
+Frontend web do **FasTo** (Angular + TypeScript). Interface da plataforma multissetorial de automação de atendimentos, agendamentos flexíveis e integração WhatsApp ("Fast to...").
+
+## Propósito
+
+Oferecer um portal web responsivo e moderno para gestão de estabelecimentos (clínicas, advocacia, madeireiras, ferragens, pequenos mercados, prestadores de serviços e comércios), permitindo gerenciar agendamentos, atendimentos, catálogo de serviços/produtos, equipe de atendentes/especialistas e fluxos de atendimento por WhatsApp.
 
 ## Stack
 
@@ -8,7 +12,7 @@ Frontend web do Groom (Angular + TypeScript). Sistema de gestão de agendamentos
 - Bootstrap + Angular Material
 - TM Angular Library (`tm-*` components)
 - Font Awesome (ícones)
-- SignalR (`@microsoft/signalr`) para atualização em tempo real da agenda
+- SignalR (`@microsoft/signalr`) para atualização em tempo real da agenda e atendimentos
 
 ## Estrutura
 

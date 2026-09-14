@@ -1,100 +1,80 @@
-<div class="sg-acesso-page">
-  <div class="container mt-5 mb-5">
-    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
-      <div class="d-flex align-items-center gap-3">
-        <div class="d-inline-flex align-items-center justify-content-center bg-primary-subtle text-primary rounded-circle p-3 shadow-sm">
-          <i class="fas fa-crown fs-3"></i>
-        </div>
-        <div>
-          <h2 class="h4 mb-0 fw-bold custom-dark-text">Planos do Sistema</h2>
-          <span class="text-muted small custom-dark-text">Gerencie os planos de assinatura disponíveis para estabelecimentos</span>
-        </div>
+<div class="sg-acesso-page container-fluid px-3 px-sm-4 px-lg-5 py-3 py-md-4">
+  <!-- Top Header -->
+  <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between mb-4 gap-3 border-bottom border-secondary border-opacity-25 pb-3">
+    <div class="d-flex align-items-center gap-3">
+      <div class="header-icon-box bg-primary-subtle text-primary rounded-4 p-3 shadow-sm d-flex align-items-center justify-content-center">
+        <i class="fas fa-crown fs-3"></i>
       </div>
-      <button type="button" (click)="novo()" class="btn btn-primary px-4 py-2 fw-bold rounded-3 shadow-sm d-inline-flex align-items-center gap-2">
-        <i class="fas fa-plus-circle"></i><span>Novo Plano</span>
-      </button>
+      <div>
+        <h2 class="h4 h3-md mb-1 fw-bold text-white d-flex align-items-center gap-2 flex-wrap">
+          <span>Planos do Sistema</span>
+          <span class="badge bg-primary-subtle text-primary border border-primary-subtle font-tiny">Admin SG</span>
+        </h2>
+        <p class="text-contrast-muted small mb-0">Gerencie os planos de assinatura disponíveis para os estabelecimentos</p>
+      </div>
     </div>
 
-    @if (errorMessage()) {
-      <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center gap-2">
-        <i class="fas fa-exclamation-triangle fs-5"></i><span>{{ errorMessage() }}</span>
-      </div>
-    }
+    <button type="button" (click)="novo()" class="btn btn-primary px-3 px-md-4 py-2.5 fw-bold rounded-3 shadow-sm d-inline-flex align-items-center justify-content-center gap-2 text-nowrap">
+      <i class="fas fa-plus-circle fs-5"></i><span>Criar Novo Plano</span>
+    </button>
+  </div>
 
-    @if (isLoading()) {
-      <div class="text-center py-5">
-        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
-          <span class="visually-hidden">Carregando planos...</span>
-        </div>
-        <p class="text-muted mt-3 fw-semibold">Carregando planos do sistema...</p>
+  @if (errorMessage()) {
+    <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center gap-2 p-3">
+      <i class="fas fa-exclamation-triangle fs-4"></i><span class="fw-medium">{{ errorMessage() }}</span>
+    </div>
+  }
+
+  @if (isLoading()) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status" style="width: 3.5rem; height: 3.5rem;">
+        <span class="visually-hidden">Carregando planos...</span>
+      </div>
+      <p class="text-white mt-3 fw-semibold fs-5">Carregando planos do sistema...</p>
+    </div>
+  } @else {
+    @if (planos().length === 0) {
+      <div class="card border-0 shadow-sm p-5 text-center custom-dark-card rounded-4">
+        <i class="fas fa-box-open fs-1 text-muted mb-3"></i>
+        <h3 class="h5 fw-bold text-white">Nenhum plano encontrado</h3>
+        <p class="text-contrast-muted mb-0">Cadastre o primeiro plano de assinatura.</p>
       </div>
     } @else {
-      @if (planos().length === 0) {
-        <div class="card border-0 shadow-sm p-5 text-center custom-dark-card rounded-4">
-          <i class="fas fa-box-open fs-1 text-muted mb-3"></i>
-          <h3 class="h5 fw-bold custom-dark-text">Nenhum plano encontrado</h3>
-          <p class="text-muted mb-0">Cadastre o primeiro plano de assinatura.</p>
-        </div>
-      } @else {
-        <div class="row g-4 mb-5">
-          @for (plano of planos(); track plano.id) {
-            <div class="col-xl-4 col-md-6 col-12">
-              <div class="card border-0 shadow-sm h-100 custom-dark-card rounded-4 p-4">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                  <span class="badge {{ corCiclo(plano.ciclo) }} px-3 py-1.5 rounded-pill fw-bold">
-                    {{ plano.ciclo || 'Mensal' }}
-                  </span>
-                  <span class="badge {{ plano.status === 'Ativo' ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-danger-subtle text-danger border border-danger-subtle' }} px-3 py-1.5 rounded-pill fw-semibold">
-                    {{ plano.status || 'Ativo' }}
-                  </span>
+      <!-- Grid de Planos Cadastrados (Clique no card abre os detalhes do plano) -->
+      <div class="row g-3 g-md-4 mb-5">
+        @for (plano of planos(); track plano.id) {
+          <div class="col-12 col-md-6 col-xl-4 col-xxl-3">
+            <div class="card border-0 shadow-sm h-100 custom-dark-card rounded-4 p-3 p-md-4 position-relative hover-lift cursor-pointer" (click)="verDetalhes(plano)">
+              <div class="d-flex align-items-center justify-content-between mb-3 border-bottom border-secondary border-opacity-25 pb-3">
+                <span class="badge {{ corCiclo(plano.ciclo) }} px-3 py-1.5 rounded-pill fw-bold">
+                  {{ plano.ciclo || 'Mensal' }}
+                </span>
+                <span class="badge {{ plano.status === 'Ativo' ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-danger-subtle text-danger border border-danger-subtle' }} px-3 py-1.5 rounded-pill fw-semibold">
+                  {{ plano.status || 'Ativo' }}
+                </span>
+              </div>
+
+              <h3 class="h5 fw-bold mb-1 text-white">{{ plano.nome }}</h3>
+              <p class="text-contrast-muted small mb-3 line-clamp-2">{{ plano.descricao || 'Sem descrição cadastrada.' }}</p>
+
+              <div class="border-top border-secondary border-opacity-25 pt-3 mt-auto">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <span class="text-contrast-muted small"><i class="fas fa-tag me-1"></i>Valor:</span>
+                  <span class="fw-bold text-white fs-5">{{ plano.valor | currency:'BRL':'R$ ' }}</span>
                 </div>
-
-                <h3 class="h5 fw-bold mb-1 custom-dark-text">{{ plano.nome }}</h3>
-                @if (plano.descricao) {
-                  <p class="text-muted small mb-2">{{ plano.descricao }}</p>
-                }
-
-                <div class="border-top border-secondary pt-3 mt-2">
-                  <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="text-muted small"><i class="fas fa-tag me-1"></i>Valor:</span>
-                    <span class="fw-bold text-white">{{ plano.valor | currency:'BRL':'R$ ' }}</span>
-                  </div>
-                  <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="text-muted small"><i class="fas fa-users me-1"></i>Limite Profissionais:</span>
-                    <span class="fw-semibold text-white">{{ plano.limiteProfissionais }}</span>
-                  </div>
-                  <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="text-muted small"><i class="fas fa-user-friends me-1"></i>Limite Clientes:</span>
-                    <span class="fw-semibold text-white">{{ plano.limiteClientes }}</span>
-                  </div>
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <span class="text-contrast-muted small"><i class="fas fa-users me-1"></i>Limite Profissionais:</span>
+                  <span class="fw-semibold text-white">{{ plano.limiteProfissionais }}</span>
                 </div>
-
-                <div class="d-flex gap-2 mt-3 pt-3 border-top border-secondary">
-                  <button type="button" (click)="verDetalhes(plano)" class="btn btn-outline-primary btn-sm flex-fill fw-bold rounded-pill">
-                    <i class="fas fa-edit me-1"></i>Editar
-                  </button>
-                  <button type="button" (click)="confirmarExclusao(plano)" class="btn btn-outline-danger btn-sm flex-fill fw-bold rounded-pill">
-                    <i class="fas fa-trash me-1"></i>Excluir
-                  </button>
+                <div class="d-flex align-items-center justify-content-between mb-0">
+                  <span class="text-contrast-muted small"><i class="fas fa-user-friends me-1"></i>Limite Clientes:</span>
+                  <span class="fw-semibold text-white">{{ plano.limiteClientes }}</span>
                 </div>
               </div>
             </div>
-          }
-        </div>
-      }
+          </div>
+        }
+      </div>
     }
-  </div>
-  <tm-modal
-    [show]="showDeleteModal()"
-    (confirm)="excluir()"
-    (cancel)="showDeleteModal.set(false)"
-    confirmLabel="Excluir"
-    cancelLabel="Cancelar"
-    title="Excluir Plano"
-    confirmClass="btn-danger"
-  >
-    <div class="p-1">
-      <p class="mb-0 text-white">Tem certeza que deseja excluir o plano <strong>{{ planoToDelete()?.nome }}</strong>?</p>
-    </div>
-  </tm-modal>
+  }
 </div>

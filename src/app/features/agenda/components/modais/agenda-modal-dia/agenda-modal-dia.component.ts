@@ -86,8 +86,10 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
   protected readonly agendamentoEditando = signal<Agendamento | null>(null);
   protected readonly agendamentoCancelando = signal<Agendamento | null>(null);
   protected readonly showCancelModal = signal(false);
-  /** Quando true, os botões de decisão dão lugar à confirmação de recusa (Sim/Não). */
   protected readonly confirmandoRecusa = signal(false);
+  protected readonly confirmandoRemocao = signal(false);
+  protected readonly exibeNotificarNaoCompareceu = signal(false);
+  protected readonly notificando = signal(false);
   protected readonly carregandoHorarios = signal(false);
   protected readonly horaOptions = signal<TmSelectOption<string>[]>([]);
 
@@ -119,11 +121,11 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
       .map((s) => ({ value: s.id, label: s.nome })),
   );
 
-  /** Profissionais do tenant com perfil Profissional (padrão ProfissionaisComponent), exibindo nome + sobrenome. */
+  /** Profissionais do tenant (usuários com status ativo), exibindo nome + sobrenome. */
   protected readonly profissionalOptions = computed<TmSelectOption<string>[]>(() =>
     this.gestaoUsuariosService
       .usuarios()
-      .filter((u) => u.perfil === 'Profissional' || (u.perfil && u.perfil.includes('Profissional')))
+      .filter((u) => u.status !== 'Inativo')
       .map((u) => ({ value: u.id, label: u.sobrenome ? `${u.nome} ${u.sobrenome}` : u.nome })),
   );
 
@@ -336,10 +338,11 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
     this.agendamentoEditando.set(null);
     this.clienteIdSelecionado.set('');
     const usuario = this.authService.currentUser();
-    const ehAdmin = this.authService.hasAdminRole();
-    const profissionalPadrao = ehAdmin
-      ? (this.profissionalOptions()[0]?.value ?? '')
-      : (usuario?.id ?? '');
+    const opcoesProfs = this.profissionalOptions();
+    const usuarioExisteEmOpcoes = usuario?.id && opcoesProfs.some((p) => p.value === usuario.id);
+    const profissionalPadrao = usuarioExisteEmOpcoes
+      ? usuario.id
+      : (opcoesProfs[0]?.value ?? '');
 
     this.form.reset({
       clienteNome: '',
@@ -360,12 +363,34 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
     this.exibeForm.set(false);
     this.exibeDetalhes.set(true);
     this.confirmandoRecusa.set(false);
+    this.exibeNotificarNaoCompareceu.set(agendamento.status === 'nao_compareceu');
   }
 
   protected fecharDetalhes(): void {
     this.exibeDetalhes.set(false);
     this.agendamentoDetalhe.set(null);
     this.confirmandoRecusa.set(false);
+    this.confirmandoRemocao.set(false);
+    this.exibeNotificarNaoCompareceu.set(false);
+  }
+
+  protected async removerAgendamentoDetalhes(id: string): Promise<void> {
+    if (this.salvando()) return;
+    this.salvando.set(true);
+    try {
+      await this.agendamentosService.remover(id);
+      this.toastService.success('Agendamento removido com sucesso');
+      this.confirmandoRemocao.set(false);
+      this.fecharDetalhes();
+      this.fecharForm();
+      this.mudancaAgendamento.emit();
+    } catch (err: any) {
+      console.error('Erro ao remover agendamento:', err);
+      const mensagemErro = err?.error?.message || err?.message || 'Erro ao remover agendamento';
+      this.toastService.error(mensagemErro);
+    } finally {
+      this.salvando.set(false);
+    }
   }
 
   /** Aplica a decisão (confirmar/recusar/não compareceu) diretamente dos detalhes, sem abrir o formulário. */
@@ -385,17 +410,39 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
       await this.agendamentosService.editarManual(agendamento.id, { status });
       if (status === 'confirmado') {
         this.toastService.success('Agendamento confirmado com sucesso');
+        this.fecharDetalhes();
       } else if (status === 'nao_compareceu') {
         this.toastService.success('Agendamento marcado como "Não Compareceu"');
+        this.agendamentoDetalhe.set({ ...agendamento, status: 'nao_compareceu' });
+        this.exibeNotificarNaoCompareceu.set(true);
       } else {
         this.toastService.success('Agendamento recusado');
+        this.fecharDetalhes();
       }
-      this.fecharDetalhes();
       this.mudancaAgendamento.emit();
     } catch {
       this.toastService.error('Erro ao salvar a decisão');
     } finally {
       this.salvando.set(false);
+    }
+  }
+
+  /** Envia a notificação de não comparecimento para o cliente via WhatsApp. */
+  protected async notificarNaoCompareceu(): Promise<void> {
+    const agendamento = this.agendamentoDetalhe();
+    if (!agendamento || this.notificando()) return;
+
+    this.notificando.set(true);
+    try {
+      await this.agendamentosService.notificarNaoCompareceu(agendamento.id);
+      this.agendamentoDetalhe.set({ ...agendamento, naoCompareceuNotificado: true });
+      this.toastService.success('Notificação enviada para o cliente via WhatsApp');
+      this.mudancaAgendamento.emit();
+    } catch (err: any) {
+      const mensagemErro = err?.error?.message || err?.message || 'Erro ao enviar notificação via WhatsApp';
+      this.toastService.error(mensagemErro);
+    } finally {
+      this.notificando.set(false);
     }
   }
 
@@ -461,7 +508,9 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
         });
         this.toastService.success('Agendamento atualizado com sucesso');
       } else {
+        const clienteIdSelected = this.clienteIdSelecionado();
         await this.agendamentosService.criarManual({
+          clienteId: clienteIdSelected && clienteIdSelected !== NOVO_CLIENTE_VALUE ? clienteIdSelected : undefined,
           clienteNome: val.clienteNome,
           clienteTelefone: val.clienteTelefone,
           profissionalId: val.profissionalId,
