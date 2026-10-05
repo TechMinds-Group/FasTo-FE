@@ -10,8 +10,9 @@ export const authGuard: CanActivateFn = (route, state) => {
   const toastService = inject(TmToastService);
 
   const isSgRoute = state.url.includes('/sg-');
+  const checkAuth$ = isSgRoute ? authService.getSgMe() : authService.getMe();
 
-  return authService.getMe().pipe(
+  return checkAuth$.pipe(
     map(user => {
       if (!user) {
         if (isSgRoute) {
@@ -24,7 +25,7 @@ export const authGuard: CanActivateFn = (route, state) => {
       const roles: string[] = anyUser.roles ?? anyUser.Roles ?? [];
       const role: string = anyUser.role ?? anyUser.Role ?? '';
       const email: string = anyUser.email ?? anyUser.Email ?? '';
-      const isSuperAdminUser = role === 'SuperAdmin' || roles.includes('SuperAdmin') || email === 'micheladm@fasto.com' || email?.startsWith('micheladm');
+      const isSuperAdminUser = isSgRoute || role === 'SuperAdmin' || roles.includes('SuperAdmin') || email === 'micheladm@fasto.com' || email?.startsWith('micheladm');
 
       if (isSgRoute) {
         if (isSuperAdminUser) {
@@ -35,9 +36,6 @@ export const authGuard: CanActivateFn = (route, state) => {
       }
 
       if (isSuperAdminUser) {
-        if (state.url === '/' || state.url === '/dashboard' || state.url.startsWith('/dashboard')) {
-          return router.createUrlTree(['/sg-perfil-x7k9p']);
-        }
         return true;
       }
 

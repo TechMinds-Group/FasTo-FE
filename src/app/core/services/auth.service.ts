@@ -1,6 +1,6 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, Subject, tap, switchMap } from 'rxjs';
+import { Observable, Subject, tap, switchMap, catchError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 
@@ -112,6 +112,20 @@ export class AuthService {
         // Wait, the API returns Id, Nome, Email, TenantId.
         this._currentUser.set(user);
       })
+    );
+  }
+
+  getSgMe(): Observable<UserContext | null> {
+    return this.http.get<UserContext>(`${environment.apiUrl}/sg-me`, {
+      withCredentials: true,
+      headers: { 'X-Skip-Error-Toast': 'true' }
+    }).pipe(
+      tap((user) => {
+        if (user && window.location.pathname.includes('/sg-')) {
+          this._currentUser.set(user);
+        }
+      }),
+      catchError(() => of(null))
     );
   }
 
