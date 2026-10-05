@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TmModalComponent, TmToastService } from '@techminds-group/tm-angular-lib';
+import { TmModalComponent, TmToastService, TmTextComponent } from '@techminds-group/tm-angular-lib';
 import { AuthService } from '../../../../core/services/auth.service';
 
 export interface AvisoConfig {

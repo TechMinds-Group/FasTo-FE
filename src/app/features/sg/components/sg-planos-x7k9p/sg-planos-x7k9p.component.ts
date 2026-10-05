@@ -1,24 +1,42 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { TmModalComponent, TmToastService } from '@techminds-group/tm-angular-lib';
 import { AuthService } from '../../../../core/services/auth.service';
-import { ThemeService } from '../../../../core/services/theme.service';
 
 @Component({
   selector: 'app-sg-planos-x7k9p',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule, TmModalComponent],
   templateUrl: './sg-planos-x7k9p.component.html',
   styleUrl: './sg-planos-x7k9p.component.scss'
 })
 export class SgPlanosX7k9pComponent implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
-  protected themeService = inject(ThemeService);
+  private toastService = inject(TmToastService);
 
   protected planos = signal<any[]>([]);
   protected isLoading = signal<boolean>(true);
+  protected searchTerm = signal<string>('');
   protected errorMessage = signal<string | null>(null);
+
+  protected planoParaExcluir = signal<any | null>(null);
+  protected showDeleteModal = signal<boolean>(false);
+  protected excluindo = signal<boolean>(false);
+
+  protected planosFiltrados = computed(() => {
+    const term = this.searchTerm().toLowerCase().trim();
+    const list = this.planos();
+    if (!term) return list;
+
+    return list.filter(p =>
+      (p.nome && p.nome.toLowerCase().includes(term)) ||
+      (p.descricao && p.descricao.toLowerCase().includes(term)) ||
+      (p.ciclo && p.ciclo.toLowerCase().includes(term))
+    );
+  });
 
   ngOnInit(): void {
     this.carregarPlanos();
@@ -33,27 +51,46 @@ export class SgPlanosX7k9pComponent implements OnInit {
         this.planos.set(data || []);
         this.isLoading.set(false);
       },
-      error: () => {
-        this.errorMessage.set('Falha ao carregar planos.');
+      error: (err) => {
+        this.errorMessage.set(err?.error?.message || 'Falha ao carregar a lista de planos.');
         this.isLoading.set(false);
       }
     });
   }
 
-  novo(): void {
-    this.router.navigate(['/sg-plano-editar-x7k9p', 'novo']);
+  novoPlano(): void {
+    this.router.navigate(['/sg-plano-novo-x7k9p']);
   }
 
-  verDetalhes(plano: any): void {
+  editarPlano(plano: any): void {
     this.router.navigate(['/sg-plano-editar-x7k9p', plano.id]);
   }
 
-  corCiclo(ciclo: string): string {
-    switch (ciclo?.toLowerCase()) {
-      case 'semanal': return 'bg-warning text-dark';
-      case 'mensal': return 'bg-primary text-white';
-      case 'anual': return 'bg-success text-white';
-      default: return 'bg-secondary text-white';
+  confirmarExclusao(plano: any, event: Event): void {
+    event.stopPropagation();
+    this.planoParaExcluir.set(plano);
+    this.showDeleteModal.set(true);
+  }
+
+  cancelarExclusao(): void {
+    this.showDeleteModal.set(false);
+    this.planoParaExcluir.set(null);
+  }
+
+  async executarExclusao(): Promise<void> {
+    const p = this.planoParaExcluir();
+    if (!p) return;
+
+    this.excluindo.set(true);
+    try {
+      await this.authService.deleteSgPlano(p.id).toPromise();
+      this.toastService.success('Plano excluído com sucesso!', 'Sucesso');
+      this.cancelarExclusao();
+      this.carregarPlanos();
+    } catch {
+      this.toastService.error('Erro ao excluir plano.', 'Erro');
+    } finally {
+      this.excluindo.set(false);
     }
   }
 }

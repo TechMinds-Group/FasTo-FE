@@ -282,6 +282,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'sg-estabelecimento-importacao-x7k9p/:empresaId',
+        loadComponent: () =>
+          import(
+            './features/sg/components/sg-estabelecimento-importacao-x7k9p/sg-estabelecimento-importacao-x7k9p.component'
+          ).then((m) => m.SgEstabelecimentoImportacaoX7k9pComponent),
+      },
+      {
         path: 'sg-estabelecimento-usuarios-x7k9p/:empresaId',
         loadComponent: () =>
           import('./features/sg/components/sg-estabelecimento-usuarios-x7k9p/sg-estabelecimento-usuarios-x7k9p.component').then(
@@ -342,6 +349,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/sg/components/sg-preset-detalhes-x7k9p/sg-preset-detalhes-x7k9p.component').then(
             (m) => m.SgPresetDetalhesX7k9pComponent,
+          ),
+      },
+      {
+        path: 'sg-fluxos-whatsapp-x7k9p',
+        loadComponent: () =>
+          import('./features/sg/components/sg-fluxos-whatsapp-x7k9p/sg-fluxos-whatsapp-x7k9p.component').then(
+            (m) => m.SgFluxosWhatsappX7k9pComponent,
           ),
       },
       {

@@ -39,7 +39,7 @@
       @for (preset of presets(); track preset.id) {
         <div class="col-12 col-md-6 col-xl-4 col-xxl-3">
           <div class="card border-0 shadow-sm h-100 custom-dark-card rounded-4 p-3 p-md-4 position-relative hover-lift cursor-pointer" (click)="abrirDetalhes(preset.id)">
-            <div class="d-flex align-items-start justify-content-between mb-3 border-bottom border-secondary border-opacity-25 pb-3 gap-2">
+            <div class="d-flex align-items-start justify-content-between mb-0 gap-2">
               <div class="d-flex align-items-center gap-3">
                 <div class="preset-icon fs-2 p-2.5 rounded-3 bg-dark border border-secondary text-center shadow-sm">
                   {{ preset.icone }}
@@ -56,16 +56,6 @@
                   <p class="text-contrast-muted small mb-0 line-clamp-2">{{ preset.descricao || 'Sem descrição cadastrada.' }}</p>
                 </div>
               </div>
-            </div>
-
-            <!-- Resumo das Mensagens do Preset -->
-            <div class="mb-2">
-              <span class="font-tiny text-uppercase tracking-wider fw-bold text-warning d-block mb-1.5">
-                <i class="fab fa-whatsapp me-1"></i>Mensagem de Boas-Vindas
-              </span>
-              <p class="small text-white mb-0 bg-dark p-3 rounded-3 border border-secondary border-opacity-50 font-monospace line-clamp-2 msg-preview-box">
-                {{ preset.whatsAppBoasVindas || 'Padrão do sistema' }}
-              </p>
             </div>
           </div>
         </div>

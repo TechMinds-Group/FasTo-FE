@@ -1,128 +1,225 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { TmModalComponent, TmToastService } from '@techminds-group/tm-angular-lib';
+import { ActivatedRoute, Router } from '@angular/router';
+import { TmTextComponent, TmSelectComponent, TmToastService } from '@techminds-group/tm-angular-lib';
+import { ThemeService } from '../../../../core/services/theme.service';
 import { AuthService } from '../../../../core/services/auth.service';
+
+interface SubmenuConfig {
+  chave: string;
+  label: string;
+  ativo: boolean;
+}
+
+interface MenuConfig {
+  chave: string;
+  label: string;
+  icon: string;
+  ativo: boolean;
+  submenus: SubmenuConfig[];
+}
+
+interface WhatsAppOptionConfig {
+  chave: string;
+  label: string;
+  icon: string;
+  ativo: boolean;
+}
+
+const MENU_DEFS = [
+  { chave: 'dashboard', label: 'Dashboard', icon: 'fas fa-th-large', submenus: [] },
+  { chave: 'agenda', label: 'Agenda / Calendário', icon: 'fas fa-calendar-alt', submenus: [] },
+  {
+    chave: 'gestao', label: 'Gestão', icon: 'fas fa-users', submenus: [
+      { chave: 'clientes', label: 'Clientes' },
+      { chave: 'assinantes', label: 'Assinantes' },
+      { chave: 'profissionais', label: 'Profissionais' },
+      { chave: 'usuarios', label: 'Usuários' }
+    ]
+  },
+  {
+    chave: 'servicos', label: 'Serviços & Planos', icon: 'fas fa-cut', submenus: [
+      { chave: 'catalogo', label: 'Catálogo de Serviços' },
+      { chave: 'planos', label: 'Planos do Estabelecimento' }
+    ]
+  },
+  {
+    chave: 'agendamento_online', label: 'Agendamento Online', icon: 'fas fa-globe', submenus: [
+      { chave: 'link_cliente', label: 'Link do Cliente' }
+    ]
+  },
+  {
+    chave: 'configuracoes', label: 'Configurações do Sistema', icon: 'fas fa-cog', submenus: [
+      { chave: 'estabelecimento', label: 'Dados do Estabelecimento' },
+      { chave: 'whatsapp', label: 'Integração WhatsApp' },
+      { chave: 'assinatura', label: 'Minha Assinatura' },
+      { chave: 'logs', label: 'Logs do Sistema' }
+    ]
+  }
+];
+
+const WHATSAPP_DEFS = [
+  { chave: 'opc1AgendarSite', label: 'Agendar no Site', icon: 'fas fa-globe' },
+  { chave: 'opc2AgendarWhatsapp', label: 'Agendar por WhatsApp', icon: 'fab fa-whatsapp' },
+  { chave: 'opc3MeusAgendamentos', label: 'Meus Agendamentos', icon: 'fas fa-calendar-check' },
+  { chave: 'opc6Atendente', label: 'Falar com Atendente', icon: 'fas fa-headset' }
+];
 
 @Component({
   selector: 'app-sg-plano-editar-x7k9p',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TmModalComponent],
+  imports: [CommonModule, ReactiveFormsModule, TmTextComponent, TmSelectComponent],
   templateUrl: './sg-plano-editar-x7k9p.component.html',
-  styleUrl: './sg-plano-editar-x7k9p.component.scss',
+  styleUrl: './sg-plano-editar-x7k9p.component.scss'
 })
 export class SgPlanoEditarX7k9pComponent implements OnInit {
-  private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
-  private readonly fb = inject(FormBuilder);
-  private readonly authService = inject(AuthService);
-  private readonly toastService = inject(TmToastService);
+  private fb = inject(FormBuilder);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private authService = inject(AuthService);
+  private toastService = inject(TmToastService);
+  protected themeService = inject(ThemeService);
 
-  protected readonly plano = signal<any | null>(null);
-  protected readonly isLoading = signal<boolean>(true);
-  protected readonly errorMessage = signal<string | null>(null);
-  protected readonly modoEdicao = signal<boolean>(false);
-  protected readonly salvando = signal<boolean>(false);
-  protected readonly isNovo = signal<boolean>(false);
+  protected planoId = signal<string>('');
+  protected isLoading = signal<boolean>(true);
+  protected salvando = signal<boolean>(false);
 
-  protected readonly initialFormValues = signal<any>({});
-  protected readonly showDeleteModal = signal<boolean>(false);
+  protected menus = signal<MenuConfig[]>([]);
+  protected whatsappOptions = signal<WhatsAppOptionConfig[]>([]);
 
-  protected readonly cicloOptions = signal<{ value: string; label: string }[]>([
-    { value: 'Semanal', label: 'Semanal' },
+  protected cicloOptions = [
     { value: 'Mensal', label: 'Mensal' },
     { value: 'Anual', label: 'Anual' },
-  ]);
+    { value: 'Semestral', label: 'Semestral' },
+    { value: 'Trimestral', label: 'Trimestral' }
+  ];
 
-  protected readonly statusOptions = signal<{ value: string; label: string }[]>([
+  protected statusOptions = [
     { value: 'Ativo', label: 'Ativo' },
-    { value: 'Inativo', label: 'Inativo' },
-  ]);
+    { value: 'Inativo', label: 'Inativo' }
+  ];
 
-  protected readonly temAlteracoes = computed(() => {
-    if (this.isNovo()) return true;
-    if (!this.modoEdicao()) return false;
-
-    const current = this.form.value;
-    const init = this.initialFormValues();
-    return Object.keys(current).some(key => (current[key] ?? '') !== (init[key] ?? ''));
-  });
-
-  protected readonly form: FormGroup = this.fb.group({
+  protected form: FormGroup = this.fb.group({
     nome: ['', [Validators.required, Validators.maxLength(100)]],
     descricao: ['', [Validators.maxLength(500)]],
     valor: [0, [Validators.required, Validators.min(0)]],
     ciclo: ['Mensal', [Validators.required]],
     status: ['Ativo', [Validators.required]],
     limiteProfissionais: [5, [Validators.required, Validators.min(1)]],
-    limiteClientes: [100, [Validators.required, Validators.min(1)]],
+    limiteClientes: [100, [Validators.required, Validators.min(1)]]
   });
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
-    if (!id || id === 'novo') {
-      this.isNovo.set(true);
-      this.modoEdicao.set(true);
-      this.isLoading.set(false);
-      this.form.patchValue({
-        nome: '',
-        descricao: '',
-        valor: 0,
-        ciclo: 'Mensal',
-        status: 'Ativo',
-        limiteProfissionais: 5,
-        limiteClientes: 100,
-      });
-      this.initialFormValues.set(this.form.value);
-    } else {
+    if (id) {
+      this.planoId.set(id);
       this.carregarPlano(id);
+    } else {
+      this.toastService.error('ID do plano inválido.', 'Erro');
+      this.voltar();
     }
   }
 
   carregarPlano(id: string): void {
     this.isLoading.set(true);
-    this.errorMessage.set(null);
-
     this.authService.getSgPlanoById(id).subscribe({
       next: (data) => {
-        this.plano.set(data);
         this.form.patchValue({
           nome: data.nome || '',
           descricao: data.descricao || '',
-          valor: data.valor ?? 0,
+          valor: data.valor || 0,
           ciclo: data.ciclo || 'Mensal',
           status: data.status || 'Ativo',
-          limiteProfissionais: data.limiteProfissionais ?? 5,
-          limiteClientes: data.limiteClientes ?? 100,
+          limiteProfissionais: data.limiteProfissionais || 5,
+          limiteClientes: data.limiteClientes || 100
         });
 
-        this.initialFormValues.set(this.form.value);
+        // Extrai permissões personalizadas salvas no plano
+        let acessosObj: any = {};
+        let waObj: any = {};
+
+        if (data.permissoesJson) {
+          try {
+            const parsed = JSON.parse(data.permissoesJson);
+            acessosObj = parsed.acessosMenu || {};
+            waObj = parsed.fluxosWhatsApp || {};
+          } catch { }
+        }
+
+        const gSub = acessosObj.gestao_sub || {};
+        const sSub = acessosObj.servicos_sub || {};
+        const aSub = acessosObj.agendamento_online_sub || {};
+        const cSub = acessosObj.configuracoes_sub || {};
+
+        const montadosMenus: MenuConfig[] = MENU_DEFS.map(def => {
+          const mainAtivo = acessosObj[def.chave] !== false;
+          let subList: SubmenuConfig[] = [];
+
+          if (def.chave === 'gestao') {
+            subList = def.submenus.map(s => ({ ...s, ativo: gSub[s.chave] !== false }));
+          } else if (def.chave === 'servicos') {
+            subList = def.submenus.map(s => ({ ...s, ativo: sSub[s.chave] !== false }));
+          } else if (def.chave === 'agendamento_online') {
+            subList = def.submenus.map(s => ({ ...s, ativo: aSub[s.chave] !== false }));
+          } else if (def.chave === 'configuracoes') {
+            subList = def.submenus.map(s => ({ ...s, ativo: cSub[s.chave] !== false }));
+          }
+
+          return { ...def, ativo: mainAtivo, submenus: subList };
+        });
+
+        const montadosWa: WhatsAppOptionConfig[] = WHATSAPP_DEFS.map(def => ({
+          ...def,
+          ativo: waObj[def.chave] !== false
+        }));
+
+        this.menus.set(montadosMenus);
+        this.whatsappOptions.set(montadosWa);
         this.isLoading.set(false);
       },
       error: () => {
-        this.errorMessage.set('Falha ao carregar detalhes do plano.');
-        this.isLoading.set(false);
+        this.toastService.error('Falha ao carregar plano.', 'Erro');
+        this.voltar();
       }
     });
   }
 
-  habilitarEdicao(): void {
-    this.modoEdicao.set(true);
+  toggleMenu(chave: string): void {
+    this.menus.update(items =>
+      items.map(item => {
+        if (item.chave === chave) {
+          const novo = !item.ativo;
+          return { ...item, ativo: novo, submenus: item.submenus.map(s => ({ ...s, ativo: novo })) };
+        }
+        return item;
+      })
+    );
   }
 
-  cancelarEdicao(): void {
-    if (this.isNovo()) {
-      this.voltar();
-    } else {
-      this.modoEdicao.set(false);
-      if (this.plano()) {
-        this.carregarPlano(this.plano().id);
-      }
-    }
+  toggleSubmenu(menuChave: string, subChave: string): void {
+    this.menus.update(items =>
+      items.map(item => {
+        if (item.chave === menuChave) {
+          const updated = item.submenus.map(s => s.chave === subChave ? { ...s, ativo: !s.ativo } : s);
+          return { ...item, ativo: updated.some(s => s.ativo), submenus: updated };
+        }
+        return item;
+      })
+    );
   }
 
-  async salvarGeral(): Promise<void> {
+  toggleWhatsAppOption(chave: string): void {
+    this.whatsappOptions.update(opts =>
+      opts.map(o => o.chave === chave ? { ...o, ativo: !o.ativo } : o)
+    );
+  }
+
+  voltar(): void {
+    this.router.navigate(['/sg-planos-x7k9p']);
+  }
+
+  async salvar(): Promise<void> {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       this.toastService.error('Preencha os campos obrigatórios.', 'Atenção');
@@ -132,60 +229,67 @@ export class SgPlanoEditarX7k9pComponent implements OnInit {
     this.salvando.set(true);
     try {
       const raw = this.form.value;
-      const payload = {
-        nome: raw.nome.trim(),
-        descricao: raw.descricao?.trim() || null,
-        valor: raw.valor,
-        ciclo: raw.ciclo,
-        status: raw.status || 'Ativo',
-        limiteProfissionais: raw.limiteProfissionais,
-        limiteClientes: raw.limiteClientes,
+      const mItems = this.menus();
+      const getM = (k: string) => mItems.find(i => i.chave === k);
+      const getS = (mk: string, sk: string) => getM(mk)?.submenus.find(s => s.chave === sk)?.ativo ?? true;
+
+      const acessosMenuPayload = {
+        dashboard: getM('dashboard')?.ativo ?? true,
+        agenda: getM('agenda')?.ativo ?? true,
+        gestao: getM('gestao')?.ativo ?? true,
+        gestao_sub: {
+          clientes: getS('gestao', 'clientes'),
+          assinantes: getS('gestao', 'assinantes'),
+          profissionais: getS('gestao', 'profissionais'),
+          usuarios: getS('gestao', 'usuarios')
+        },
+        servicos: getM('servicos')?.ativo ?? true,
+        servicos_sub: {
+          catalogo: getS('servicos', 'catalogo'),
+          planos: getS('servicos', 'planos')
+        },
+        agendamento_online: getM('agendamento_online')?.ativo ?? true,
+        agendamento_online_sub: {
+          link_cliente: getS('agendamento_online', 'link_cliente')
+        },
+        configuracoes: getM('configuracoes')?.ativo ?? true,
+        configuracoes_sub: {
+          estabelecimento: getS('configuracoes', 'estabelecimento'),
+          whatsapp: getS('configuracoes', 'whatsapp'),
+          assinatura: getS('configuracoes', 'assinatura'),
+          logs: getS('configuracoes', 'logs')
+        }
       };
 
-      if (this.isNovo()) {
-        const res = await this.authService.createSgPlano(payload).toPromise();
-        this.toastService.success(`Plano '${res.nome}' criado com sucesso!`, 'Sucesso');
-        this.router.navigate(['/sg-plano-editar-x7k9p', res.id]);
-      } else {
-        const p = this.plano();
-        await this.authService.updateSgPlano(p.id, payload).toPromise();
-        this.toastService.success(`Plano '${raw.nome}' atualizado com sucesso!`, 'Sucesso');
-        this.carregarPlano(p.id);
-        this.modoEdicao.set(false);
-      }
-    } catch {
-      this.toastService.error('Erro ao salvar plano.', 'Erro');
-    } finally {
-      this.salvando.set(false);
-    }
-  }
+      const waOpts = this.whatsappOptions();
+      const getWa = (k: string) => waOpts.find(o => o.chave === k)?.ativo ?? true;
 
-  excluir(): void {
-    this.showDeleteModal.set(true);
-  }
+      const fluxosWhatsAppPayload = {
+        opc1AgendarSite: getWa('opc1AgendarSite'),
+        opc2AgendarWhatsapp: getWa('opc2AgendarWhatsapp'),
+        opc3MeusAgendamentos: getWa('opc3MeusAgendamentos'),
+        opc6Atendente: getWa('opc6Atendente')
+      };
 
-  cancelarExcluir(): void {
-    this.showDeleteModal.set(false);
-  }
+      await this.authService.updateSgPlano(this.planoId(), {
+        nome: raw.nome,
+        descricao: raw.descricao || null,
+        valor: raw.valor,
+        ciclo: raw.ciclo,
+        status: raw.status,
+        limiteProfissionais: raw.limiteProfissionais,
+        limiteClientes: raw.limiteClientes,
+        acessosMenu: acessosMenuPayload,
+        fluxosWhatsApp: fluxosWhatsAppPayload
+      }).toPromise();
 
-  async confirmarExcluir(): Promise<void> {
-    const p = this.plano();
-    if (!p) return;
-
-    this.salvando.set(true);
-    try {
-      await this.authService.deleteSgPlano(p.id).toPromise();
-      this.showDeleteModal.set(false);
-      this.toastService.success('Plano excluído com sucesso!', 'Sucesso');
+      this.toastService.success('Plano e permissões atualizados com sucesso!', 'Sucesso');
       this.voltar();
-    } catch {
-      this.toastService.error('Erro ao excluir plano.', 'Erro');
+    } catch (err: any) {
+      const msg = err?.error?.message || 'Erro ao atualizar plano.';
+      this.toastService.error(msg, 'Erro');
     } finally {
       this.salvando.set(false);
     }
-  }
-
-  voltar(): void {
-    this.router.navigate(['/sg-planos-x7k9p']);
   }
 }

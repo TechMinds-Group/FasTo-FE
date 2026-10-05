@@ -61,7 +61,7 @@ export class SidebarComponent implements OnInit {
 
     if (isSuperAdmin) {
       if (path.includes('/sg-estabelecimento-')) {
-        const match = path.match(/\/sg-estabelecimento-(?:detalhes|usuarios|usuario-novo|usuario-detalhes|usuario-editar)-x7k9p\/([a-f0-9-]+)/i);
+        const match = path.match(/\/sg-estabelecimento-(?:detalhes|usuarios|usuario-novo|usuario-detalhes|usuario-editar|importacao)-x7k9p\/([a-f0-9-]+)/i);
         const empId = match ? match[1] : '';
 
         return [
@@ -71,29 +71,14 @@ export class SidebarComponent implements OnInit {
             route: '/sg-estabelecimentos-x7k9p',
           },
           {
-            label: 'Dados & Presets',
-            icon: 'fas fa-store',
-            route: empId ? `/sg-estabelecimento-detalhes-x7k9p/${empId}?aba=dados` : '#',
-          },
-          {
-            label: 'Menus do Painel',
-            icon: 'fas fa-sliders-h',
-            route: empId ? `/sg-estabelecimento-detalhes-x7k9p/${empId}?aba=menus` : '#',
-          },
-          {
-            label: 'WhatsApp & Bot',
-            icon: 'fab fa-whatsapp',
-            route: empId ? `/sg-estabelecimento-detalhes-x7k9p/${empId}?aba=whatsapp` : '#',
-          },
-          {
-            label: 'Gerenciador Presets',
-            icon: 'fas fa-layer-group',
-            route: empId ? `/sg-estabelecimento-detalhes-x7k9p/${empId}?aba=presets` : '#',
-          },
-          {
             label: 'Usuários',
             icon: 'fas fa-users',
             route: empId ? `/sg-estabelecimento-usuarios-x7k9p/${empId}` : '#',
+          },
+          {
+            label: 'Importação de Dados',
+            icon: 'fas fa-file-import',
+            route: empId ? `/sg-estabelecimento-importacao-x7k9p/${empId}` : '#',
           },
           {
             label: 'Sair',
@@ -113,6 +98,11 @@ export class SidebarComponent implements OnInit {
           label: 'Presets / Combos',
           icon: 'fas fa-layer-group',
           route: '/sg-presets-x7k9p',
+        },
+        {
+          label: 'Fluxos de WhatsApp',
+          icon: 'fab fa-whatsapp',
+          route: '/sg-fluxos-whatsapp-x7k9p',
         },
         {
           label: 'Planos',

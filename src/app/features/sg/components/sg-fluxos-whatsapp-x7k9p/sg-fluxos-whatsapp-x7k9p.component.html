@@ -1,0 +1,296 @@
+<div class="sg-fluxos-page">
+  <div class="container py-4 py-md-5">
+
+    <!-- Header Principal Despoluído -->
+    <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between mb-4 pb-3 border-bottom border-slate-700 gap-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="icon-avatar-header bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center flex-shrink-0">
+          <i class="fab fa-whatsapp fs-3"></i>
+        </div>
+        <div>
+          <h1 class="h4 fw-bold text-white mb-1 d-flex align-items-center gap-2">
+            Simulador & Fluxos do Bot WhatsApp
+          </h1>
+          <p class="text-slate-300 small mb-0">
+            Teste a interação em tempo real do chatbot enviando mensagens e experimentando cada fluxo
+          </p>
+        </div>
+      </div>
+
+      <!-- Seletor Rápido para Mobile & Busca para Desktop -->
+      <div class="d-flex align-items-center gap-2 w-100 w-md-auto">
+        <div class="d-block d-lg-none w-100">
+          <select
+            class="form-select custom-select-mobile shadow-sm"
+            [ngModel]="selectedFluxoKey()"
+            (ngModelChange)="selectFluxo($event)"
+          >
+            @for (f of fluxosList(); track f.key) {
+              <option [value]="f.key">{{ f.icone }} {{ f.titulo }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="search-box d-none d-lg-block">
+          <div class="input-group input-group-sm shadow-sm">
+            <span class="input-group-text bg-slate-900 border-slate-700 text-slate-400 ps-3">
+              <i class="fas fa-search"></i>
+            </span>
+            <input
+              type="text"
+              class="form-control custom-dark-input py-2 px-3"
+              placeholder="Filtrar fluxos..."
+              [ngModel]="searchQuery()"
+              (ngModelChange)="searchQuery.set($event)"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pílulas de Categoria (Filtro Elegante) -->
+    <div class="d-none d-lg-flex align-items-center gap-2 mb-4 overflow-x-auto pb-1">
+      <button
+        type="button"
+        class="btn btn-sm pill-btn"
+        [ngClass]="selectedCategoria() === 'todos' ? 'pill-active' : 'pill-inactive'"
+        (click)="setCategoria('todos')"
+      >
+        Todos os Fluxos ({{ fluxosList().length }})
+      </button>
+      <button
+        type="button"
+        class="btn btn-sm pill-btn"
+        [ngClass]="selectedCategoria() === 'cliente' ? 'pill-active' : 'pill-inactive'"
+        (click)="setCategoria('cliente')"
+      >
+        <i class="fas fa-user-check me-1"></i>Atendimento ao Cliente
+      </button>
+      <button
+        type="button"
+        class="btn btn-sm pill-btn"
+        [ngClass]="selectedCategoria() === 'servicos' ? 'pill-active' : 'pill-inactive'"
+        (click)="setCategoria('servicos')"
+      >
+        <i class="fas fa-briefcase me-1"></i>Serviços & Catálogo
+      </button>
+      <button
+        type="button"
+        class="btn btn-sm pill-btn"
+        [ngClass]="selectedCategoria() === 'profissional' ? 'pill-active' : 'pill-inactive'"
+        (click)="setCategoria('profissional')"
+      >
+        <i class="fas fa-user-tie me-1"></i>Painel do Profissional
+      </button>
+      <button
+        type="button"
+        class="btn btn-sm pill-btn"
+        [ngClass]="selectedCategoria() === 'sistema' ? 'pill-active' : 'pill-inactive'"
+        (click)="setCategoria('sistema')"
+      >
+        <i class="fas fa-cog me-1"></i>Sistema & Encerramento
+      </button>
+    </div>
+
+    <!-- Grid Principal (Master-Detail Despoluído) -->
+    <div class="row g-4">
+      
+      <!-- Coluna Esquerda: Lista Limpa de Navegação (Desktop) -->
+      <div class="col-lg-4 d-none d-lg-block">
+        <div class="card main-surface-card border-0 shadow-sm p-3">
+          <div class="d-flex align-items-center justify-content-between mb-3 px-2 pb-2 border-bottom border-slate-700">
+            <span class="text-uppercase font-tiny fw-bold text-slate-400 tracking-wider">Selecione o Fluxo</span>
+            <span class="badge bg-slate-800 text-slate-300 font-tiny">{{ filteredFluxos().length }} opções</span>
+          </div>
+
+          <div class="flow-nav-list pe-1">
+            @for (fluxo of filteredFluxos(); track fluxo.key) {
+              <div
+                class="flow-nav-item p-3 rounded-3 cursor-pointer d-flex align-items-center gap-3 transition-all mb-1"
+                [class.active]="selectedFluxoKey() === fluxo.key"
+                (click)="selectFluxo(fluxo.key)"
+              >
+                <span class="flow-emoji-badge fs-4 flex-shrink-0">{{ fluxo.icone }}</span>
+                <div class="overflow-hidden flex-grow-1">
+                  <h2 class="h6 fw-bold mb-0 text-white text-truncate font-body">{{ fluxo.titulo }}</h2>
+                  <span class="text-slate-400 extra-small text-truncate d-block mt-0.5">{{ fluxo.descricao }}</span>
+                </div>
+                <i class="fas fa-chevron-right text-slate-500 font-tiny transition-all"></i>
+              </div>
+            } @empty {
+              <div class="text-center py-4 text-slate-400">
+                <i class="fas fa-search mb-2 d-block fs-4"></i>
+                <span class="small">Nenhum fluxo encontrado.</span>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Coluna Direita: SIMULADOR INTERATIVO DE WHATSAPP -->
+      <div class="col-lg-8 col-12">
+        @if (currentFluxo(); as fluxo) {
+          <div class="card main-surface-card border-0 shadow-sm p-3 p-md-4">
+            
+            <!-- Detalhes do Fluxo (Topo do Card) -->
+            <div class="d-flex align-items-start justify-content-between gap-3 mb-3 border-bottom border-slate-700 pb-3">
+              <div class="d-flex align-items-center gap-3">
+                <span class="fs-1 flex-shrink-0">{{ fluxo.icone }}</span>
+                <div>
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2.5 py-0.5 rounded-pill font-tiny fw-bold">
+                      <i class="fas fa-circle me-1 extra-small"></i>Fluxo Ativo no Bot
+                    </span>
+                    <span class="badge bg-slate-800 text-slate-300 font-tiny px-2.5 py-0.5 rounded-pill text-capitalize">
+                      {{ fluxo.categoria }}
+                    </span>
+                  </div>
+                  <h2 class="h5 fw-bold text-white mb-1">{{ fluxo.titulo }}</h2>
+                  <p class="text-slate-300 small mb-0">{{ fluxo.descricao }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Resumo do Desfecho / Resultado Final -->
+            <div class="desfecho-banner p-3 rounded-3 mb-3 d-flex align-items-center gap-3">
+              <i class="fas fa-check-circle text-amber-400 fs-4 flex-shrink-0"></i>
+              <div>
+                <span class="font-tiny text-uppercase fw-bold text-amber-400 d-block tracking-wider mb-0.5">Resultado Esperado</span>
+                <span class="text-slate-100 small fw-medium">{{ fluxo.desfecho }}</span>
+              </div>
+            </div>
+
+            <!-- SIMULADOR REALISTA E INTERATIVO DE WHATSAPP -->
+            <div class="whatsapp-mockup-container rounded-4 shadow-lg overflow-hidden border border-slate-700">
+              
+              <!-- Barra Superior do Chat (Header WhatsApp com Botão de Reset) -->
+              <div class="whatsapp-header p-3 bg-slate-900 d-flex align-items-center justify-content-between border-bottom border-slate-700 gap-2">
+                <div class="d-flex align-items-center gap-3 overflow-hidden">
+                  <div class="bot-avatar rounded-circle bg-emerald-600 text-white d-flex align-items-center justify-content-center fw-bold fs-5 shadow-sm flex-shrink-0" style="width: 40px; height: 40px;">
+                    🤖
+                  </div>
+                  <div class="overflow-hidden">
+                    <h3 class="h6 fw-bold text-white mb-0 text-truncate">Bot FasTo • Simulação</h3>
+                    <span class="text-emerald-400 extra-small d-flex align-items-center gap-1">
+                      <i class="fas fa-circle font-tiny"></i> online e respondendo
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Botão de Resetar Simulação -->
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-warning shadow-sm rounded-3 fw-bold d-inline-flex align-items-center gap-1.5 flex-shrink-0"
+                  (click)="resetarSimulacao()"
+                  title="Reinicia o chat e zera a simulação deste fluxo"
+                >
+                  <i class="fas fa-rotate-left me-1"></i> Resetar Simulação
+                </button>
+              </div>
+
+              <!-- Corpo da Conversa / Balões Dinâmicos do Chat -->
+              <div class="whatsapp-body p-3 p-md-4">
+                @for (msg of chatHistory(); track msg.id) {
+                  <div class="chat-message-row mb-3">
+
+                    <!-- Mensagem enviada pelo Bot ou Atendente (Esquerda) -->
+                    @if (msg.autor === 'bot' || msg.autor === 'atendente') {
+                      <div class="d-flex justify-content-start">
+                        <div class="chat-bubble left-bubble p-3 rounded-3 shadow-sm position-relative">
+                          <div class="bubble-sender-name font-tiny fw-bold mb-1" [class.text-emerald-400]="msg.autor === 'bot'" [class.text-amber-400]="msg.autor === 'atendente'">
+                            {{ msg.autor === 'bot' ? '🤖 Bot FasTo' : '👔 Atendente' }}
+                          </div>
+                          <div class="bubble-text text-slate-100 font-monospace small" style="white-space: pre-wrap; line-height: 1.55;">
+                            {{ msg.texto }}
+                          </div>
+
+                          @if (msg.detalhes) {
+                            <div class="text-sky-300 extra-small mt-2 pt-2 border-top border-slate-700">
+                              <i class="fas fa-info-circle me-1 text-sky-400"></i>{{ msg.detalhes }}
+                            </div>
+                          }
+
+                          @if (msg.fallback) {
+                            <div class="text-rose-200 extra-small mt-2 pt-2 border-top border-rose-800">
+                              <i class="fas fa-shield-alt me-1 text-rose-400"></i><strong>Regra de Opção Inválida:</strong> {{ msg.fallback }}
+                            </div>
+                          }
+
+                          <div class="bubble-time text-end text-slate-400 extra-small mt-1">
+                            {{ msg.hora }} <i class="fas fa-check-double text-sky-400 ms-1 font-tiny"></i>
+                          </div>
+                        </div>
+                      </div>
+                    }
+
+                    <!-- Mensagem enviada pelo Cliente (Direita) -->
+                    @if (msg.autor === 'cliente') {
+                      <div class="d-flex justify-content-end">
+                        <div class="chat-bubble right-bubble p-3 rounded-3 shadow-sm position-relative">
+                          <div class="bubble-text text-slate-100 font-monospace small" style="white-space: pre-wrap; line-height: 1.55;">
+                            {{ msg.texto }}
+                          </div>
+                          <div class="bubble-time text-end text-emerald-200 extra-small mt-1 opacity-75">
+                            {{ msg.hora }} <i class="fas fa-check-double ms-1 font-tiny"></i>
+                          </div>
+                        </div>
+                      </div>
+                    }
+
+                    <!-- Evento de Sistema (Banner Centralizado) -->
+                    @if (msg.autor === 'sistema') {
+                      <div class="system-event-box my-2 p-2.5 rounded-3 text-center mx-auto border" style="max-width: 90%;">
+                        <span class="text-slate-300 extra-small d-block fw-semibold">
+                          <i class="fas fa-cog me-1.5 text-purple-400"></i>{{ msg.texto }}
+                        </span>
+                      </div>
+                    }
+
+                  </div>
+                } @empty {
+                  <div class="empty-chat-placeholder py-5 text-center my-auto">
+                    <div class="empty-icon-bubble mx-auto mb-3 text-slate-500 fs-1">
+                      💬
+                    </div>
+                    <h3 class="h6 text-white fw-bold mb-1">Simulação Pronta</h3>
+                    <p class="text-slate-400 extra-small mb-0 max-w-md mx-auto">
+                      Envie sua mensagem no campo abaixo (ex: <strong>"Oi"</strong>, <strong>"1"</strong>, <strong>"2"</strong>) para iniciar a interação e ver o robô responder de acordo com o fluxo.
+                    </p>
+                  </div>
+                }
+              </div>
+
+              <!-- Rodapé da Simulação (Campo de Envio de Mensagem) -->
+              <div class="whatsapp-input-bar p-3 bg-slate-900 border-top border-slate-700">
+                <form (ngSubmit)="enviarMensagemSimulada()" class="d-flex align-items-center gap-2">
+                  <input
+                    type="text"
+                    class="form-control chat-input-field py-2 px-3 shadow-none text-white"
+                    placeholder="Digite sua resposta (ex: 1, 2, opção ou mensagem)..."
+                    [(ngModel)]="userMessageInput"
+                    name="userMessageInput"
+                  />
+                  <button
+                    type="submit"
+                    class="btn btn-success px-3.5 py-2 fw-bold d-inline-flex align-items-center gap-2 rounded-3 shadow-sm"
+                    [disabled]="!userMessageInput().trim()"
+                  >
+                    <span>Enviar</span>
+                    <i class="fas fa-paper-plane"></i>
+                  </button>
+                </form>
+                <div class="text-center mt-2">
+                  <span class="text-slate-400 extra-small">
+                    💡 Digite uma opção ou responda no chat acima para testar a reação do bot. Digite <strong>0</strong> ou clique em <strong>Resetar Simulação</strong> a qualquer momento.
+                  </span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        }
+      </div>
+
+    </div>
+  </div>
+</div>

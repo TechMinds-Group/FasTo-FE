@@ -1,0 +1,220 @@
+.sg-fluxos-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--tm-bg-color, #0f172a);
+  color: #f8fafc;
+}
+
+.main-surface-card {
+  background: var(--tm-surface-color, #1e293b) !important;
+  border: 1px solid var(--tm-border-color, #334155) !important;
+  color: #f8fafc !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3) !important;
+  border-radius: 1rem !important;
+}
+
+.icon-avatar-header {
+  width: 52px;
+  height: 52px;
+  background-color: rgba(34, 197, 94, 0.15) !important;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.custom-dark-input {
+  background-color: #0f172a !important;
+  border: 1px solid #475569 !important;
+  color: #ffffff !important;
+  font-size: 0.88rem;
+
+  &:focus {
+    background-color: #0f172a !important;
+    border-color: #8b5cf6 !important;
+    box-shadow: 0 0 0 0.2rem rgba(139, 92, 246, 0.25) !important;
+  }
+}
+
+.custom-select-mobile {
+  background-color: #0f172a !important;
+  border: 1px solid #475569 !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  padding: 0.6rem 1rem;
+  border-radius: 0.5rem;
+}
+
+/* Category Filter Pills */
+.pill-btn {
+  border-radius: 50rem;
+  padding: 0.45rem 1.1rem;
+  font-weight: 600;
+  font-size: 0.82rem;
+  transition: all 0.2s ease;
+}
+
+.pill-active {
+  background-color: #8b5cf6 !important;
+  color: #ffffff !important;
+  border: 1px solid #8b5cf6 !important;
+}
+
+.pill-inactive {
+  background-color: #0f172a !important;
+  border: 1px solid #334155 !important;
+  color: #cbd5e1 !important;
+
+  &:hover {
+    background-color: #334155 !important;
+    color: #ffffff !important;
+  }
+}
+
+/* Master-Detail Navigation List */
+.flow-nav-list {
+  max-height: 72vh;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 5px;
+  }
+  &::-webkit-scrollbar-track {
+    background: #0f172a;
+    border-radius: 3px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #475569;
+    border-radius: 3px;
+  }
+}
+
+.flow-nav-item {
+  border-left: 3px solid transparent;
+  background-color: transparent;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.04);
+    border-left-color: #64748b;
+  }
+
+  &.active {
+    background-color: rgba(139, 92, 246, 0.15) !important;
+    border-left-color: #8b5cf6 !important;
+
+    h2 {
+      color: #ffffff !important;
+    }
+    i {
+      color: #8b5cf6 !important;
+      transform: translateX(2px);
+    }
+  }
+}
+
+.desfecho-banner {
+  background-color: rgba(245, 158, 11, 0.1) !important;
+  border: 1px solid rgba(245, 158, 11, 0.3) !important;
+}
+
+.variable-chip {
+  background-color: #083344 !important;
+  color: #67e8f9 !important;
+  border: 1px solid #06b6d4 !important;
+}
+
+/* REALISTIC WHATSAPP MOCKUP STYLING */
+.whatsapp-mockup-container {
+  background-color: #0b141a !important;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 0);
+  background-size: 20px 20px;
+}
+
+.whatsapp-header {
+  background-color: #111b21 !important;
+}
+
+.whatsapp-body {
+  min-height: 380px;
+  max-height: 520px;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: #0b141a;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #2a3942;
+    border-radius: 3px;
+  }
+}
+
+.chat-bubble {
+  max-width: 82%;
+  position: relative;
+  word-break: break-word;
+
+  &.left-bubble {
+    background-color: #202c33 !important;
+    border-top-left-radius: 0 !important;
+    border: 1px solid #2a3942 !important;
+  }
+
+  &.right-bubble {
+    background-color: #005c4b !important;
+    border-top-right-radius: 0 !important;
+    border: 1px solid #026c59 !important;
+  }
+}
+
+.chat-input-field {
+  background-color: #2a3942 !important;
+  border: 1px solid #3b4a54 !important;
+  color: #ffffff !important;
+  border-radius: 0.6rem !important;
+
+  &:focus {
+    background-color: #2a3942 !important;
+    border-color: #00a884 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 0 0.2rem rgba(0, 168, 132, 0.25) !important;
+  }
+
+  &::placeholder {
+    color: #8696a0 !important;
+  }
+}
+
+.actor-step-pill {
+  background-color: #182229 !important;
+  color: #8696a0 !important;
+  border: 1px solid #222d34 !important;
+  font-weight: 500;
+}
+
+.system-event-box {
+  background-color: #182229 !important;
+  border: 1px solid #222d34 !important;
+}
+
+.note-box {
+  background-color: #0c4a6e !important;
+  border: 1px solid #075985 !important;
+}
+
+.fallback-box {
+  background-color: #4c0519 !important;
+  border: 1px solid #9f1239 !important;
+}
+
+.font-tiny {
+  font-size: 0.75rem;
+}
+
+.extra-small {
+  font-size: 0.8rem;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}

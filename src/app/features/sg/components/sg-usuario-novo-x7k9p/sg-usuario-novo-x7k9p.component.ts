@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TmTextComponent, TmSelectComponent, TmToastService } from '@techminds-group/tm-angular-lib';
 import { ThemeService } from '../../../../core/services/theme.service';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -11,73 +11,64 @@ import { AuthService } from '../../../../core/services/auth.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, TmTextComponent, TmSelectComponent],
   templateUrl: './sg-usuario-novo-x7k9p.component.html',
-  styleUrl: './sg-usuario-novo-x7k9p.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  styleUrl: './sg-usuario-novo-x7k9p.component.scss'
 })
 export class SgUsuarioNovoX7k9pComponent implements OnInit {
-  private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
-  private readonly fb = inject(FormBuilder);
-  private readonly authService = inject(AuthService);
-  private readonly toastService = inject(TmToastService);
-  protected readonly themeService = inject(ThemeService);
+  private fb = inject(FormBuilder);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private authService = inject(AuthService);
+  private toastService = inject(TmToastService);
+  protected themeService = inject(ThemeService);
 
-  protected readonly empresaId = signal<string>('');
-  protected readonly nomeEmpresa = signal<string>('');
-  protected readonly salvando = signal<boolean>(false);
-  protected readonly perfilOptions = signal<{ value: string; label: string }[]>([]);
-  protected readonly perfisSelecionados = signal<string[]>([]);
+  protected empresaId = signal<string>('');
+  protected empresa = signal<any | null>(null);
+  protected niveis = signal<any[]>([]);
+  protected salvando = signal<boolean>(false);
 
-  protected readonly form: FormGroup = this.fb.group({
-    nome: ['', [Validators.required, Validators.maxLength(60)]],
-    sobrenome: ['', [Validators.required, Validators.maxLength(60)]],
-    email: ['', [Validators.required, Validators.email]],
-    senha: ['', [Validators.required]],
-    telefone: ['', [Validators.required, Validators.maxLength(15)]],
-    perfil: ['', [Validators.required]],
+  protected perfisSelecionados = signal<string[]>([]);
+
+  protected niveisOptions = computed(() =>
+    this.niveis().map(n => ({ value: n.id, label: n.nome }))
+  );
+
+  protected form: FormGroup = this.fb.group({
+    nome: ['', [Validators.required, Validators.maxLength(50)]],
+    sobrenome: ['', [Validators.maxLength(50)]],
+    email: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
+    senha: ['', [Validators.required, Validators.minLength(6)]],
+    telefone: ['', [Validators.maxLength(20)]],
+    perfil: ['', [Validators.required]]
   });
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
+    const id = this.route.snapshot.paramMap.get('empresaId');
     if (id) {
       this.empresaId.set(id);
+      this.carregarEmpresa(id);
       this.carregarNiveis(id);
     } else {
-      this.toastService.error('Identificador da empresa inválido.', 'Erro');
-      this.voltar();
-    }
-  }
-
-  private async carregarNiveis(empresaId: string): Promise<void> {
-    try {
-      this.authService.getSgNiveisAcesso(empresaId).subscribe({
-        next: (niveis) => {
-          const options = niveis.map((n: any) => ({
-            value: n.id,
-            label: n.nome,
-          }));
-          this.perfilOptions.set(options);
-          if (options.length > 0) {
-            this.perfisSelecionados.set([options[0].value]);
-            this.form.patchValue({ perfil: options[0].value });
-          }
-        },
-        error: () => {
-          this.toastService.error('Falha ao carregar níveis de acesso.', 'Erro');
-        }
-      });
-    } catch {
-      this.toastService.error('Falha ao carregar níveis de acesso.', 'Erro');
-    }
-  }
-
-  voltar(): void {
-    const id = this.empresaId();
-    if (id) {
-      this.router.navigate(['/sg-estabelecimento-detalhes-x7k9p', id]);
-    } else {
+      this.toastService.error('Empresa não especificada.', 'Erro');
       this.router.navigate(['/sg-estabelecimentos-x7k9p']);
     }
+  }
+
+  carregarEmpresa(id: string): void {
+    this.authService.getSgEmpresaById(id).subscribe({
+      next: (data) => this.empresa.set(data)
+    });
+  }
+
+  carregarNiveis(id: string): void {
+    this.authService.getSgNiveisAcesso(id).subscribe({
+      next: (data) => {
+        this.niveis.set(data || []);
+        if (data && data.length > 0) {
+          this.perfisSelecionados.set([data[0].id]);
+          this.form.patchValue({ perfil: data[0].id });
+        }
+      }
+    });
   }
 
   onPerfisChange(val: unknown): void {
@@ -86,17 +77,22 @@ export class SgUsuarioNovoX7k9pComponent implements OnInit {
       if (selected.length > 2) {
         selected = selected.slice(0, 2);
       }
-      if (selected.length === 0 && this.perfilOptions().length > 0) {
-        selected = [this.perfilOptions()[0].value];
+      if (selected.length === 0 && this.niveisOptions().length > 0) {
+        selected = [this.niveisOptions()[0].value];
       }
       this.perfisSelecionados.set(selected);
       this.form.patchValue({ perfil: selected.length > 0 ? selected[0] : '' });
     }
   }
 
+  voltar(): void {
+    this.router.navigate(['/sg-estabelecimento-detalhes-x7k9p', this.empresaId()]);
+  }
+
   async salvar(): Promise<void> {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.toastService.error('Preencha os campos obrigatórios.', 'Atenção');
       return;
     }
 
@@ -104,20 +100,21 @@ export class SgUsuarioNovoX7k9pComponent implements OnInit {
     try {
       const raw = this.form.value;
       const selected = this.perfisSelecionados();
-      const result = await this.authService.createSgUsuario(this.empresaId(), {
+      await this.authService.createSgUsuario(this.empresaId(), {
         nome: raw.nome,
-        sobrenome: raw.sobrenome,
+        sobrenome: raw.sobrenome || '',
         email: raw.email,
         senha: raw.senha,
-        telefone: (raw.telefone ?? '').replace(/\D/g, ''),
-        nivelAcessoId: selected.length > 0 ? selected[0] : (this.perfilOptions()[0]?.value || ''),
-        secundarioNivelAcessoId: selected.length > 1 ? selected[1] : null,
+        telefone: (raw.telefone || '').replace(/\D/g, ''),
+        nivelAcessoId: selected.length > 0 ? selected[0] : (this.niveisOptions()[0]?.value || ''),
+        secundarioNivelAcessoId: selected.length > 1 ? selected[1] : null
       }).toPromise();
 
-      this.toastService.success(`Usuário "${raw.nome}" cadastrado com sucesso!`, 'Sucesso');
-      this.router.navigate(['/sg-estabelecimento-detalhes-x7k9p', this.empresaId()]);
-    } catch {
-      this.toastService.error('Erro ao cadastrar usuário.', 'Erro');
+      this.toastService.success('Usuário criado com sucesso!', 'Sucesso');
+      this.voltar();
+    } catch (err: any) {
+      const msg = err?.error?.message || 'Erro ao cadastrar usuário.';
+      this.toastService.error(msg, 'Erro');
     } finally {
       this.salvando.set(false);
     }
