@@ -57,9 +57,10 @@ export class SidebarComponent implements OnInit {
     const roles = currentUser?.roles ?? [];
     const role = currentUser?.role ?? '';
     const path = this.currentPath();
-    const isSuperAdmin = role === 'SuperAdmin' || roles.includes('SuperAdmin') || currentUser?.email === 'micheladm@fasto.com' || currentUser?.email?.startsWith('micheladm') || path.includes('/sg-');
+    const isSgRoute = path.includes('/sg-');
+    const isSuperAdminUser = role === 'SuperAdmin' || roles.includes('SuperAdmin') || currentUser?.email === 'micheladm@fasto.com' || currentUser?.email?.startsWith('micheladm');
 
-    if (isSuperAdmin) {
+    if (isSgRoute && isSuperAdminUser) {
       if (path.includes('/sg-estabelecimento-')) {
         const match = path.match(/\/sg-estabelecimento-(?:detalhes|usuarios|usuario-novo|usuario-detalhes|usuario-editar|importacao)-x7k9p\/([a-f0-9-]+)/i);
         const empId = match ? match[1] : '';
