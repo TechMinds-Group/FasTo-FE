@@ -80,6 +80,10 @@
                   <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">Estado</label>
                   <p class="fw-semibold mb-0 custom-dark-text">{{ emp.estado || '—' }}</p>
                 </div>
+                <div class="col-12 mt-3 pt-3 border-top">
+                  <label class="form-label small fw-bold text-muted text-uppercase tracking-wider"><i class="fab fa-whatsapp text-success me-1"></i>Modelo de WhatsApp (Preset)</label>
+                  <p class="fw-semibold mb-0 custom-dark-text">{{ getPresetNome(emp.presetId) }}</p>
+                </div>
               </div>
             } @else {
               <div class="row g-3 mb-4">

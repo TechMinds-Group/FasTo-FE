@@ -143,12 +143,18 @@ export class SgEstabelecimentoDetalhesX7k9pComponent implements OnInit {
         cidade: emp.cidade || '',
         estado: emp.estado || '',
         planoSistemaId: emp.planoSistemaId || '',
-        presetId: '',
+        presetId: emp.presetId || '',
         assinaturaValidaInicio: emp.assinaturaValidaInicio ? this.formatDate(emp.assinaturaValidaInicio) : '',
         assinaturaValidaAte: emp.assinaturaValidaAte ? this.formatDate(emp.assinaturaValidaAte) : '',
       });
       this.modoEdicao.set(true);
     }
+  }
+
+  getPresetNome(presetId?: string): string {
+    if (!presetId) return 'Nenhum / Customizado';
+    const found = this.presetsDisponiveis().find(p => p.id === presetId);
+    return found ? `${found.icone || '📱'} ${found.nome}` : 'Modelo Aplicado';
   }
 
   cancelarEdicao(): void {
