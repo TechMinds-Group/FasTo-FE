@@ -42,6 +42,9 @@
           <tm-select formControlName="planoAssinatura" label="Plano de Assinatura *" [options]="planosOptions()" [darkMode]="themeService.isDarkMode()" class="custom-dark-text"></tm-select>
         </div>
         <div class="col-sm-6 col-12">
+          <tm-select formControlName="presetId" label="Modelo de WhatsApp (Preset)" [options]="presetsOptions()" [darkMode]="themeService.isDarkMode()" class="custom-dark-text"></tm-select>
+        </div>
+        <div class="col-sm-6 col-12">
           <tm-text formControlName="password" label="Senha Padrão do Admin *" type="password" placeholder="Admin@123" class="custom-dark-text"></tm-text>
         </div>
       </div>

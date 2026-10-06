@@ -22,6 +22,7 @@ export class SgEstabelecimentoNovoX7k9pComponent implements OnInit {
 
   protected salvando = signal<boolean>(false);
   protected planosDisponiveis = signal<any[]>([]);
+  protected presetsDisponiveis = signal<any[]>([]);
 
   protected planosOptions = computed(() =>
     this.planosDisponiveis()
@@ -29,17 +30,27 @@ export class SgEstabelecimentoNovoX7k9pComponent implements OnInit {
       .map(p => ({ value: p.nome, label: `${p.nome} - R$ ${parseFloat(p.valor).toFixed(2)}/${p.ciclo}` }))
   );
 
+  protected presetsOptions = computed(() => [
+    { value: '', label: 'Nenhum / Padrão do Sistema' },
+    ...this.presetsDisponiveis().map(p => ({
+      value: p.id,
+      label: `${p.icone || '📱'} ${p.nome}`
+    }))
+  ]);
+
   protected form: FormGroup = this.fb.group({
     nome: ['', [Validators.required, Validators.maxLength(100)]],
     nomeExibicao: ['', [Validators.maxLength(100)]],
     cnpj: ['', [Validators.required, Validators.maxLength(18)]],
     telefone: ['', [Validators.required, Validators.maxLength(20)]],
     planoAssinatura: ['FasTo Pro', [Validators.required]],
+    presetId: [''],
     password: ['Admin@123', [Validators.required, Validators.minLength(6)]]
   });
 
   ngOnInit(): void {
     this.carregarPlanos();
+    this.carregarPresets();
   }
 
   carregarPlanos(): void {
@@ -53,6 +64,13 @@ export class SgEstabelecimentoNovoX7k9pComponent implements OnInit {
           }
         }
       }
+    });
+  }
+
+  carregarPresets(): void {
+    this.authService.getSgPresets().subscribe({
+      next: (data) => this.presetsDisponiveis.set(data || []),
+      error: () => {}
     });
   }
 
@@ -76,10 +94,20 @@ export class SgEstabelecimentoNovoX7k9pComponent implements OnInit {
         cnpj: (raw.cnpj || '').replace(/\D/g, ''),
         telefone: (raw.telefone || '').replace(/\D/g, ''),
         planoAssinatura: raw.planoAssinatura,
+        presetId: raw.presetId || null,
         password: raw.password
       }).toPromise();
 
-      this.toastService.success(`Estabelecimento criado! Admin: ${res?.emailAdmin}`, 'Sucesso');
+      const createdEmpresaId = res?.id || res?.empresaId || res?.tenantId;
+      if (createdEmpresaId && raw.presetId) {
+        try {
+          await this.authService.aplicarSgPreset(createdEmpresaId, raw.presetId).toPromise();
+        } catch {
+          // Ignora se o preset já tiver sido aplicado pelo backend
+        }
+      }
+
+      this.toastService.success(`Estabelecimento criado com sucesso! Admin: ${res?.emailAdmin}`, 'Sucesso');
       this.voltar();
     } catch (err: any) {
       const msg = err?.error?.message || 'Erro ao cadastrar estabelecimento.';

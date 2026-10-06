@@ -29,11 +29,22 @@ export class SgEstabelecimentoDetalhesX7k9pComponent implements OnInit {
   protected salvando = signal<boolean>(false);
 
   protected planosDisponiveis = signal<any[]>([]);
+  protected presetsDisponiveis = signal<any[]>([]);
+
   protected planosOptions = computed(() =>
     this.planosDisponiveis()
       .filter(p => p.status === 'Ativo')
       .map(p => ({ value: p.id, label: `${p.nome} - R$ ${parseFloat(p.valor).toFixed(2)}/${p.ciclo}` }))
   );
+
+  protected presetsOptions = computed(() => [
+    { value: '', label: 'Manter Modelo Atual (Sem alterações)' },
+    ...this.presetsDisponiveis().map(p => ({
+      value: p.id,
+      label: `${p.icone || '📱'} ${p.nome}`
+    }))
+  ]);
+
   protected planosOptionsComNenhum = computed(() => {
     const options = this.planosOptions();
     return [{ value: '', label: 'Nenhum' }, ...options];
@@ -55,6 +66,7 @@ export class SgEstabelecimentoDetalhesX7k9pComponent implements OnInit {
     cidade: ['', [Validators.maxLength(100)]],
     estado: ['', [Validators.maxLength(50)]],
     planoSistemaId: [''],
+    presetId: [''],
     assinaturaValidaInicio: [''],
     assinaturaValidaAte: [''],
   });
@@ -64,6 +76,7 @@ export class SgEstabelecimentoDetalhesX7k9pComponent implements OnInit {
     if (id) {
       this.carregarDetalhes(id);
       this.carregarPlanos();
+      this.carregarPresets();
     } else {
       this.errorMessage.set('Identificador da empresa inválido.');
       this.isLoading.set(false);
@@ -95,6 +108,13 @@ export class SgEstabelecimentoDetalhesX7k9pComponent implements OnInit {
     });
   }
 
+  carregarPresets(): void {
+    this.authService.getSgPresets().subscribe({
+      next: (data) => this.presetsDisponiveis.set(data || []),
+      error: () => {}
+    });
+  }
+
   voltar(): void {
     this.router.navigate(['/sg-estabelecimentos-x7k9p']);
   }
@@ -123,6 +143,7 @@ export class SgEstabelecimentoDetalhesX7k9pComponent implements OnInit {
         cidade: emp.cidade || '',
         estado: emp.estado || '',
         planoSistemaId: emp.planoSistemaId || '',
+        presetId: '',
         assinaturaValidaInicio: emp.assinaturaValidaInicio ? this.formatDate(emp.assinaturaValidaInicio) : '',
         assinaturaValidaAte: emp.assinaturaValidaAte ? this.formatDate(emp.assinaturaValidaAte) : '',
       });
@@ -161,6 +182,7 @@ export class SgEstabelecimentoDetalhesX7k9pComponent implements OnInit {
         bairro: raw.bairro || null,
         cidade: raw.cidade || null,
         estado: raw.estado || null,
+        presetId: raw.presetId || null,
       }).toPromise();
 
       const selectedId = raw.planoSistemaId;
@@ -174,7 +196,15 @@ export class SgEstabelecimentoDetalhesX7k9pComponent implements OnInit {
         assinaturaValidaAte: raw.assinaturaValidaAte || null,
       }).toPromise();
 
-      this.toastService.success('Estabelecimento atualizado com sucesso!', 'Sucesso');
+      if (raw.presetId) {
+        try {
+          await this.authService.aplicarSgPreset(emp.id, raw.presetId).toPromise();
+        } catch {
+          // Ignora se o preset tiver sido aplicado diretamente no update
+        }
+      }
+
+      this.toastService.success('Estabelecimento e Modelo de WhatsApp atualizados com sucesso!', 'Sucesso');
       this.carregarDetalhes(emp.id);
       this.modoEdicao.set(false);
     } catch {

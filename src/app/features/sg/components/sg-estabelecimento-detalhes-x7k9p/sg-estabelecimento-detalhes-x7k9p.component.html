@@ -134,6 +134,14 @@
                   </div>
                 </div>
               </div>
+              <div class="border-top pt-4 mt-4">
+                <h5 class="fw-bold mb-3 custom-dark-text"><i class="fab fa-whatsapp text-success me-2"></i>Modelo de WhatsApp (Preset)</h5>
+                <div class="row g-3">
+                  <div class="col-12">
+                    <tm-select formControlName="presetId" label="Aplicar Modelo / Preset no WhatsApp" [options]="presetsOptions()" [darkMode]="themeService.isDarkMode()" class="custom-dark-text"></tm-select>
+                  </div>
+                </div>
+              </div>
             }
 
             @if (modoEdicao()) {
