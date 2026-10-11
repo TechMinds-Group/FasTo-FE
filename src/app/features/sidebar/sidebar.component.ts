@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, output, signal, inject, computed, ViewChild, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, output, signal, inject, computed, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs';
@@ -6,7 +6,6 @@ import { TmSidebarComponent, MenuItem, ProfileMenuItem, SidebarUser } from '@tec
 import { ThemeService } from '../../core/services/theme.service';
 import { AuthService } from '../../core/services/auth.service';
 import { LanguageService } from '../../core/services/language.service';
-import { EstabelecimentoService } from '../../core/services/estabelecimento.service';
 import { ALL_SIDEBAR_MENU_ITEMS, VISIBLE_SIDEBAR_MENUS, PROFILE_MENU_ITEMS, filterMenuByRoles } from '../../core/config/menu.config';
 import { SidebarModalIdiomaComponent } from './components/modais/sidebar-modal-idioma/sidebar-modal-idioma.component';
 
@@ -18,16 +17,14 @@ import { SidebarModalIdiomaComponent } from './components/modais/sidebar-modal-i
   styleUrl: './sidebar.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SidebarComponent implements OnInit {
+export class SidebarComponent {
   public themeService = inject(ThemeService);
   private authService = inject(AuthService);
   private languageService = inject(LanguageService);
-  private estabelecimentoService = inject(EstabelecimentoService);
   private router = inject(Router);
   protected isCollapsed = signal(false);
   protected avatarColor = signal('0D8ABC');
   protected showIdiomaModal = signal(false);
-  protected rotuloAtendentePlural = signal<string>('Profissionais');
   protected currentPath = signal<string>(window.location.pathname);
   @ViewChild(TmSidebarComponent) sidebar!: TmSidebarComponent;
 
@@ -37,19 +34,6 @@ export class SidebarComponent implements OnInit {
     ).subscribe((event: NavigationEnd) => {
       this.currentPath.set(event.urlAfterRedirects || event.url);
     });
-  }
-
-  async ngOnInit(): Promise<void> {
-    try {
-      const info = await this.estabelecimentoService.carregarInfo();
-      if (info && info.rotuloAtendente) {
-        const singular = info.rotuloAtendente.trim();
-        const plural = singular.endsWith('s') ? singular : `${singular}s`;
-        this.rotuloAtendentePlural.set(plural);
-      }
-    } catch {
-      // Fallback para 'Profissionais'
-    }
   }
 
   protected readonly menuItems = computed<MenuItem[]>(() => {
@@ -128,25 +112,67 @@ export class SidebarComponent implements OnInit {
       ];
     }
 
-    const rotuloAtend = this.rotuloAtendentePlural();
+    const acessos = (currentUser as any)?.acessosMenu || (currentUser as any)?.AcessosMenu || {};
+    const gestaoSub = acessos?.gestao_sub || {};
+    const servicosSub = acessos?.servicos_sub || {};
+    const agendamentoSub = acessos?.agendamento_online_sub || {};
+    const configuracoesSub = acessos?.configuracoes_sub || {};
 
-    const items = ALL_SIDEBAR_MENU_ITEMS.map((item) => {
-      if (item.label === 'Gestão' && item.subItems) {
-        const updatedSub = item.subItems.map((sub) => {
-          if (sub.route === '/gestao/profissionais') {
-            return { ...sub, label: rotuloAtend };
-          }
-          return sub;
-        });
-        return { ...item, subItems: updatedSub };
-      }
-      return item;
-    });
-
-    return filterMenuByRoles(
-      items.filter((item) => VISIBLE_SIDEBAR_MENUS.includes(item.label)),
+    const filteredByRoles = filterMenuByRoles(
+      ALL_SIDEBAR_MENU_ITEMS.filter(item =>
+        VISIBLE_SIDEBAR_MENUS.includes(item.label)
+      ),
       roles,
     );
+
+    return filteredByRoles
+      .filter(item => {
+        if (item.label === 'Dashboard' && acessos.dashboard === false) return false;
+        if (item.label === 'Agenda' && acessos.agenda === false) return false;
+        if (item.label === 'Gestão' && acessos.gestao === false) return false;
+        if (item.label === 'Serviços' && acessos.servicos === false) return false;
+        if (item.label === 'Agendamento Online' && acessos.agendamento_online === false) return false;
+        if (item.label === 'Configurações' && acessos.configuracoes === false) return false;
+        return true;
+      })
+      .map(item => {
+        if (!item.subItems) return item;
+
+        let filteredSubs = [...item.subItems];
+
+        if (item.label === 'Gestão') {
+          filteredSubs = filteredSubs.filter(sub => {
+            if (sub.label === 'Clientes' && gestaoSub.clientes === false) return false;
+            if (sub.label === 'Assinantes' && gestaoSub.assinantes === false) return false;
+            if (sub.label === 'Profissionais' && (gestaoSub.profissionais === false || gestaoSub.atendentes === false)) return false;
+            if (sub.label === 'Usuários' && gestaoSub.usuarios === false) return false;
+            return true;
+          });
+        } else if (item.label === 'Serviços') {
+          filteredSubs = filteredSubs.filter(sub => {
+            if (sub.label === 'Catálogo' && servicosSub.catalogo === false) return false;
+            if (sub.label === 'Planos' && servicosSub.planos === false) return false;
+            return true;
+          });
+        } else if (item.label === 'Agendamento Online') {
+          filteredSubs = filteredSubs.filter(sub => {
+            if (sub.label === 'Link do Cliente' && agendamentoSub.link_cliente === false) return false;
+            return true;
+          });
+        } else if (item.label === 'Configurações') {
+          filteredSubs = filteredSubs.filter(sub => {
+            if (sub.label === 'Estabelecimento' && configuracoesSub.estabelecimento === false) return false;
+            if (sub.label === 'Horários' && configuracoesSub.estabelecimento === false) return false;
+            if (sub.label === 'WhatsApp' && configuracoesSub.whatsapp === false) return false;
+            if (sub.label === 'Minha Assinatura' && configuracoesSub.assinatura === false) return false;
+            if (sub.label === 'Logs do Sistema' && configuracoesSub.logs === false) return false;
+            return true;
+          });
+        }
+
+        return { ...item, subItems: filteredSubs };
+      })
+      .filter(item => !item.subItems || item.subItems.length > 0);
   });
 
   protected readonly profileMenuItems = computed<ProfileMenuItem[]>(() => {

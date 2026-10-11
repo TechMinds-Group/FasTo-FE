@@ -7,28 +7,20 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { TmTimeComponent, TmToastService } from '@techminds-group/tm-angular-lib';
+import { TmToastService } from '@techminds-group/tm-angular-lib';
 import {
   EstabelecimentoInfo,
   EstabelecimentoService,
   obterIconeAleatorioCapa,
   obterIconeAleatorioLogo,
+  validarImagemArquivo,
 } from '../../../../core/services/estabelecimento.service';
-import {
-  DiaFuncionamento,
-  DIAS_SEMANA_ESTABELECIMENTO,
-} from '../../../../core/models/configuracoes/horario-estabelecimento.model';
-import {
-  ClientesService,
-  ImportacaoClienteResult,
-} from '../../../../core/services/clientes.service';
 
 /**
- * Componente de Gestão do Estabelecimento (RF-32).
- * Contém blocos colapsáveis de configuração (ex.: Horário de Funcionamento, Importação de Dados).
+ * Componente de Gestão do Perfil e Identidade do Estabelecimento.
  */
 @Component({
   selector: 'app-estabelecimento-config',
@@ -40,33 +32,12 @@ import {
 })
 export class EstabelecimentoConfigComponent implements OnInit {
   private readonly estabelecimentoService = inject(EstabelecimentoService);
-  private readonly clientesService = inject(ClientesService);
   private readonly toastService = inject(TmToastService);
   private readonly router = inject(Router);
+  private readonly location = inject(Location);
   private readonly cdr = inject(ChangeDetectorRef);
 
-  protected readonly diasFuncionamento = signal<DiaFuncionamento[]>([]);
-  protected readonly salvando = signal(false);
-
-  /** Sinais para o bloco de Importação de Dados */
-  protected readonly importacaoExpandido = signal(false);
-  protected readonly plataformaSelecionada = signal<'tua-agenda' | null>('tua-agenda');
-  protected readonly categoriaSelecionada = signal<'clientes' | null>('clientes');
-  protected readonly arquivoSelecionado = signal<File | null>(null);
-  protected readonly importando = signal(false);
-  protected readonly resultadoImportacao = signal<ImportacaoClienteResult | null>(null);
-  protected readonly exibirModalDuplicados = signal(false);
-
-  protected abrirModalDuplicados(): void {
-    this.exibirModalDuplicados.set(true);
-  }
-
-  protected fecharModalDuplicados(): void {
-    this.exibirModalDuplicados.set(false);
-  }
-
   /** Sinais para a identidade do estabelecimento */
-  protected readonly infoExpandido = signal(false);
   protected readonly salvandoInfo = signal(false);
   protected readonly estabelecimentoInfo = signal<EstabelecimentoInfo>({
     nome: '',
@@ -84,8 +55,6 @@ export class EstabelecimentoConfigComponent implements OnInit {
     cidade: '',
     estado: '',
     endereco: '',
-    rotuloAtendente: 'Atendente',
-    rotuloServico: 'Tipo de Atendimento',
   });
 
   protected readonly estabelecimentoInfoOriginal = signal<EstabelecimentoInfo>({
@@ -104,12 +73,23 @@ export class EstabelecimentoConfigComponent implements OnInit {
     cidade: '',
     estado: '',
     endereco: '',
-    rotuloAtendente: 'Atendente',
-    rotuloServico: 'Tipo de Atendimento',
   });
+
+  protected readonly diasValidadeLink = signal<number>(5);
+  protected readonly diasValidadeLinkOriginal = signal<number>(5);
+
+  /** Minutos de reserva do slot da lista de espera (RN-076 — default 15). */
+  protected readonly minutosReservaListaEspera = signal<number>(15);
+  protected readonly minutosReservaListaEsperaOriginal = signal<number>(15);
 
   protected readonly temAlteracoesInfo = computed(() => {
     if (this.logoFile() !== null || this.capaFile() !== null || this.logoRemovida() || this.capaRemovida()) {
+      return true;
+    }
+    if (this.diasValidadeLink() !== this.diasValidadeLinkOriginal()) {
+      return true;
+    }
+    if (this.minutosReservaListaEspera() !== this.minutosReservaListaEsperaOriginal()) {
       return true;
     }
     const cur = this.estabelecimentoInfo();
@@ -129,7 +109,7 @@ export class EstabelecimentoConfigComponent implements OnInit {
     );
   });
 
-  /** Arquivos pendentes de upload (nunca enviados como base64) e previews locais */
+  /** Arquivos pendentes de upload e previews locais */
   protected readonly logoFile = signal<File | null>(null);
   protected readonly capaFile = signal<File | null>(null);
   protected readonly logoPreview = signal('');
@@ -137,7 +117,7 @@ export class EstabelecimentoConfigComponent implements OnInit {
   protected readonly logoRemovida = signal(false);
   protected readonly capaRemovida = signal(false);
 
-  /** Imagem exibida: preview do arquivo selecionado, ou URL do servidor (ou vazio se removida). */
+  /** Imagem exibida: preview do arquivo selecionado, ou URL do servidor */
   protected readonly logoVisivel = computed(() => {
     if (this.logoFile()) {
       return this.logoPreview();
@@ -169,9 +149,18 @@ export class EstabelecimentoConfigComponent implements OnInit {
   protected readonly buscandoCep = signal(false);
   private ultimoCepBuscado = '';
 
+  async ngOnInit(): Promise<void> {
+    await this.carregarInfo();
+  }
+
   protected atualizarCampo(campo: keyof EstabelecimentoInfo, valor: string): void {
+    let valorProcessado = valor;
+    if (campo === 'nomeExibicao' && valorProcessado && valorProcessado.length > 20) {
+      valorProcessado = valorProcessado.substring(0, 20);
+    }
+
     this.estabelecimentoInfo.update((prev) => {
-      const next = { ...prev, [campo]: valor };
+      const next = { ...prev, [campo]: valorProcessado };
       return next;
     });
 
@@ -242,18 +231,35 @@ export class EstabelecimentoConfigComponent implements OnInit {
     this.estabelecimentoInfo.update((prev) => ({ ...prev, endereco: enderecoFormatado }));
   }
 
-  async ngOnInit(): Promise<void> {
-    await this.carregarInfo();
+  protected atualizarDiasValidadeLink(valor: number | string): void {
+    const parsed = typeof valor === 'number' ? valor : parseInt(valor, 10);
+    this.diasValidadeLink.set(isNaN(parsed) ? 1 : Math.max(1, parsed));
+    this.cdr.markForCheck();
+  }
+
+  /** RN-076: inteiro ≥ 1; default 15 quando o campo é esvaziado. */
+  protected atualizarMinutosReserva(valor: number | string): void {
+    const parsed = typeof valor === 'number' ? valor : parseInt(valor, 10);
+    this.minutosReservaListaEspera.set(isNaN(parsed) ? 15 : Math.max(1, parsed));
+    this.cdr.markForCheck();
   }
 
   protected async carregarInfo(): Promise<void> {
     try {
-      const data = await this.estabelecimentoService.carregarInfo();
+      const [data, dias, minutos] = await Promise.all([
+        this.estabelecimentoService.carregarInfo(),
+        this.estabelecimentoService.carregarValidadeLink(),
+        this.estabelecimentoService.carregarMinutosReservaListaEspera(),
+      ]);
       if (data) {
         this.estabelecimentoInfo.set(structuredClone(data));
         this.montarEnderecoCompleto();
         this.estabelecimentoInfoOriginal.set(structuredClone(this.estabelecimentoInfo()));
       }
+      this.diasValidadeLink.set(dias);
+      this.diasValidadeLinkOriginal.set(dias);
+      this.minutosReservaListaEspera.set(minutos);
+      this.minutosReservaListaEsperaOriginal.set(minutos);
       this.resetImagens();
       this.cdr.markForCheck();
     } catch {
@@ -264,6 +270,8 @@ export class EstabelecimentoConfigComponent implements OnInit {
   protected cancelarAlteracoesInfo(): void {
     const orig = this.estabelecimentoInfoOriginal();
     this.estabelecimentoInfo.set(structuredClone(orig));
+    this.diasValidadeLink.set(this.diasValidadeLinkOriginal());
+    this.minutosReservaListaEspera.set(this.minutosReservaListaEsperaOriginal());
     this.resetImagens();
     this.cdr.markForCheck();
   }
@@ -283,6 +291,11 @@ export class EstabelecimentoConfigComponent implements OnInit {
       return;
     }
 
+    if (!validarImagemArquivo(arquivo, this.toastService)) {
+      input.value = '';
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = () => {
       this.logoPreview.set(reader.result as string);
@@ -297,6 +310,11 @@ export class EstabelecimentoConfigComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     const arquivo = input.files?.[0];
     if (!arquivo) {
+      return;
+    }
+
+    if (!validarImagemArquivo(arquivo, this.toastService)) {
+      input.value = '';
       return;
     }
 
@@ -347,6 +365,16 @@ export class EstabelecimentoConfigComponent implements OnInit {
         capaUrl: this.capaRemovida() ? '' : capaArquivo ? novasUrls.capaUrl : info.capaUrl,
       });
 
+      if (this.diasValidadeLink() !== this.diasValidadeLinkOriginal()) {
+        await this.estabelecimentoService.salvarValidadeLink(this.diasValidadeLink());
+        this.diasValidadeLinkOriginal.set(this.diasValidadeLink());
+      }
+
+      if (this.minutosReservaListaEspera() !== this.minutosReservaListaEsperaOriginal()) {
+        await this.estabelecimentoService.salvarMinutosReservaListaEspera(this.minutosReservaListaEspera());
+        this.minutosReservaListaEsperaOriginal.set(this.minutosReservaListaEspera());
+      }
+
       const atualizado = await this.estabelecimentoService.carregarInfo();
       if (atualizado) {
         this.estabelecimentoInfo.set(structuredClone(atualizado));
@@ -385,6 +413,7 @@ export class EstabelecimentoConfigComponent implements OnInit {
   }
 
   protected voltar(): void {
-    this.router.navigate(['/configuracoes']);
+    this.location.back();
   }
 }
+

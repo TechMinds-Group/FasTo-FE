@@ -1,0 +1,125 @@
+<div class="container mt-5 mb-5">
+  @if (categoria(); as c) {
+    <!-- Header: Voltar + Nome da Categoria + Subtítulo -->
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
+      <div class="d-flex align-items-center gap-3">
+        <button
+          (click)="voltar()"
+          class="btn btn-light shadow-sm rounded-circle p-0 d-flex align-items-center justify-content-center btn-voltar"
+          title="Voltar"
+        >
+          <i class="fas fa-arrow-left custom-dark-text"></i>
+        </button>
+
+        <div>
+          <h2 class="h4 mb-0 fw-bold custom-dark-text">{{ c.nome }}</h2>
+          <span class="text-muted small custom-dark-text">Detalhes da Categoria</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grid Principal -->
+    <div class="row g-4 mb-5">
+      <div class="col-xl-8 col-12">
+        <div class="card border-0 shadow-sm p-4 details-card custom-dark-card rounded-4">
+
+          <!-- 1. Header do Perfil (Avatar/Emoji e Nome da Categoria) -->
+          <div class="d-flex align-items-center gap-3 border-bottom pb-4 mb-4">
+            @if (c.icone) {
+              <span
+                class="categoria-emoji d-inline-flex align-items-center justify-content-center rounded-3 border bg-body-tertiary flex-shrink-0"
+                [title]="c.nome"
+              >{{ c.icone }}</span>
+            } @else {
+              <span class="avatar-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center flex-shrink-0" title="Sem ícone">
+                <i class="fas fa-tag fs-3"></i>
+              </span>
+            }
+            <div>
+              <h2 class="h3 fw-bold mb-0 custom-dark-text">{{ c.nome }}</h2>
+            </div>
+          </div>
+
+          <!-- 2. Informações Cadastrais -->
+          <div class="row g-4">
+            <!-- Status -->
+            <div class="col-sm-6 col-12">
+              <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">Status</label>
+              <div class="mt-1">
+                @if (c.status === 'Ativo') {
+                  <span class="badge border border-success-subtle bg-success-subtle text-success px-3 py-1.5 rounded-pill fw-semibold">
+                    <i class="fas fa-check-circle me-1"></i>Ativo
+                  </span>
+                } @else {
+                  <span class="badge border border-danger-subtle bg-danger-subtle text-danger px-3 py-1.5 rounded-pill fw-semibold">
+                    <i class="fas fa-times-circle me-1"></i>Inativo
+                  </span>
+                }
+              </div>
+            </div>
+
+            <!-- Ordem -->
+            <div class="col-sm-6 col-12">
+              <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">Ordem</label>
+              <p class="fw-semibold mb-0 custom-dark-text">
+                <i class="fas fa-list-ol text-info me-2"></i>{{ c.ordem }}
+              </p>
+            </div>
+
+            <!-- Quantidade de Serviços -->
+            <div class="col-sm-6 col-12">
+              <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">Quantidade de Serviços</label>
+              <p class="fw-semibold mb-0 custom-dark-text">
+                <i class="fas fa-concierge-bell text-info me-2"></i>{{ c.quantidadeServicos }} serviço(s)
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coluna Direita: Card Ações Rápidas -->
+      <div class="col-xl-4 col-12">
+        <div class="card border-0 shadow-sm p-4 actions-card custom-dark-card rounded-4">
+          <h4 class="h5 fw-bold mb-4 custom-dark-text">
+            <i class="fas fa-sliders-h me-2 text-primary"></i>Ações Rápidas
+          </h4>
+
+          <div class="d-grid gap-3">
+            <button
+              type="button"
+              (click)="verServicos()"
+              class="btn btn-outline-primary py-2.5 fw-bold w-100 transition-all custom-action-btn"
+            >
+              <i class="fas fa-concierge-bell me-2"></i>Ver Serviços ({{ c.quantidadeServicos }})
+            </button>
+
+            <button
+              type="button"
+              (click)="editar()"
+              class="btn btn-primary py-2.5 fw-bold w-100 transition-all custom-action-btn"
+            >
+              <i class="fas fa-edit me-2"></i>Editar Categoria
+            </button>
+
+            <button
+              type="button"
+              (click)="excluir()"
+              class="btn btn-outline-danger py-2.5 fw-bold w-100 transition-all custom-action-btn"
+            >
+              <i class="fas fa-trash-can me-2"></i>Excluir Categoria
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+@if (categoria(); as c) {
+  <app-categorias-modal-excluir
+    [(show)]="showModalExcluir"
+    [categoria]="c"
+    (confirm)="confirmarExcluir()"
+    (cancel)="cancelarExclusao()"
+  />
+}

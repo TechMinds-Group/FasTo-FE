@@ -12,4 +12,8 @@ export interface PlanoFasToEstado {
   limiteProfissionais: number;
   usoClientes: number;
   limiteClientes: number;
+  cnpj?: string;
+  telefone?: string;
+  email?: string;
 }
+

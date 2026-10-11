@@ -21,10 +21,6 @@
   font-size: 0.75rem;
 }
 
-.shrink-0 {
-  flex-shrink: 0;
-}
-
 .custom-dark-card {
   background-color: #ffffff;
 }
@@ -46,11 +42,35 @@
 
   .custom-dark-text { color: #ffffff !important; }
 
-  label { color: rgba(255, 255, 255, 0.7) !important; }
+  label,
+  .form-label {
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+
+  .text-muted,
+  span.text-muted {
+    color: #a3b1c2 !important;
+  }
+
+  .logo-preview-box {
+    background-color: #1c2128 !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+
+    i {
+      color: #a3b1c2 !important;
+    }
+  }
 
   .form-control {
     background-color: #0d1117;
     border-color: rgba(255, 255, 255, 0.1);
     color: #c9d1d9;
+  }
+
+  tm-text {
+    ::ng-deep label,
+    ::ng-deep .form-label {
+      color: rgba(255, 255, 255, 0.9) !important;
+    }
   }
 }

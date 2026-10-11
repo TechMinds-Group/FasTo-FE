@@ -77,15 +77,20 @@ export class ProfissionalDetalhesComponent implements OnInit, AfterViewInit {
   /** Controla se toda a tela está em modo de edição ou somente leitura. */
   protected readonly modoEdicao = signal<boolean>(false);
   protected readonly salvando = signal<boolean>(false);
+  protected readonly carregando = signal<boolean>(true);
 
   protected readonly servicosOptions = signal<TmSelectOption[]>([]);
   protected readonly planosOptions = signal<TmSelectOption[]>([]);
   protected readonly fotoFile = signal<File | null>(null);
   protected readonly fotoPreview = signal<string>('');
+  protected readonly fotoRemovida = signal<boolean>(false);
 
   protected readonly fotoVisivel = computed(() => {
     if (this.fotoFile()) {
       return this.fotoPreview();
+    }
+    if (this.fotoRemovida()) {
+      return '';
     }
     const p = this.profissional();
     return p?.fotoUrl ? this.estabelecimentoService.resolverUrl(p.fotoUrl) : '';
@@ -117,6 +122,7 @@ export class ProfissionalDetalhesComponent implements OnInit, AfterViewInit {
   }
 
   protected habilitarEdicao(): void {
+    if (this.carregando()) return;
     const p = this.profissional();
     if (p) {
       this.preencherFormulario(p);
@@ -139,6 +145,7 @@ export class ProfissionalDetalhesComponent implements OnInit, AfterViewInit {
     }
     this.fotoFile.set(null);
     this.fotoPreview.set('');
+    this.fotoRemovida.set(false);
     this.modoEdicao.set(false);
   }
 
@@ -202,14 +209,25 @@ export class ProfissionalDetalhesComponent implements OnInit, AfterViewInit {
     }
   }
 
+  protected triggerFotoUpload(input: HTMLInputElement): void {
+    input.click();
+  }
+
+  protected removerFoto(): void {
+    this.fotoFile.set(null);
+    this.fotoPreview.set('');
+    this.fotoRemovida.set(true);
+  }
+
   protected onFotoSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const file = input.files[0];
-      if (file.size > 5 * 1024 * 1024) {
-        this.toastService.error('A imagem de perfil deve ter no máximo 5MB.', 'Erro');
+      if (file.size > 3 * 1024 * 1024) {
+        this.toastService.error('A imagem de perfil deve ter no máximo 3MB.', 'Erro');
         return;
       }
+      this.fotoRemovida.set(false);
       this.fotoFile.set(file);
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -252,8 +270,10 @@ export class ProfissionalDetalhesComponent implements OnInit, AfterViewInit {
         secundarioNivelAcessoId: p.secundarioNivelAcessoId ?? null,
       });
 
-      // 2. Foto (se alterada)
-      if (this.fotoFile()) {
+      // 2. Foto (se removida ou alterada)
+      if (this.fotoRemovida()) {
+        await this.gestaoUsuariosService.removerFoto(p.id);
+      } else if (this.fotoFile()) {
         await this.gestaoUsuariosService.salvarFoto(p.id, this.fotoFile()!);
       }
 
@@ -274,10 +294,11 @@ export class ProfissionalDetalhesComponent implements OnInit, AfterViewInit {
       this.toastService.success('Profissional e horários atualizados com sucesso!', 'Sucesso');
 
       // Recarregar dados atualizados
-      await this.carregarDados(p.id);
-      this.modoEdicao.set(false);
       this.fotoFile.set(null);
       this.fotoPreview.set('');
+      this.fotoRemovida.set(false);
+      await this.carregarDados(p.id);
+      this.modoEdicao.set(false);
     } catch (err) {
       console.error('Erro ao salvar alterações do profissional', err);
     } finally {
@@ -315,27 +336,36 @@ export class ProfissionalDetalhesComponent implements OnInit, AfterViewInit {
   }
 
   private async carregarDados(id: string): Promise<void> {
+    this.carregando.set(true);
     try {
-      await this.gestaoUsuariosService.carregarUsuarios();
+      if (this.gestaoUsuariosService.usuarios().length === 0) {
+        await this.gestaoUsuariosService.carregarUsuarios();
+      }
       const user = this.gestaoUsuariosService.usuarios().find((u) => u.id === id);
       if (!user) {
         this.toastService.error('Profissional não encontrado.', 'Erro');
         this.voltar();
         return;
       }
-      this.profissional.set(user);
 
       await Promise.all([
-        this.carregarAgendamentos(id),
         this.carregarAtuacao(id),
         this.carregarServicosOptions(),
         this.carregarPlanosOptions(),
+        this.carregarAgendamentos(id),
       ]);
+
+      this.profissional.set(user);
+      if (this.modoEdicao()) {
+        this.preencherFormulario(user);
+      }
     } catch (err) {
       console.error('Erro ao carregar detalhes do profissional', err);
       if (!this.profissional()) {
         this.voltar();
       }
+    } finally {
+      this.carregando.set(false);
     }
   }
 
@@ -376,6 +406,10 @@ export class ProfissionalDetalhesComponent implements OnInit, AfterViewInit {
           .map((planoId) => planos.find((p) => p.id === planoId)?.nome)
           .filter((nome): nome is string => !!nome),
       );
+
+      if (this.modoEdicao()) {
+        this.form.patchValue({ servicoIds: servIds, planoIds: planIds });
+      }
     } catch (err) {
       console.error('Erro ao carregar atuação do profissional', err);
       this.servicoIdsAtendidos.set([]);

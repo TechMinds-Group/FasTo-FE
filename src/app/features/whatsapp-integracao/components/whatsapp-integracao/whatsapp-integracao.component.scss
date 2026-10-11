@@ -190,7 +190,10 @@
 }
 
 /* Regras de Tema Escuro */
-:host-context([data-theme='dark']) {
+:host-context([data-theme='dark']),
+:host-context([data-bs-theme='dark']),
+:host-context(.dark-theme),
+:host-context(.dark) {
   .collapsible-trigger:hover {
     background-color: rgba(255, 255, 255, 0.03) !important;
   }

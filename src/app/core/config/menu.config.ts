@@ -16,6 +16,12 @@ export const ALL_SIDEBAR_MENU_ITEMS: MenuItem[] = [
     roles: ['Administrador', 'Profissional'],
   },
   {
+    label: 'Solicitações',
+    icon: 'fas fa-inbox',
+    route: '/solicitacoes',
+    roles: ['Administrador'],
+  },
+  {
     label: 'Gestão',
     icon: 'fas fa-users',
     roles: ['Administrador', 'Profissional'],
@@ -26,10 +32,13 @@ export const ALL_SIDEBAR_MENU_ITEMS: MenuItem[] = [
     ],
   },
   {
-    label: 'Serviços',
-    icon: 'fas fa-concierge-bell',
-    route: '/servicos/catalogo',
+    label: 'Catálogo',
+    icon: 'fas fa-book',
     roles: ['Administrador', 'Profissional'],
+    subItems: [
+      { label: 'Categorias', icon: 'fas fa-tags', route: '/catalogo/categorias', roles: ['Administrador'] },
+      { label: 'Serviços', icon: 'fas fa-concierge-bell', route: '/servicos/catalogo' },
+    ],
   },
   {
     label: 'Configurações',
@@ -56,8 +65,9 @@ export const ALL_SIDEBAR_MENU_ITEMS: MenuItem[] = [
 export const VISIBLE_SIDEBAR_MENUS: string[] = [
   'Dashboard',
   'Agenda',
+  'Solicitações',
   'Gestão',
-  'Serviços',
+  'Catálogo',
   'Configurações',
   'Sair',
 ];

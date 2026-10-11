@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { ServicoDisponivel } from '../../../../../core/models/agendamento-publico/agendamento-publico.model';
+import { formatarPrecoServico } from '../../../services/formatador-preco-servico';
 
 @Component({
   selector: 'app-passo-servico',
@@ -12,8 +13,5 @@ export class PassoServicoComponent {
   readonly servicos = input.required<ServicoDisponivel[]>();
   readonly selecionado = output<ServicoDisponivel>();
 
-  formatarPreco(preco?: number | null): string {
-    if (!preco || preco <= 0) return 'Sob Consulta';
-    return preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-  }
+  protected readonly formatarPrecoServico = formatarPrecoServico;
 }

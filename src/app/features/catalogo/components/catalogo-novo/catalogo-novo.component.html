@@ -15,12 +15,120 @@
       <div class="card border-0 shadow-sm p-4 custom-dark-card">
         <form [formGroup]="form" (ngSubmit)="salvar()">
           <div class="row g-3">
+              <!-- Imagens do Serviço (até 3 imagens) -->
+              <div class="col-12 mb-3">
+                <label class="form-label fw-bold custom-dark-text small mb-2">
+                  Imagens do Serviço <span class="fw-normal text-muted">(a 1ª é a principal exibida primeiro)</span>
+                </label>
+                <div class="row g-3">
+                  <!-- Slot 1 (Principal) -->
+                  <div class="col-12 col-sm-4">
+                    <span class="extra-small text-muted fw-bold d-block mb-1">Foto Principal</span>
+                    <input #inputImg1 type="file" class="d-none" accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif" (change)="onImagemSelected($event, 1)" />
+                    <div class="d-flex align-items-center gap-2">
+                      <div
+                        class="logo-preview-box border overflow-hidden position-relative shrink-0 d-flex align-items-center justify-content-center cursor-pointer image-upload-zone mx-auto mx-sm-0"
+                        style="width: 80px; height: 80px; min-width: 80px; min-height: 80px; border-radius: 12px !important; background-size: cover; background-position: center;"
+                        [style.backgroundImage]="imagemVisivel1() ? 'url(' + imagemVisivel1() + ')' : 'none'"
+                        (click)="triggerUpload(inputImg1)"
+                        title="Foto principal (exibida primeiro no menu)"
+                      >
+                        @if (!imagemVisivel1()) {
+                          <i class="fas fa-scissors text-muted fs-3"></i>
+                        }
+                        <div class="image-upload-overlay d-flex flex-column align-items-center justify-content-center text-center p-1">
+                          <i class="fas fa-camera fs-5"></i>
+                        </div>
+                      </div>
+                      <div class="flex-grow-1">
+                        <span class="extra-small text-muted">Foto principal do serviço.</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Slot 2 (Opcional - só exibe quando acionado) -->
+                  @if (mostrarSlot2() || imagemUrl2()) {
+                    <div class="col-12 col-sm-4">
+                      <span class="extra-small text-muted fw-bold d-block mb-1">Foto 2 (Opcional)</span>
+                      <input #inputImg2 type="file" class="d-none" accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif" (change)="onImagemSelected($event, 2)" />
+                      <div class="d-flex align-items-center gap-2">
+                        <div
+                          class="logo-preview-box border overflow-hidden position-relative shrink-0 d-flex align-items-center justify-content-center cursor-pointer image-upload-zone mx-auto mx-sm-0"
+                          style="width: 80px; height: 80px; min-width: 80px; min-height: 80px; border-radius: 12px !important; background-size: cover; background-position: center;"
+                          [style.backgroundImage]="imagemVisivel2() ? 'url(' + imagemVisivel2() + ')' : 'none'"
+                          (click)="triggerUpload(inputImg2)"
+                          title="Foto 2 (segunda foto no carrossel de 3s)"
+                        >
+                          @if (!imagemVisivel2()) {
+                            <i class="fas fa-image text-muted fs-3"></i>
+                          }
+                          <div class="image-upload-overlay d-flex flex-column align-items-center justify-content-center text-center p-1">
+                            <i class="fas fa-camera fs-5"></i>
+                          </div>
+                        </div>
+                        <div class="flex-grow-1">
+                          <span class="extra-small text-muted">Passa após 3s no menu.</span>
+                        </div>
+                      </div>
+                    </div>
+                  }
+
+                  <!-- Slot 3 (Opcional - só exibe quando acionado) -->
+                  @if (mostrarSlot3() || imagemUrl3()) {
+                    <div class="col-12 col-sm-4">
+                      <span class="extra-small text-muted fw-bold d-block mb-1">Foto 3 (Opcional)</span>
+                      <input #inputImg3 type="file" class="d-none" accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif" (change)="onImagemSelected($event, 3)" />
+                      <div class="d-flex align-items-center gap-2">
+                        <div
+                          class="logo-preview-box border overflow-hidden position-relative shrink-0 d-flex align-items-center justify-content-center cursor-pointer image-upload-zone mx-auto mx-sm-0"
+                          style="width: 80px; height: 80px; min-width: 80px; min-height: 80px; border-radius: 12px !important; background-size: cover; background-position: center;"
+                          [style.backgroundImage]="imagemVisivel3() ? 'url(' + imagemVisivel3() + ')' : 'none'"
+                          (click)="triggerUpload(inputImg3)"
+                          title="Foto 3 (terceira foto no carrossel de 3s)"
+                        >
+                          @if (!imagemVisivel3()) {
+                            <i class="fas fa-image text-muted fs-3"></i>
+                          }
+                          <div class="image-upload-overlay d-flex flex-column align-items-center justify-content-center text-center p-1">
+                            <i class="fas fa-camera fs-5"></i>
+                          </div>
+                        </div>
+                        <div class="flex-grow-1">
+                          <span class="extra-small text-muted">Terceira foto no carrossel.</span>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+
+                <div class="d-flex flex-column gap-2 mt-3 w-100">
+                  @if (mostrarSlot3() || imagemUrl3() || mostrarSlot2() || imagemUrl2() || imagemUrl()) {
+                    <button
+                      type="button"
+                      class="btn btn-outline-danger py-2.5 px-4 rounded-3 fw-bold w-100 w-sm-auto shadow-sm"
+                      (click)="removerUltimaFoto()"
+                    >
+                      <i class="fas fa-trash me-2"></i>Remover foto
+                    </button>
+                  }
+                  @if (!mostrarSlot2() || !mostrarSlot3()) {
+                    <button
+                      type="button"
+                      class="btn btn-outline-primary py-2.5 px-4 rounded-3 fw-bold w-100 w-sm-auto shadow-sm"
+                      (click)="adicionarMaisFoto()"
+                    >
+                      <i class="fas fa-plus me-2"></i>Adicionar outra foto
+                    </button>
+                  }
+                </div>
+              </div>
+
             <!-- Nome do serviço -->
             <div class="col-sm-6 col-12">
               <tm-text
                 formControlName="nome"
                 label="Nome do Serviço *"
-                placeholder="Ex: Atendimento Especializado"
+                placeholder="Ex: Regulagem Geral"
                 class="custom-dark-text"
               ></tm-text>
               @if (form.get('nome')?.touched && form.get('nome')?.invalid) {
@@ -28,16 +136,53 @@
               }
             </div>
 
+            <!-- Categoria -->
+            <div class="col-sm-6 col-12">
+              <tm-select
+                formControlName="categoriaId"
+                label="Categoria *"
+                placeholder="Selecione uma categoria"
+                [options]="categoriasOptions()"
+                [darkMode]="themeService.isDarkMode()"
+                class="custom-dark-text"
+              ></tm-select>
+              @if (form.get('categoriaId')?.touched && form.get('categoriaId')?.invalid) {
+                <div class="text-danger extra-small mt-1">Categoria é obrigatória.</div>
+              }
+            </div>
+
             <!-- Preço -->
             <div class="col-sm-6 col-12">
               <tm-text
                 formControlName="preco"
-                label="Preço (Opcional - R$)"
-                placeholder="R$ 0,00 (Deixe vazio para 'Sob Consulta')"
+                label="Preço (R$) *"
+                placeholder="R$ 0,00"
                 mask="currency"
                 [maxlength]="14"
                 class="custom-dark-text"
               ></tm-text>
+              @if (form.get('preco')?.touched && form.get('preco')?.invalid) {
+                <div class="text-danger extra-small mt-1">Preço válido é obrigatório.</div>
+              }
+              <div class="form-check mt-1">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="check-preco-apartir-de-novo"
+                  formControlName="precoAPartirDe"
+                  title="Marque quando o valor informado é o inicial e pode variar conforme o caso"
+                />
+                <label
+                  class="form-check-label small custom-dark-text"
+                  for="check-preco-apartir-de-novo"
+                  title="Marque quando o valor informado é o inicial e pode variar conforme o caso"
+                >
+                  Preço a partir de (valor inicial)
+                </label>
+                <div class="form-text extra-small text-muted">
+                  Marque quando o valor informado é o inicial e pode variar conforme o caso.
+                </div>
+              </div>
             </div>
 
             <!-- Duração -->
@@ -47,6 +192,16 @@
                 type="number"
                 label="Duração (minutos)"
                 placeholder="Ex: 30"
+                class="custom-dark-text"
+              ></tm-text>
+            </div>
+
+            <!-- Descrição -->
+            <div class="col-sm-6 col-12">
+              <tm-text
+                formControlName="descricao"
+                label="Descrição (opcional)"
+                placeholder="Ex: Descrição detalhada do serviço prestado"
                 class="custom-dark-text"
               ></tm-text>
             </div>

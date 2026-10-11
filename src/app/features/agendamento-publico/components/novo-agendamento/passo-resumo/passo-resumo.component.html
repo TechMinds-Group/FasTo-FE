@@ -46,7 +46,13 @@
     @if (planoNome()) {
       <span class="agendamento-resumo__total-valor">Incluso no plano</span>
     } @else {
-      <span class="agendamento-resumo__total-valor">{{ formatarPreco(servico()?.preco ?? 0) }}</span>
+      @let precoServico = formatarPrecoServico(servico());
+      <div class="agendamento-resumo__total-valor-bloco">
+        @if (precoServico.qualificador; as qualificador) {
+          <span class="agendamento-resumo__total-prefixo">{{ qualificador }}</span>
+        }
+        <span class="agendamento-resumo__total-valor">{{ precoServico.valor }}</span>
+      </div>
     }
   </div>
 </div>

@@ -150,6 +150,39 @@ export const routes: Routes = [
         ],
       },
       {
+        path: 'catalogo',
+        children: [
+          {
+            path: 'categorias',
+            loadComponent: () =>
+              import('./features/categorias/components/categorias/categorias.component').then(
+                (m) => m.CategoriasComponent,
+              ),
+          },
+          {
+            path: 'categorias/novo',
+            loadComponent: () =>
+              import('./features/categorias/components/categorias-form/categorias-form.component').then(
+                (m) => m.CategoriasFormComponent,
+              ),
+          },
+          {
+            path: 'categorias/:id/editar',
+            loadComponent: () =>
+              import('./features/categorias/components/categorias-form/categorias-form.component').then(
+                (m) => m.CategoriasFormComponent,
+              ),
+          },
+          {
+            path: 'categorias/:id',
+            loadComponent: () =>
+              import('./features/categorias/components/categorias-detalhes/categorias-detalhes.component').then(
+                (m) => m.CategoriasDetalhesComponent,
+              ),
+          },
+        ],
+      },
+      {
         path: 'servicos',
         children: [
           {
@@ -204,7 +237,7 @@ export const routes: Routes = [
           {
             path: 'catalogo/:id',
             loadComponent: () =>
-              import('./features/catalogo/components/catalogo-detalhes/catalogo-detalhes/catalogo-detalhes.component').then(
+              import('./features/catalogo/components/catalogo-detalhes/catalogo-detalhes.component').then(
                 (m) => m.CatalogoDetalhesComponent,
               ),
           },
@@ -256,9 +289,23 @@ export const routes: Routes = [
             loadComponent: () =>
               import('./features/logs-sistema/components/logs-sistema/logs-sistema.component').then(
                 (m) => m.LogsSistemaComponent,
-),
+              ),
           },
         ],
+      },
+      {
+        path: 'solicitacoes',
+        loadComponent: () =>
+          import('./features/solicitacoes/components/solicitacoes/solicitacoes.component').then(
+            (m) => m.SolicitacoesComponent,
+          ),
+      },
+      {
+        path: 'solicitacoes/:id',
+        loadComponent: () =>
+          import('./features/solicitacoes/components/solicitacoes-detalhes/solicitacoes-detalhes.component').then(
+            (m) => m.SolicitacoesDetalhesComponent,
+          ),
       },
       {
         path: 'sg-estabelecimentos-x7k9p',

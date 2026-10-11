@@ -17,3 +17,11 @@ export const DIAS_SEMANA_ESTABELECIMENTO: Record<number, { label: string; abrevi
   5: { label: 'Sexta-feira', abreviacao: 'Sex' },
   6: { label: 'Sábado', abreviacao: 'Sáb' },
 };
+
+export interface ConfiguracaoHorarioOpcoes {
+  intervaloAgendamentoMinutos: number;
+  horarioPorDemanda: boolean;
+  horariosDemanda?: string[];
+  /** RN-069 — CR-001: horas após o fim do agendamento para o fechamento automático da comanda (0 = desativado; default 2). */
+  fechamentoAutomaticoHoras: number;
+}

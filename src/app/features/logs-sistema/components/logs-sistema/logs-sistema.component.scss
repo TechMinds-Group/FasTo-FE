@@ -21,7 +21,10 @@
   font-size: 0.75rem;
 }
 
-:host-context([data-theme='dark']) {
+:host-context([data-theme='dark']),
+:host-context([data-bs-theme='dark']),
+:host-context(.dark-theme),
+:host-context(.dark) {
   .btn-voltar {
     background-color: #21262d !important;
     border-color: rgba(255, 255, 255, 0.1) !important;

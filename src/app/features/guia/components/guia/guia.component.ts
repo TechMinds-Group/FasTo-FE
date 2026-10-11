@@ -109,8 +109,8 @@ export class GuiaComponent {
         },
         {
           icone: 'fas fa-users-gear',
-          titulo: 'Gestão > Atendentes & Usuários',
-          descricao: 'Gerencie os atendentes e usuários da sua empresa com acesso ao sistema. Defina permissões e funções de acesso.',
+          titulo: 'Gestão > Profissionais & Usuários',
+          descricao: 'Gerencie os profissionais e usuários da sua empresa com acesso ao sistema. Defina permissões e funções de acesso.',
         },
         {
           icone: 'fas fa-credit-card',

@@ -11,11 +11,11 @@
     </button>
 
     <div class="min-w-0 flex-fill">
-      <h1 class="h3 mb-1.5 fw-bold custom-dark-text text-break d-flex align-items-center gap-2.5">
+      <h1 class="h3 mb-2 fw-bold custom-dark-text text-break d-flex align-items-center gap-2">
         <i class="fab fa-whatsapp text-success me-2"></i>
         Integração WhatsApp
       </h1>
-      <span class="text-muted small custom-dark-text d-block text-break lh-sm ms-0.5">
+      <span class="text-muted small custom-dark-text d-block text-break lh-sm ms-1">
         Atendimento e confirmações automáticas via WhatsApp.
       </span>
     </div>
@@ -35,17 +35,17 @@
       <div
         class="card-header border-0 bg-transparent p-4 d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-4"
       >
-        <div class="d-flex align-items-center gap-3.5 min-w-0 flex-fill">
+        <div class="d-flex align-items-center gap-3 min-w-0 flex-fill">
           <div
             class="bloco-icone bg-success-subtle text-success d-flex align-items-center justify-content-center shrink-0 me-2"
           >
             <i class="fab fa-whatsapp"></i>
           </div>
           <div class="min-w-0 flex-fill">
-            <div class="d-flex align-items-center flex-wrap gap-3 mb-1.5">
+            <div class="d-flex align-items-center flex-wrap gap-3 mb-2">
               <h2 class="h5 fw-bold mb-0 custom-dark-text text-break me-1">Status da Conexão</h2>
               <span
-                class="badge border px-3 py-1.5 rounded-pill fw-semibold small shrink-0 d-inline-flex align-items-center gap-2"
+                class="badge border px-3 py-2 rounded-pill fw-semibold small shrink-0 d-inline-flex align-items-center gap-2"
                 [class.bg-success-subtle]="conectado()"
                 [class.text-success]="conectado()"
                 [class.border-success-subtle]="conectado()"
@@ -66,7 +66,7 @@
         @if (!conectado()) {
           <div class="w-100 w-md-auto shrink-0 mt-2 mt-md-0">
             <button
-              class="btn btn-success w-100 w-md-auto px-4 py-2.5 fw-bold rounded-pill shadow-sm d-inline-flex align-items-center justify-content-center gap-2.5"
+              class="btn btn-success w-100 w-md-auto px-4 py-2 fw-bold rounded-pill shadow-sm d-inline-flex align-items-center justify-content-center gap-2"
               (click)="conectar()"
               [disabled]="conectando()"
             >
@@ -86,11 +86,11 @@
           <div class="p-4 rounded-3 border dia-card">
             <div class="row align-items-center g-3">
               <div class="col-12 col-md-8">
-                <div class="fw-bold custom-dark-text fs-6 mb-2 d-flex align-items-center gap-2.5">
+                <div class="fw-bold custom-dark-text fs-6 mb-2 d-flex align-items-center gap-2">
                   <i class="fas fa-robot text-success fs-5 me-2"></i>
                   <span>Automação de Atendimento</span>
                 </div>
-                <p class="text-muted small custom-dark-text mb-0 lh-sm ms-0.5">
+                <p class="text-muted small custom-dark-text mb-0 lh-sm ms-1">
                   Envio automático de confirmações de agendamento e respostas rápidas aos seus
                   clientes.
                 </p>
@@ -110,16 +110,16 @@
         @if (qrCodeBase64(); as qr) {
           <div class="text-center py-4 px-3 bg-body-tertiary rounded-4 border my-2">
             <div
-              class="badge bg-primary-subtle text-primary border border-primary-subtle px-4 py-2 rounded-pill mb-3.5 small fw-semibold d-inline-flex align-items-center gap-2"
+              class="badge bg-primary-subtle text-primary border border-primary-subtle px-4 py-2 rounded-pill mb-4 small fw-semibold d-inline-flex align-items-center gap-2"
             >
-              <i class="fas fa-qrcode me-1.5"></i>
+              <i class="fas fa-qrcode me-2"></i>
               <span>Escaneie com a câmera do seu WhatsApp</span>
             </div>
             <div>
               <img
                 [src]="qr.startsWith('data:') ? qr : 'data:image/png;base64,' + qr"
                 alt="QR Code WhatsApp"
-                class="img-fluid border rounded-3 p-3.5 qr-code-img mb-3 shadow-sm"
+                class="img-fluid border rounded-3 p-3 qr-code-img mb-3 shadow-sm"
               />
             </div>
             <p
@@ -133,7 +133,7 @@
 
         @if (erro(); as msg) {
           <div
-            class="alert alert-danger d-flex align-items-center gap-3 mt-3.5 p-3.5 rounded-3"
+            class="alert alert-danger d-flex align-items-center gap-3 mt-4 p-3 rounded-3"
             role="alert"
           >
             <i class="fas fa-exclamation-circle shrink-0 fs-5 me-2"></i>
@@ -143,7 +143,7 @@
 
         @if (conectado()) {
           <div
-            class="alert alert-success d-flex align-items-center gap-3 mb-3.5 p-3.5 rounded-3"
+            class="alert alert-success d-flex align-items-center gap-3 mb-4 p-3 rounded-3"
             role="alert"
           >
             <i class="fas fa-check-circle fs-5 shrink-0 me-2"></i>
@@ -152,7 +152,7 @@
 
           @if (dispositivos().length > 0) {
             <div class="pt-2">
-              <h3 class="h6 fw-bold custom-dark-text mb-3.5 d-flex align-items-center gap-2.5">
+              <h3 class="h6 fw-bold custom-dark-text mb-3 d-flex align-items-center gap-2">
                 <i class="fas fa-mobile-alt text-success me-2"></i>
                 <span>Dispositivo Conectado</span>
               </h3>
@@ -197,7 +197,7 @@
         role="button"
         [attr.aria-expanded]="blocoConfigExpandido()"
       >
-        <div class="d-flex align-items-center gap-3.5 min-w-0 flex-fill">
+        <div class="d-flex align-items-center gap-3 min-w-0 flex-fill">
           <div
             class="bloco-icone bg-primary-subtle text-primary d-flex align-items-center justify-content-center shrink-0 me-2"
           >
@@ -252,13 +252,12 @@
             </div>
 
             <div class="p-4 rounded-3 border dia-card mb-4">
-              <div class="fw-bold custom-dark-text fs-6 mb-1 d-flex align-items-center gap-2.5">
+              <div class="fw-bold custom-dark-text fs-6 mb-1 d-flex align-items-center gap-2">
                 <i class="fas fa-bell text-primary me-2"></i>
                 <span>Lembretes de Agendamento</span>
               </div>
               <div class="form-text custom-dark-text small mb-3 ms-1 lh-sm">
-                Enviados automaticamente para o cliente. O lembrete de 1 dia só é enviado quando o
-                agendamento foi feito com mais de 2 dias de antecedência.
+                Enviados automaticamente para o cliente via WhatsApp. O lembrete de 1 dia é enviado às 14h do dia anterior (para marcações com 2+ dias de antecedência). O <strong>Lembrete Próximo do Agendamento</strong> é enviado de forma dinâmica próximo ao corte/atendimento (30 min antes, na abertura da loja ou 4h antes do serviço).
               </div>
               <div class="row g-4">
                 <div class="col-12 col-lg-6">
@@ -267,7 +266,7 @@
                     [textarea]="true"
                     [rows]="5"
                     label="Lembrete 1 dia antes"
-                    placeholder="Mensagem enviada 1 dia antes do agendamento..."
+                    placeholder="Mensagem enviada 1 dia antes do agendamento (a partir das 14h BRT)..."
                     icon="fas fa-calendar-day"
                   ></tm-text>
                 </div>
@@ -276,8 +275,8 @@
                     formControlName="lembrete4hMensagem"
                     [textarea]="true"
                     [rows]="5"
-                    label="Lembrete 4 horas antes"
-                    placeholder="Mensagem enviada 4 horas antes do agendamento..."
+                    label="Lembrete Próximo do Agendamento"
+                    placeholder="Mensagem enviada próximo ao horário do agendamento..."
                     icon="fas fa-hourglass-half"
                   ></tm-text>
                 </div>
@@ -390,14 +389,12 @@
               class="pt-4 mt-3 border-top d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center justify-content-between gap-4"
             >
 
-
-
               <div
                 class="d-flex flex-column flex-sm-row gap-3 w-100 w-sm-auto ms-auto justify-content-sm-end"
               >
                 <button
                   type="button"
-                  class="btn btn-outline-secondary px-4 py-2.5 fw-semibold rounded-pill w-100 w-sm-auto"
+                  class="btn btn-outline-secondary px-4 py-2 fw-semibold rounded-pill w-100 w-sm-auto"
                   (click)="carregarConfig()"
                 >
                   <i class="fas fa-times me-2"></i>Cancelar
@@ -405,7 +402,7 @@
 
                 <button
                   type="button"
-                  class="btn btn-primary px-4 py-2.5 fw-bold rounded-pill w-100 w-sm-auto shadow-sm"
+                  class="btn btn-primary px-4 py-2 fw-bold rounded-pill w-100 w-sm-auto shadow-sm"
                   (click)="salvarConfig()"
                   [disabled]="configSalvando()"
                 >
@@ -431,7 +428,7 @@
         role="button"
         [attr.aria-expanded]="blocoAjudaExpandido()"
       >
-        <div class="d-flex align-items-center gap-3.5 min-w-0 flex-fill">
+        <div class="d-flex align-items-center gap-3 min-w-0 flex-fill">
           <div
             class="bloco-icone bg-warning-subtle text-warning d-flex align-items-center justify-content-center shrink-0 me-2"
           >
@@ -467,7 +464,7 @@
             class="alert alert-warning d-flex align-items-start gap-3 mt-4 mb-0 p-4 rounded-3 shadow-sm"
             role="alert"
           >
-            <i class="fas fa-exclamation-triangle fs-5 shrink-0 me-2.5 mt-0.5 text-warning"></i>
+            <i class="fas fa-exclamation-triangle fs-5 shrink-0 me-2 mt-1 text-warning"></i>
             <span class="text-break lh-sm">
               Desconecte outros bots de WhatsApp antes de parear.
             </span>

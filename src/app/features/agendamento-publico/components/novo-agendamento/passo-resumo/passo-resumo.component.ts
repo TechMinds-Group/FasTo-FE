@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { TmButtonComponent } from '@techminds-group/tm-angular-lib';
 import { ProfissionalDisponivel, ServicoDisponivel } from '../../../../../core/models/agendamento-publico/agendamento-publico.model';
+import { formatarPrecoServico } from '../../../services/formatador-preco-servico';
 
 @Component({
   selector: 'app-passo-resumo',
@@ -28,8 +29,5 @@ export class PassoResumoComponent {
     return new Date(ano, mes - 1, dia).toLocaleDateString('pt-BR');
   }
 
-  formatarPreco(preco?: number | null): string {
-    if (!preco || preco <= 0) return 'Sob Consulta';
-    return preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-  }
+  protected readonly formatarPrecoServico = formatarPrecoServico;
 }

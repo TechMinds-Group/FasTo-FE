@@ -19,7 +19,13 @@
             <i class="fa-regular fa-clock"></i> {{ servico.duracao }} min
           </span>
         </span>
-        <span class="agendamento-servicos__preco">{{ formatarPreco(servico.preco) }}</span>
+        <span class="agendamento-servicos__preco-bloco">
+          @let preco = formatarPrecoServico(servico);
+          @if (preco.qualificador; as qualificador) {
+            <span class="agendamento-servicos__preco-rotulo">{{ qualificador }}</span>
+          }
+          <span class="agendamento-servicos__preco">{{ preco.valor }}</span>
+        </span>
         <i class="fa-solid fa-chevron-right agendamento-servicos__seta"></i>
       </button>
     }

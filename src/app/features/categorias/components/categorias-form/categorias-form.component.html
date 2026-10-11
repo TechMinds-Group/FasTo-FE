@@ -1,0 +1,94 @@
+<div class="container mt-5 mb-5">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <button (click)="voltar()" class="btn btn-light shadow-sm rounded-circle p-0 d-flex align-items-center justify-content-center btn-voltar" title="Cancelar">
+      <i class="fas fa-arrow-left text-muted"></i>
+    </button>
+    <div>
+      <h1 class="h2 text-primary fw-bold mb-1 custom-dark-text">{{ titulo() }}</h1>
+      <p class="text-muted small mb-0 custom-dark-text">
+        @if (modoEdicao()) {
+          Atualize os dados da categoria.
+        } @else {
+          Preencha os dados da nova categoria do catálogo.
+        }
+      </p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm p-4 custom-dark-card">
+        <form [formGroup]="form" (ngSubmit)="salvar()">
+          <div class="row g-3">
+            <!-- Nome -->
+            <div class="col-sm-6 col-12">
+              <tm-text
+                formControlName="nome"
+                label="Nome *"
+                placeholder="Ex: Cabelo"
+                class="custom-dark-text"
+              ></tm-text>
+              @if (form.get('nome')?.touched && form.get('nome')?.invalid) {
+                <div class="text-danger extra-small mt-1">Nome é obrigatório (máx. 100 caracteres).</div>
+              }
+            </div>
+
+            <!-- Ícone (emoji) -->
+            <div class="col-sm-6 col-12">
+              <tm-text
+                formControlName="icone"
+                label="Ícone (emoji, opcional)"
+                placeholder="Ex: 💇"
+                [maxlength]="10"
+                class="custom-dark-text"
+              ></tm-text>
+              @if (form.get('icone')?.touched && form.get('icone')?.invalid) {
+                <div class="text-danger extra-small mt-1">O ícone deve ter no máximo 10 caracteres.</div>
+              }
+            </div>
+
+            <!-- Ordem -->
+            <div class="col-sm-6 col-12">
+              <tm-text
+                formControlName="ordem"
+                type="number"
+                label="Ordem de exibição"
+                placeholder="Ex: 0"
+                class="custom-dark-text"
+              ></tm-text>
+              @if (form.get('ordem')?.touched && form.get('ordem')?.invalid) {
+                <div class="text-danger extra-small mt-1">Ordem deve ser um número maior ou igual a zero.</div>
+              }
+            </div>
+
+            <!-- Status -->
+            <div class="col-sm-6 col-12">
+              <tm-select
+                formControlName="status"
+                label="Status *"
+                placeholder="Selecione o status"
+                [options]="statusOptions"
+                [darkMode]="themeService.isDarkMode()"
+                class="custom-dark-text"
+              ></tm-select>
+            </div>
+          </div>
+
+          <!-- Ações -->
+          <div class="d-flex gap-3 mt-4 justify-content-end flex-column flex-sm-row">
+            <button type="button" class="btn btn-outline-secondary fw-semibold px-4 py-2" (click)="voltar()">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary fw-bold px-4 py-2" [disabled]="salvando()">
+              @if (salvando()) {
+                <span class="spinner-border spinner-border-sm me-2" role="status"></span>Salvando...
+              } @else {
+                <i class="fas fa-save me-2"></i>Salvar
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

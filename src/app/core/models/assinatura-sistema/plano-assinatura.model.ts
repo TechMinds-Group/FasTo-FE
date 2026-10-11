@@ -13,4 +13,8 @@ export interface PlanoAssinatura {
   usoClientes: number;
   validoAte?: string;
   diasRestantes?: number;
+  cnpj?: string;
+  telefone?: string;
+  email?: string;
 }
+

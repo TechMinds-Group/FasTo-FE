@@ -24,6 +24,7 @@ import {
 } from '@techminds-group/tm-angular-lib';
 import { TranslatePipe } from '../../../../../shared/pipes/translate.pipe';
 import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import {
   Agendamento,
   CORES_STATUS,
@@ -32,10 +33,12 @@ import {
 import { AgendamentosService } from '../../../../../core/services/agendamentos.service';
 import { AuthService } from '../../../../../core/services/auth.service';
 import { CatalogoService } from '../../../../../core/services/catalogo.service';
+import { ClubesService } from '../../../../../core/services/clubes.service';
 import { ClientesService } from '../../../../../core/services/clientes.service';
 import { GestaoUsuariosService } from '../../../../../core/services/gestao-usuarios.service';
 import { LanguageService } from '../../../../../core/services/language.service';
 import { ThemeService } from '../../../../../core/services/theme.service';
+import { BloqueioAgendaDTO, BloqueioAgendaService } from '../../../../../core/services/bloqueio-agenda.service';
 import { TxKey } from '../../../../../core/i18n/i18n.types';
 
 const NOVO_CLIENTE_VALUE = '__cadastrar_cliente__';
@@ -63,11 +66,13 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
   private readonly agendamentosService = inject(AgendamentosService);
   private readonly authService = inject(AuthService);
   private readonly catalogoService = inject(CatalogoService);
+  private readonly clubesService = inject(ClubesService);
   private readonly clientesService = inject(ClientesService);
   private readonly gestaoUsuariosService = inject(GestaoUsuariosService);
   private readonly languageService = inject(LanguageService);
   private readonly toastService = inject(TmToastService);
   protected readonly themeService = inject(ThemeService);
+  private readonly bloqueioService = inject(BloqueioAgendaService);
 
   /** Admin pode agendar para qualquer profissional; profissional fica restrito ao próprio id (backend também valida). */
   protected readonly ehAdmin = this.authService.hasAdminRole;
@@ -78,6 +83,7 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
 
   readonly mudancaAgendamento = output<void>();
 
+  protected readonly bloqueiosDoDia = signal<BloqueioAgendaDTO[]>([]);
   protected readonly carregando = signal(false);
   protected readonly salvando = signal(false);
   protected readonly exibeForm = signal(false);
@@ -86,19 +92,32 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
   protected readonly agendamentoEditando = signal<Agendamento | null>(null);
   protected readonly agendamentoCancelando = signal<Agendamento | null>(null);
   protected readonly showCancelModal = signal(false);
+  /** Quando true, os botões de decisão dão lugar à confirmação de recusa (Sim/Não). */
   protected readonly confirmandoRecusa = signal(false);
   protected readonly confirmandoRemocao = signal(false);
+  /** Quando true, exibe o botão "Notificar Cliente" após marcar como não compareceu. */
   protected readonly exibeNotificarNaoCompareceu = signal(false);
   protected readonly notificando = signal(false);
   protected readonly carregandoHorarios = signal(false);
   protected readonly horaOptions = signal<TmSelectOption<string>[]>([]);
 
   protected readonly clienteIdSelecionado = signal<string>('');
+  protected readonly tipoSelecionado = signal<string>('servico');
+
+  protected getNomeClienteExibicao(c: { nome: string; sobrenome?: string | null }): string {
+    const nome = c.nome ? c.nome.trim() : '';
+    const sobrenome = c.sobrenome ? c.sobrenome.trim() : '';
+    if (!sobrenome) return nome;
+    if (nome.toLowerCase().endsWith(sobrenome.toLowerCase())) return nome;
+    return `${nome} ${sobrenome}`;
+  }
 
   protected readonly clienteOptions = computed<TmSelectOption<string>[]>(() => {
-    const clientes = this.clientesService.clientes();
+    const clientes = this.clientesService
+      .clientes()
+      .filter((c) => !c.status || c.status === 'Ativo' || c.status.toLowerCase() === 'ativo');
     const opcoes: TmSelectOption<string>[] = clientes.map((c) => {
-      const nomeCompleto = c.sobrenome ? `${c.nome} ${c.sobrenome}` : c.nome;
+      const nomeCompleto = this.getNomeClienteExibicao(c);
       return {
         value: c.id,
         label: c.celular ? `${nomeCompleto} (${c.celular})` : nomeCompleto,
@@ -114,18 +133,25 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
     cancelado: '#6c757d',
   };
 
-  protected readonly servicoOptions = computed<TmSelectOption<string>[]>(() =>
-    this.catalogoService
+  protected readonly servicoOptions = computed<TmSelectOption<string>[]>(() => {
+    const tipo = this.tipoSelecionado();
+    if (tipo === 'plano') {
+      return this.clubesService
+        .clubes()
+        .filter((c) => !c.status || c.status === 'Ativo' || c.status.toLowerCase() === 'ativo')
+        .map((c) => ({ value: c.id, label: c.nome }));
+    }
+    return this.catalogoService
       .servicos()
-      .filter((s) => s.status === 'Ativo')
-      .map((s) => ({ value: s.id, label: s.nome })),
-  );
+      .filter((s) => !s.status || s.status === 'Ativo' || s.status.toLowerCase() === 'ativo')
+      .map((s) => ({ value: s.id, label: s.nome }));
+  });
 
-  /** Profissionais do tenant (usuários com status ativo), exibindo nome + sobrenome. */
+  /** Profissionais do tenant com perfil Profissional (padrão ProfissionaisComponent), exibindo nome + sobrenome. */
   protected readonly profissionalOptions = computed<TmSelectOption<string>[]>(() =>
     this.gestaoUsuariosService
       .usuarios()
-      .filter((u) => u.status !== 'Inativo')
+      .filter((u) => u.perfil === 'Profissional' || (u.perfil && u.perfil.includes('Profissional')))
       .map((u) => ({ value: u.id, label: u.sobrenome ? `${u.nome} ${u.sobrenome}` : u.nome })),
   );
 
@@ -188,14 +214,21 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
     return status === 'agendado' || status === 'pendente';
   });
 
+  protected readonly tipoOptions: TmSelectOption<string>[] = [
+    { value: 'servico', label: 'Serviço Avulso' },
+    { value: 'plano', label: 'Plano (Clube)' },
+  ];
+
   protected readonly form: FormGroup = this.fb.group({
     clienteNome: ['', [Validators.required]],
-    clienteTelefone: ['', [Validators.pattern(/^\d{10,13}$/)]],
+    clienteTelefone: [''],
     profissionalId: ['', [Validators.required]],
     servicoId: ['', [Validators.required]],
+    tipo: ['servico', [Validators.required]],
     horaInicio: ['', [Validators.required]],
     statusDecisao: ['confirmado'],
     observacoes: [''],
+    ehEncaixe: [false],
   });
 
   private readonly subscriptions: { unsubscribe: () => void }[] = [];
@@ -203,6 +236,40 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
   constructor() {
     const profissionalControl = this.form.get('profissionalId');
     const servicoControl = this.form.get('servicoId');
+    const tipoControl = this.form.get('tipo');
+    const ehEncaixeControl = this.form.get('ehEncaixe');
+
+    if (tipoControl) {
+      this.subscriptions.push(
+        tipoControl.valueChanges.subscribe((val) => {
+          const novoTipo = val || 'servico';
+          if (this.tipoSelecionado() !== novoTipo) {
+            this.tipoSelecionado.set(novoTipo);
+            const opts = this.servicoOptions();
+            const currentVal = this.form.get('servicoId')?.value;
+            if (novoTipo === 'servico') {
+              let initial: string[] = [];
+              if (Array.isArray(currentVal)) {
+                initial = currentVal.filter((id) => opts.some((o) => o.value === id));
+              } else if (typeof currentVal === 'string' && opts.some((o) => o.value === currentVal)) {
+                initial = [currentVal];
+              }
+              if (initial.length === 0 && opts.length > 0) {
+                initial = [opts[0].value];
+              }
+              this.form.patchValue({ servicoId: initial });
+            } else {
+              let initial = typeof currentVal === 'string' ? currentVal : (Array.isArray(currentVal) && currentVal.length > 0 ? currentVal[0] : '');
+              if (opts.length > 0 && !opts.some((o) => o.value === initial)) {
+                initial = opts[0].value;
+              }
+              this.form.patchValue({ servicoId: initial });
+            }
+          }
+        }),
+      );
+    }
+
     if (profissionalControl && servicoControl) {
       this.subscriptions.push(
         profissionalControl.valueChanges.subscribe(() => {
@@ -211,6 +278,14 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
       );
       this.subscriptions.push(
         servicoControl.valueChanges.subscribe(() => {
+          this.carregarHorariosDisponiveis();
+        }),
+      );
+    }
+
+    if (ehEncaixeControl) {
+      this.subscriptions.push(
+        ehEncaixeControl.valueChanges.subscribe(() => {
           this.carregarHorariosDisponiveis();
         }),
       );
@@ -227,11 +302,32 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
     if (changes['show']?.currentValue === true) {
       await Promise.all([
         this.catalogoService.carregarServicos(),
+        firstValueFrom(this.clubesService.carregarClubes()),
         this.gestaoUsuariosService.carregarUsuarios(),
         this.clientesService.carregarClientes(),
+        this.carregarBloqueiosDoDia(),
       ]);
       this.fecharForm();
       this.fecharDetalhes();
+    }
+  }
+
+  protected async carregarBloqueiosDoDia(): Promise<void> {
+    const data = this.dataSelecionada();
+    if (!data) {
+      this.bloqueiosDoDia.set([]);
+      return;
+    }
+    try {
+      const ano = data.getFullYear();
+      const mes = String(data.getMonth() + 1).padStart(2, '0');
+      const dia = String(data.getDate()).padStart(2, '0');
+      const inicio = `${ano}-${mes}-${dia}T00:00:00`;
+      const fim = `${ano}-${mes}-${dia}T23:59:59`;
+      const dados = await this.bloqueioService.listarBloqueios(inicio, fim);
+      this.bloqueiosDoDia.set(dados);
+    } catch {
+      this.bloqueiosDoDia.set([]);
     }
   }
 
@@ -244,9 +340,7 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
     this.clienteIdSelecionado.set(clienteId);
     const cliente = this.clientesService.clientes().find((c) => c.id === clienteId);
     if (cliente) {
-      const nomeCompleto = cliente.sobrenome
-        ? `${cliente.nome} ${cliente.sobrenome}`
-        : cliente.nome;
+      const nomeCompleto = this.getNomeClienteExibicao(cliente);
       this.form.patchValue({
         clienteNome: nomeCompleto,
         clienteTelefone: cliente.celular ?? '',
@@ -267,10 +361,34 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
   /** Busca os horários disponíveis do profissional para a data/serviço selecionados e atualiza as opções do campo de horário. */
   protected async carregarHorariosDisponiveis(): Promise<void> {
     const profissionalId = this.form.get('profissionalId')?.value as string | undefined;
-    const servicoId = this.form.get('servicoId')?.value as string | undefined;
+    const rawServicoId = this.form.get('servicoId')?.value;
     const data = this.dataSelecionada();
 
+    let servicoId: string | undefined;
+    if (Array.isArray(rawServicoId)) {
+      servicoId = rawServicoId[0];
+    } else if (typeof rawServicoId === 'string') {
+      servicoId = rawServicoId;
+    }
+
     if (!profissionalId || !servicoId || !data || this.agendamentoEditando()) {
+      return;
+    }
+
+    if (this.form.get('ehEncaixe')?.value) {
+      const encaixeOptions: TmSelectOption<string>[] = [];
+      for (let h = 0; h < 24; h++) {
+        for (let m = 0; m < 60; m += 30) {
+          const hh = String(h).padStart(2, '0');
+          const mm = String(m).padStart(2, '0');
+          encaixeOptions.push({ value: `${hh}:${mm}`, label: `${hh}:${mm}` });
+        }
+      }
+      this.horaOptions.set(encaixeOptions);
+      const atual = this.form.get('horaInicio')?.value as string | undefined;
+      if (!atual || !encaixeOptions.some((o) => o.value === atual)) {
+        this.form.patchValue({ horaInicio: encaixeOptions[0]?.value ?? '' }, { emitEvent: false });
+      }
       return;
     }
 
@@ -337,21 +455,26 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
   protected abrirNovoForm(): void {
     this.agendamentoEditando.set(null);
     this.clienteIdSelecionado.set('');
+    this.tipoSelecionado.set('servico');
     const usuario = this.authService.currentUser();
-    const opcoesProfs = this.profissionalOptions();
-    const usuarioExisteEmOpcoes = usuario?.id && opcoesProfs.some((p) => p.value === usuario.id);
-    const profissionalPadrao = usuarioExisteEmOpcoes
-      ? usuario.id
-      : (opcoesProfs[0]?.value ?? '');
+    const ehAdmin = this.authService.hasAdminRole();
+    const profissionalPadrao = ehAdmin
+      ? (this.profissionalOptions()[0]?.value ?? '')
+      : (usuario?.id ?? '');
+
+    const opts = this.servicoOptions();
+    const defaultServico = opts.length > 0 ? [opts[0].value] : [];
 
     this.form.reset({
       clienteNome: '',
       clienteTelefone: '',
       profissionalId: profissionalPadrao,
-      servicoId: this.servicoOptions()[0]?.value ?? '',
+      servicoId: defaultServico,
+      tipo: 'servico',
       horaInicio: '',
       statusDecisao: 'confirmado',
       observacoes: '',
+      ehEncaixe: false,
     });
     this.exibeForm.set(true);
     this.carregarHorariosDisponiveis();
@@ -460,15 +583,48 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
     });
     this.clienteIdSelecionado.set(clienteMatch?.id ?? '');
 
+    const tipoVal = agendamento.tipo ?? 'servico';
+    this.tipoSelecionado.set(tipoVal);
+
+    let matchedServicoId = '';
+    if (tipoVal === 'plano') {
+      matchedServicoId =
+        this.clubesService.clubes().find((c) => c.nome === agendamento.servicoNome || c.id === agendamento.servicoId)?.id ??
+        agendamento.servicoId ??
+        '';
+    } else {
+      matchedServicoId =
+        this.catalogoService.servicos().find((s) => s.nome === agendamento.servicoNome || s.id === agendamento.servicoId)?.id ??
+        agendamento.servicoId ??
+        '';
+    }
+
+    let servicoVal: string | string[];
+    if (tipoVal === 'servico') {
+      if (agendamento.servicoNome && agendamento.servicoNome.includes(' + ')) {
+        const names = agendamento.servicoNome.split(' + ').map((n) => n.trim().toLowerCase());
+        const matchedIds = this.catalogoService
+          .servicos()
+          .filter((s) => names.includes(s.nome.toLowerCase()))
+          .map((s) => s.id);
+        servicoVal = matchedIds.length > 0 ? matchedIds : (matchedServicoId ? [matchedServicoId] : []);
+      } else {
+        servicoVal = matchedServicoId ? [matchedServicoId] : (this.servicoOptions()[0]?.value ? [this.servicoOptions()[0].value] : []);
+      }
+    } else {
+      servicoVal = matchedServicoId || (this.servicoOptions()[0]?.value ?? '');
+    }
+
     this.form.reset({
       clienteNome: agendamento.clienteNome,
       clienteTelefone: agendamento.clienteTelefone,
       profissionalId: agendamento.profissionalId,
-      servicoId:
-        this.servicoOptions().find((s) => s.label === agendamento.servicoNome)?.value ?? '',
+      servicoId: servicoVal,
+      tipo: tipoVal,
       horaInicio: hora,
       statusDecisao: agendamento.status === 'recusado' ? 'recusado' : 'confirmado',
       observacoes: agendamento.observacoes ?? '',
+      ehEncaixe: agendamento.ehEncaixe ?? false,
     });
     this.exibeForm.set(true);
   }
@@ -479,16 +635,39 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
   }
 
   protected async salvarAgendamento(): Promise<void> {
-    if (this.form.invalid) {
+    if (this.salvando()) return;
+
+    const rawServicoId = this.form.get('servicoId')?.value;
+    const servicoIds: string[] = Array.isArray(rawServicoId)
+      ? rawServicoId
+      : (typeof rawServicoId === 'string' && rawServicoId ? [rawServicoId] : []);
+
+    if (this.form.invalid || servicoIds.length === 0) {
       this.form.markAllAsTouched();
+      if (!this.form.get('clienteNome')?.value) {
+        this.toastService.error('Por favor, informe ou selecione o nome do cliente');
+      } else if (!this.form.get('profissionalId')?.value) {
+        this.toastService.error('Por favor, selecione um profissional');
+      } else if (servicoIds.length === 0) {
+        this.toastService.error('Por favor, selecione ao menos um serviço');
+      } else if (!this.form.get('horaInicio')?.value) {
+        this.toastService.error('Por favor, selecione um horário de início');
+      } else {
+        this.toastService.error('Preencha todos os campos obrigatórios');
+      }
+      return;
+    }
+
+    const horaInicioStr = this.form.get('horaInicio')?.value as string;
+    if (!horaInicioStr || !horaInicioStr.includes(':')) {
+      this.toastService.error('Selecione um horário válido para o agendamento');
       return;
     }
 
     const dataRef = this.dataSelecionada() ?? new Date();
     const val = this.form.value;
-    const [hora, minuto] = (val.horaInicio as string).split(':').map(Number);
+    const [hora, minuto] = horaInicioStr.split(':').map(Number);
 
-    // Convenção do projeto: hora local do estabelecimento é enviada crua (sem fuso/UTC).
     const ano = dataRef.getFullYear();
     const mes = String(dataRef.getMonth() + 1).padStart(2, '0');
     const dia = String(dataRef.getDate()).padStart(2, '0');
@@ -499,32 +678,41 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
     this.salvando.set(true);
     try {
       const editando = this.agendamentoEditando();
+      const primaryServicoId = servicoIds[0] ?? '';
+      const clienteIdSelected = this.clienteIdSelecionado();
+
       if (editando) {
         await this.agendamentosService.editarManual(editando.id, {
-          servicoId: val.servicoId,
+          servicoId: primaryServicoId,
+          servicoIds: val.tipo === 'servico' ? servicoIds : [primaryServicoId],
           dataInicio: dataInicioIso,
           status: val.statusDecisao,
+          tipo: val.tipo,
           observacoes: val.observacoes,
         });
         this.toastService.success('Agendamento atualizado com sucesso');
       } else {
-        const clienteIdSelected = this.clienteIdSelecionado();
         await this.agendamentosService.criarManual({
           clienteId: clienteIdSelected && clienteIdSelected !== NOVO_CLIENTE_VALUE ? clienteIdSelected : undefined,
           clienteNome: val.clienteNome,
           clienteTelefone: val.clienteTelefone,
           profissionalId: val.profissionalId,
-          servicoId: val.servicoId,
+          servicoId: primaryServicoId,
+          servicoIds: val.tipo === 'servico' ? servicoIds : [primaryServicoId],
           dataInicio: dataInicioIso,
+          tipo: val.tipo,
           observacoes: val.observacoes,
+          ehEncaixe: val.ehEncaixe ?? false,
         });
         this.toastService.success('Agendamento criado com sucesso');
       }
 
       this.fecharForm();
       this.mudancaAgendamento.emit();
-    } catch {
-      this.toastService.error('Erro ao salvar agendamento');
+    } catch (err: any) {
+      console.error('Erro ao salvar agendamento:', err);
+      const mensagemErro = err?.error?.message || err?.message || 'Erro ao salvar agendamento';
+      this.toastService.error(mensagemErro);
     } finally {
       this.salvando.set(false);
     }

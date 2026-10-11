@@ -1,0 +1,80 @@
+<div class="container mt-5 mb-5">
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
+    <div>
+      <h1 class="h2 text-primary fw-bold mb-2 custom-dark-text d-flex align-items-center gap-2">
+        <i class="fas fa-tags me-2"></i>Categorias de Catálogo
+      </h1>
+      <p class="text-muted custom-dark-text mb-0">
+        Organize os serviços do seu catálogo em categorias. Clique na categoria para visualizar seus detalhes completos.
+      </p>
+    </div>
+
+    <div>
+      <button
+        (click)="abrirNova()"
+        class="btn btn-primary px-4 py-2.5 shadow-sm fw-bold rounded-3 d-inline-flex align-items-center gap-2"
+      >
+        <i class="fas fa-plus"></i><span>Nova Categoria</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="mb-5">
+    <tm-table
+      [cols]="cols()"
+      [data]="categoriasService.categorias()"
+      [paginated]="true"
+      [pageSize]="tamanhoPagina()"
+      (pageSizeChange)="tamanhoPagina.set($event)"
+      [showControls]="true"
+      (rowClick)="verDetalhes($event)"
+    ></tm-table>
+  </div>
+</div>
+
+<ng-template #iconeTemplate let-item>
+  <div class="text-start">
+    @if (item.icone) {
+      <span class="categoria-emoji d-inline-flex align-items-center justify-content-center rounded-3 border bg-body-tertiary" [title]="item.nome">{{ item.icone }}</span>
+    } @else {
+      <span class="d-inline-flex align-items-center justify-content-center rounded-3 border bg-body-tertiary text-muted categoria-emoji" title="Sem ícone">
+        <i class="fas fa-tag"></i>
+      </span>
+    }
+  </div>
+</ng-template>
+
+<ng-template #nomeTemplate let-item>
+  <div class="text-start">
+    <strong class="fw-bold custom-dark-text text-break d-block">{{ item.nome }}</strong>
+  </div>
+</ng-template>
+
+<ng-template #ordemTemplate let-item>
+  <div class="text-start">
+    <span class="custom-dark-text">{{ item.ordem }}</span>
+  </div>
+</ng-template>
+
+<ng-template #statusTemplate let-item>
+  <div class="d-flex align-items-center gap-2">
+    @switch (item.status) {
+      @case ('Ativo') {
+        <span class="badge bg-success-subtle text-success border border-success-subtle px-2.5 py-1 rounded-pill small fw-semibold">
+          <i class="fas fa-check-circle me-1"></i>Ativo
+        </span>
+      }
+      @case ('Inativo') {
+        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2.5 py-1 rounded-pill small fw-semibold">
+          <i class="fas fa-times-circle me-1"></i>Inativo
+        </span>
+      }
+    }
+  </div>
+</ng-template>
+
+<ng-template #quantidadeTemplate let-item>
+  <div class="text-start">
+    <span class="custom-dark-text">{{ item.quantidadeServicos }} serviço(s)</span>
+  </div>
+</ng-template>

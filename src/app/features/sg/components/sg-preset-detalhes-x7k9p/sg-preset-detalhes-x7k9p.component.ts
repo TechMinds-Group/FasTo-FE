@@ -97,8 +97,8 @@ export class SgPresetDetalhesX7k9pComponent implements OnInit {
     },
     {
       key: 'opc8ConsultarStatus',
-      label: '8. Consultar Status do Processo / Pedido',
-      descricao: 'Consulta andamento de casos, serviços ou pedidos',
+      label: '8. Consultar Protocolo / Status',
+      descricao: 'Cliente acompanha a solicitação pelo protocolo recebido (ex: ORC-A73F2K). Ativada automaticamente junto com Orçamentos',
       icone: '🔍',
       ativo: false,
     },
@@ -239,6 +239,15 @@ export class SgPresetDetalhesX7k9pComponent implements OnInit {
 
   toggleFluxo(key: string): void {
     this.fluxos.update((list) => list.map((f) => (f.key === key ? { ...f, ativo: !f.ativo } : f)));
+
+    // Regra de negócio: todo orçamento gera protocolo, portanto a consulta de
+    // protocolo é marcada automaticamente junto com o fluxo de Orçamentos.
+    if (key === 'opc4Orcamento') {
+      const orcamento = this.fluxos().find((f) => f.key === 'opc4Orcamento');
+      if (orcamento?.ativo) {
+        this.fluxos.update((list) => list.map((f) => (f.key === 'opc8ConsultarStatus' ? { ...f, ativo: true } : f)));
+      }
+    }
   }
 
   inserirVariavel(campo: string, varName: string): void {

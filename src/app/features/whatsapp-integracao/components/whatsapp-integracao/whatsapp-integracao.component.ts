@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, ChangeDetectorRef, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -52,6 +52,7 @@ export class WhatsappIntegracaoComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly router = inject(Router);
+  private readonly location = inject(Location);
   private readonly toastService = inject(TmToastService);
   private readonly apiUrl = `${environment.apiUrl}/api/whatsapp`;
 
@@ -76,7 +77,6 @@ export class WhatsappIntegracaoComponent implements OnInit {
   protected readonly dispositivos = signal<DispositivoWhatsApp[]>([]);
   protected readonly configSalvando = signal(false);
 
-
   /** Sinais para controle de expansão dos blocos colapsáveis (nascem colapsados) */
   protected readonly blocoConfigExpandido = signal(false);
   protected readonly blocoAjudaExpandido = signal(false);
@@ -97,10 +97,8 @@ export class WhatsappIntegracaoComponent implements OnInit {
   protected toggleBlocoAjuda(): void { this.blocoAjudaExpandido.update(v => !v); }
 
   protected voltar(): void {
-    this.router.navigate(['/configuracoes']);
+    this.location.back();
   }
-
-
 
   async ngOnInit(): Promise<void> {
     await Promise.all([
@@ -176,37 +174,30 @@ export class WhatsappIntegracaoComponent implements OnInit {
     this.qrCodeBase64.set(null);
 
     try {
-      const raw: any = await firstValueFrom(
-        this.http.get<any>(`${this.apiUrl}/connect`),
+      const raw = await firstValueFrom(
+        this.http.get<QrCodeData>(`${this.apiUrl}/connect`),
       );
 
-      const base64 = raw?.base64 || raw?.qrcode?.base64;
-      const code = raw?.code || raw?.qrcode?.code;
-      const state = raw?.state || raw?.instance?.state || raw?.status;
-
-      if (base64) {
-        const formattedBase64 = base64.startsWith('data:image') ? base64 : `data:image/png;base64,${base64}`;
-        this.qrCodeBase64.set(formattedBase64);
-        this.statusTexto.set('Escaneie o QR Code com o seu WhatsApp');
+      if (raw.base64) {
+        this.qrCodeBase64.set(raw.base64);
+        this.statusTexto.set('Escaneie o QR Code com o WhatsApp Business');
         this.iniciarPolling();
-      } else if (code) {
-        this.qrCodeBase64.set(code);
-        this.statusTexto.set('Escaneie o QR Code com o seu WhatsApp');
+      } else if (raw.code) {
+        this.qrCodeBase64.set(raw.code);
+        this.statusTexto.set('Escaneie o QR Code com o WhatsApp Business');
         this.iniciarPolling();
-      } else if (state === 'connected' || state === 'open') {
+      } else if (raw.status === 'connected' || raw.status === 'open') {
         this.conectado.set(true);
         this.statusTexto.set('WhatsApp conectado com sucesso!');
         await this.carregarDispositivos();
       } else {
-        this.erro.set(raw?.erro || raw?.message || 'Resposta inesperada do servidor WhatsApp. Tente novamente.');
+        this.erro.set('Resposta inesperada da Evolution API. Tente novamente.');
       }
-    } catch (err: any) {
-      const errorMsg = err?.error?.erro || err?.error?.message || 'Erro ao comunicar com a Evolution API. Verifique se o serviço de WhatsApp está online.';
-      this.erro.set(errorMsg);
+    } catch {
+      this.erro.set('Erro ao conectar com o servidor. Verifique sua conexão.');
     } finally {
       this.conectando.set(false);
       this.carregando.set(false);
-      this.cdr.markForCheck();
     }
   }
 
@@ -215,7 +206,13 @@ export class WhatsappIntegracaoComponent implements OnInit {
       const raw = await firstValueFrom(
         this.http.get<InstancesResponse>(`${this.apiUrl}/devices`),
       );
-      this.dispositivos.set(Array.isArray(raw) ? raw : []);
+      const lista = Array.isArray(raw) ? raw : [];
+      const conectados = lista.filter(d => 
+        d.connectionStatus === 'open' || 
+        (d as any).status === 'open' || 
+        (d as any).state === 'open'
+      );
+      this.dispositivos.set(conectados);
     } catch {
       this.dispositivos.set([]);
     }
@@ -279,4 +276,5 @@ export class WhatsappIntegracaoComponent implements OnInit {
     return cleaned;
   }
 }
+
 

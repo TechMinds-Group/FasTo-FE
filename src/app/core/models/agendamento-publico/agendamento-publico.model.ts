@@ -21,6 +21,8 @@ export interface ServicoDisponivel {
   id: string;
   nome: string;
   preco: number;
+  /** Quando true, o preço é um valor inicial ("a partir de") e pode variar conforme o caso. */
+  precoAPartirDe: boolean;
   duracao: number;
 }
 

@@ -320,17 +320,21 @@
 
               <div class="agendamento-wizard__resumo-total">
                 <span>Total</span>
-                <strong>
-                  @if (tipoAgendamento() === 'plano') {
-                    Incluso no plano
+                @if (tipoAgendamento() === 'plano') {
+                  <strong>Incluso no plano</strong>
+                } @else {
+                  @if (servicoSelecionado(); as servico) {
+                    @let preco = formatarPrecoServico(servico);
+                    <strong>
+                      @if (preco.qualificador; as qualificador) {
+                        <span class="agendamento-wizard__resumo-total-prefixo">{{ qualificador }}</span>
+                      }
+                      {{ preco.valor }}
+                    </strong>
                   } @else {
-                    @if (totalServico(); as total) {
-                      {{ formatarPreco(total) }}
-                    } @else {
-                      —
-                    }
+                    <strong>—</strong>
                   }
-                </strong>
+                }
               </div>
             </aside>
           </div>

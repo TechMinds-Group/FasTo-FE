@@ -1,0 +1,27 @@
+<tm-modal
+  title="Excluir Categoria"
+  icon="fas fa-exclamation-triangle"
+  iconClass="text-danger"
+  confirmClass="btn-danger"
+  confirmLabel="Excluir"
+  cancelLabel="Cancelar"
+  [show]="show()"
+  (cancel)="onCancel()"
+  (confirm)="onConfirm()"
+>
+  @if (categoria(); as c) {
+    <div class="p-1">
+      <p class="mb-0 text-main">
+        Tem certeza que deseja excluir a categoria <strong>{{ c.nome }}</strong>?
+      </p>
+      @if (c.quantidadeServicos > 0) {
+        <p class="text-warning small mt-2 mb-0">
+          <i class="fas fa-triangle-exclamation me-1"></i>Esta categoria possui {{ c.quantidadeServicos }} serviço(s) vinculado(s).
+        </p>
+      }
+      <p class="text-danger small mt-2 mb-0">
+        <i class="fas fa-exclamation-triangle me-1"></i>Esta ação não pode ser desfeita.
+      </p>
+    </div>
+  }
+</tm-modal>

@@ -512,6 +512,14 @@
       font-size: 1.05rem;
       color: var(--tm-primary);
     }
+
+    &-prefixo {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--tm-text-secondary);
+      text-align: right;
+    }
   }
 
   &__endereco-wrapper {

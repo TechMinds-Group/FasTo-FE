@@ -10,8 +10,45 @@ export type { PlanoAssinatura } from '../models/assinatura-sistema/plano-assinat
 export type { PagamentoPixResponse } from '../models/assinatura-sistema/pagamento-pix-response.model';
 export type { StatusPagamentoResponse } from '../models/assinatura-sistema/status-pagamento-response.model';
 
+export interface CartaoCreditoRequest {
+  holderName: string;
+  number: string;
+  expiryMonth: string;
+  expiryYear: string;
+  ccv: string;
+  cpfCnpj: string;
+  phone: string;
+  email: string;
+  postalCode: string;
+  addressNumber: string;
+}
+
+export interface CheckoutAsaasRequest {
+  planoId: string;
+  formaPagamento: 'PIX' | 'BOLETO' | 'CREDIT_CARD';
+  diaVencimento: number;
+  email?: string;
+  cnpj?: string;
+  telefone?: string;
+  cartao?: CartaoCreditoRequest;
+}
+
+export interface CheckoutAsaasResponse {
+  subscriptionId: string;
+  paymentId: string;
+  formaPagamento: string;
+  valorPlano: number;
+  taxaGateway: number;
+  valorTotal: number;
+  pixCopiaECola?: string;
+  pixQrCodeBase64?: string;
+  linhaDigitavelBoleto?: string;
+  boletoPdfUrl?: string;
+  status: string;
+}
+
 /**
- * Serviço responsável pela comunicação HTTP com todos os endpoints do módulo de Assinatura do Sistema e Checkout Pix.
+ * Serviço responsável pela comunicação HTTP com todos os endpoints do módulo de Assinatura do Sistema e Checkout.
  */
 @Injectable({
   providedIn: 'root',
@@ -19,6 +56,16 @@ export type { StatusPagamentoResponse } from '../models/assinatura-sistema/statu
 export class AssinaturaSistemaService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.apiUrl}/assinatura-sistema`;
+
+  public checkoutAsaas(request: CheckoutAsaasRequest): Observable<CheckoutAsaasResponse> {
+    return this.http.post<CheckoutAsaasResponse>(`${this.apiUrl}/checkout-asaas`, request, {
+      withCredentials: true,
+    });
+  }
+
+  public sincronizarPagamento(): Observable<{ sincronizado: boolean }> {
+    return this.http.post<{ sincronizado: boolean }>(`${this.apiUrl}/sincronizar`, {}, { withCredentials: true });
+  }
 
   public getMercadoPagoConfig(): Observable<{ publicKey: string }> {
     return this.http.get<{ publicKey: string }>(`${this.apiUrl}/config`, {
@@ -61,3 +108,4 @@ export class AssinaturaSistemaService {
     );
   }
 }
+

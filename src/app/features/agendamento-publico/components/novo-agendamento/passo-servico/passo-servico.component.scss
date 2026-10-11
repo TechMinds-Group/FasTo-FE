@@ -77,6 +77,21 @@
     }
   }
 
+  &__preco-bloco {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.1rem;
+  }
+
+  &__preco-rotulo {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--tm-text-secondary);
+    white-space: nowrap;
+  }
+
   &__preco {
     font-size: 0.95rem;
     font-weight: 700;

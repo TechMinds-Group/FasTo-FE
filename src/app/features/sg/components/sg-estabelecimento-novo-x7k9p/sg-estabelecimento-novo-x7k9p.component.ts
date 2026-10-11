@@ -98,14 +98,7 @@ export class SgEstabelecimentoNovoX7k9pComponent implements OnInit {
         password: raw.password
       }).toPromise();
 
-      const createdEmpresaId = res?.id || res?.empresaId || res?.tenantId;
-      if (createdEmpresaId && raw.presetId) {
-        try {
-          await this.authService.aplicarSgPreset(createdEmpresaId, raw.presetId).toPromise();
-        } catch {
-          // Ignora se o preset já tiver sido aplicado pelo backend
-        }
-      }
+      // O preset já é aplicado pelo próprio create (vínculo + fluxos + mensagens do WhatsApp)
 
       this.toastService.success(`Estabelecimento criado com sucesso! Admin: ${res?.emailAdmin}`, 'Sucesso');
       this.voltar();

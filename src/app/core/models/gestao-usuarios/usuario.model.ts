@@ -14,4 +14,6 @@ export interface Usuario {
   planoAssinatura?: string;
   plano?: string;
   fotoUrl?: string;
+  tema?: 'dispositivo' | 'escuro' | 'claro';
 }
+

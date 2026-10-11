@@ -202,13 +202,7 @@ export class SgEstabelecimentoDetalhesX7k9pComponent implements OnInit {
         assinaturaValidaAte: raw.assinaturaValidaAte || null,
       }).toPromise();
 
-      if (raw.presetId) {
-        try {
-          await this.authService.aplicarSgPreset(emp.id, raw.presetId).toPromise();
-        } catch {
-          // Ignora se o preset tiver sido aplicado diretamente no update
-        }
-      }
+      // O preset já é aplicado pelo próprio update (vínculo + fluxos + mensagens do WhatsApp)
 
       this.toastService.success('Estabelecimento e Modelo de WhatsApp atualizados com sucesso!', 'Sucesso');
       this.carregarDetalhes(emp.id);

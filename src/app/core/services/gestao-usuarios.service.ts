@@ -100,4 +100,11 @@ export class GestaoUsuariosService {
     await this.carregarUsuarios();
     return res;
   }
+
+  async removerFoto(id: string): Promise<void> {
+    await firstValueFrom(
+      this.http.delete<void>(`${this.apiUrl}/${id}/foto`, { withCredentials: true }),
+    );
+    await this.carregarUsuarios();
+  }
 }

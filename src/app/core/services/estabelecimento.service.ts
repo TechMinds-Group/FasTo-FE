@@ -2,7 +2,40 @@ import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { firstValueFrom } from 'rxjs';
-import { DiaFuncionamento } from '../models/configuracoes/horario-estabelecimento.model';
+import { DiaFuncionamento, ConfiguracaoHorarioOpcoes } from '../models/configuracoes/horario-estabelecimento.model';
+import { TmToastService } from '@techminds-group/tm-angular-lib';
+
+/** Validador centralizado de arquivos de imagem no frontend (máximo 3MB, formatos JPG, PNG, WEBP, GIF). */
+export function validarImagemArquivo(file: File | undefined | null, toastService: TmToastService): boolean {
+  if (!file) {
+    return false;
+  }
+
+  // 1. Limite de tamanho: 3MB (3 * 1024 * 1024 bytes)
+  const MAX_BYTES = 3 * 1024 * 1024;
+  if (file.size > MAX_BYTES) {
+    toastService.error('A imagem excede o tamanho máximo permitido de 3MB.', 'Tamanho Excedido');
+    return false;
+  }
+
+  // 2. Extensões e MIME types permitidos (formatos conhecidos de imagem: JPG, JPEG, PNG, WEBP, GIF)
+  const extensoesPermitidas = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+  const mimeTypesPermitidos = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+
+  const nome = file.name.toLowerCase();
+  const temExtensaoValida = extensoesPermitidas.some((ext) => nome.endsWith(ext));
+  const temMimeValido = !file.type || mimeTypesPermitidos.includes(file.type.toLowerCase());
+
+  if (!temExtensaoValida || !temMimeValido) {
+    toastService.error(
+      'Formato de imagem não permitido. Utilize apenas arquivos nos formatos JPG, PNG, WEBP ou GIF.',
+      'Formato Inválido',
+    );
+    return false;
+  }
+
+  return true;
+}
 
 export interface ViaCepResult {
   cep: string;
@@ -122,8 +155,67 @@ export class EstabelecimentoService {
     this._horarios.set(dias);
   }
 
+  async carregarConfiguracoesHorario(): Promise<ConfiguracaoHorarioOpcoes> {
+    try {
+      return await firstValueFrom(
+        this.http.get<ConfiguracaoHorarioOpcoes>(`${this.apiUrl}/configuracoes-horario`, {
+          headers: new HttpHeaders({ 'X-Skip-Error-Toast': 'true' }),
+        }),
+      );
+    } catch {
+      return { intervaloAgendamentoMinutos: 30, horarioPorDemanda: false, fechamentoAutomaticoHoras: 2 };
+    }
+  }
+
+  async salvarConfiguracoesHorario(opcoes: ConfiguracaoHorarioOpcoes): Promise<void> {
+    await firstValueFrom(
+      this.http.put(`${this.apiUrl}/configuracoes-horario`, opcoes),
+    );
+  }
+
   async carregarInfo(): Promise<EstabelecimentoInfo> {
     return firstValueFrom(this.http.get<EstabelecimentoInfo>(`${this.apiUrl}/info`));
+  }
+
+  async carregarValidadeLink(): Promise<number> {
+    try {
+      const response = await firstValueFrom(
+        this.http.get<{ dias: number }>(`${environment.apiUrl}/configuracoes/link`, {
+          headers: new HttpHeaders({ 'X-Skip-Error-Toast': 'true' }),
+        }),
+      );
+      return response.dias;
+    } catch {
+      return 5;
+    }
+  }
+
+  async salvarValidadeLink(dias: number): Promise<void> {
+    await firstValueFrom(
+      this.http.put(`${environment.apiUrl}/configuracoes/link`, { dias }),
+    );
+  }
+
+  /** Minutos de reserva do slot da lista de espera (RN-076); default 15 quando não configurado. */
+  async carregarMinutosReservaListaEspera(): Promise<number> {
+    try {
+      const response = await firstValueFrom(
+        this.http.get<{ minutos: number }>(`${environment.apiUrl}/configuracoes/lista-espera`, {
+          headers: new HttpHeaders({ 'X-Skip-Error-Toast': 'true' }),
+        }),
+      );
+      return response.minutos;
+    } catch {
+      return 15;
+    }
+  }
+
+
+  /** Persiste os minutos de reserva da lista de espera (validação ≥ 1 no backend — RN-076). */
+  async salvarMinutosReservaListaEspera(minutos: number): Promise<void> {
+    await firstValueFrom(
+      this.http.put(`${environment.apiUrl}/configuracoes/lista-espera`, { minutos }),
+    );
   }
 
   /** Obtém o link público de agendamento; no primeiro acesso o backend gera e persiste. */
@@ -139,6 +231,14 @@ export class EstabelecimentoService {
   /** Envia logo/capa via multipart; retorna as URLs relativas salvas em disco. */
   async salvarImagens(formData: FormData): Promise<{ logoUrl?: string; capaUrl?: string }> {
     return firstValueFrom(this.http.post<{ logoUrl?: string; capaUrl?: string }>(`${this.apiUrl}/imagens`, formData));
+  }
+
+  /** Upload individual de imagem para serviços ou planos. */
+  async uploadImagemItem(file: File, tipo: 'servico' | 'plano'): Promise<{ imagemUrl: string }> {
+    const formData = new FormData();
+    formData.append('arquivo', file);
+    formData.append('tipo', tipo);
+    return firstValueFrom(this.http.post<{ imagemUrl: string }>(`${this.apiUrl}/imagens/upload`, formData));
   }
 
   /** Converte URL relativa da API em URL absoluta para exibição; mantém base64/data para preview. */

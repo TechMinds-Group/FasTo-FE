@@ -6,6 +6,7 @@ import { EstabelecimentoInfo, EstabelecimentoService, obterIconeAleatorioCapa, o
 import { AgendamentoPublico, HorarioDisponivel, PlanoAtivoCliente, ProfissionalDisponivel, ServicoDisponivel } from '../../../../core/models/agendamento-publico/agendamento-publico.model';
 import { AGENDAMENTO_PUBLICO_CONFIG } from '../../models/agendamento-publico.config';
 import { TemaPublicoService } from '../../services/tema-publico.service';
+import { formatarPrecoServico } from '../../services/formatador-preco-servico';
 import { PassoProfissionalComponent } from './passo-profissional/passo-profissional.component';
 import { PassoServicoComponent } from './passo-servico/passo-servico.component';
 import { PassoDataHorarioComponent } from './passo-data-horario/passo-data-horario.component';
@@ -120,7 +121,7 @@ export class NovoAgendamentoComponent implements OnInit, OnDestroy {
   });
 
   /** Total do serviço selecionado (resumo lateral). */
-  readonly totalServico = computed(() => this.servicoSelecionado()?.preco ?? null);
+  protected readonly formatarPrecoServico = formatarPrecoServico;
 
   /** Duração do agendamento atual: serviço selecionado ou duração total do plano. */
   readonly duracaoAtual = computed(() => {
@@ -129,10 +130,6 @@ export class NovoAgendamentoComponent implements OnInit, OnDestroy {
     }
     return this.servicoSelecionado()?.duracao ?? null;
   });
-
-  formatarPreco(preco: number): string {
-    return preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-  }
 
   formatarData(data: string): string {
     const [ano, mes, dia] = data.split('-');

@@ -1,15 +1,18 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { TmTextComponent, TmToastService } from '@techminds-group/tm-angular-lib';
+import { TmSelectComponent, TmSelectOption, TmTextComponent, TmToastService } from '@techminds-group/tm-angular-lib';
 import { CatalogoService } from '../../../../core/services/catalogo.service';
+import { CatalogoCategoriaService } from '../../../../core/services/catalogo-categoria.service';
+import { ThemeService } from '../../../../core/services/theme.service';
+import { EstabelecimentoService, validarImagemArquivo } from '../../../../core/services/estabelecimento.service';
 import { ServicoPayload } from '../../models/servico-payload.model';
 
 @Component({
   selector: 'app-catalogo-novo',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TmTextComponent],
+  imports: [CommonModule, ReactiveFormsModule, TmTextComponent, TmSelectComponent],
   templateUrl: './catalogo-novo.component.html',
   styleUrl: './catalogo-novo.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -18,24 +21,122 @@ export class CatalogoNovoComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
   private readonly catalogoService = inject(CatalogoService);
+  private readonly categoriasService = inject(CatalogoCategoriaService);
   private readonly toastService = inject(TmToastService);
+  protected readonly themeService = inject(ThemeService);
+  protected readonly estabelecimentoService = inject(EstabelecimentoService);
 
   protected readonly salvando = signal<boolean>(false);
+  protected readonly uploadingSlot = signal<number | null>(null);
+  protected readonly imagemUrl = signal<string | null>(null);
+  protected readonly imagemUrl2 = signal<string | null>(null);
+  protected readonly imagemUrl3 = signal<string | null>(null);
+
+  protected readonly mostrarSlot2 = signal<boolean>(false);
+  protected readonly mostrarSlot3 = signal<boolean>(false);
+
+  protected readonly imagemVisivel1 = computed(() =>
+    this.estabelecimentoService.resolverUrl(this.imagemUrl() || undefined),
+  );
+  protected readonly imagemVisivel2 = computed(() =>
+    this.estabelecimentoService.resolverUrl(this.imagemUrl2() || undefined),
+  );
+  protected readonly imagemVisivel3 = computed(() =>
+    this.estabelecimentoService.resolverUrl(this.imagemUrl3() || undefined),
+  );
 
   protected readonly form: FormGroup = this.fb.group({
     nome: ['', [Validators.required, Validators.maxLength(60)]],
-    preco: [''],
+    preco: ['', [Validators.required]],
+    precoAPartirDe: [false],
     duracao: [''],
+    descricao: [''],
+    categoriaId: ['', [Validators.required]],
   });
+
+  protected readonly categoriasOptions = computed<TmSelectOption[]>(() =>
+    this.categoriasService.categorias().map((c) => ({ value: c.id, label: c.nome })),
+  );
 
   ngOnInit(): void {
     if (this.catalogoService.servicos().length === 0) {
       this.catalogoService.carregarServicos().catch(() => undefined);
     }
+    if (this.categoriasService.categorias().length === 0) {
+      this.categoriasService.carregarCategorias().catch(() => undefined);
+    }
   }
 
   voltar(): void {
     this.router.navigate(['/servicos/catalogo']);
+  }
+
+  triggerUpload(input: HTMLInputElement): void {
+    input.click();
+  }
+
+  adicionarMaisFoto(): void {
+    if (!this.mostrarSlot2()) {
+      this.mostrarSlot2.set(true);
+    } else if (!this.mostrarSlot3()) {
+      this.mostrarSlot3.set(true);
+    }
+  }
+
+  async onImagemSelected(event: Event, slot: 1 | 2 | 3): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    if (!validarImagemArquivo(file, this.toastService)) {
+      input.value = '';
+      return;
+    }
+
+    this.uploadingSlot.set(slot);
+    try {
+      const result = await this.estabelecimentoService.uploadImagemItem(file, 'servico');
+      if (slot === 1) {
+        this.imagemUrl.set(result.imagemUrl);
+      } else if (slot === 2) {
+        this.imagemUrl2.set(result.imagemUrl);
+        this.mostrarSlot2.set(true);
+      } else if (slot === 3) {
+        this.imagemUrl3.set(result.imagemUrl);
+        this.mostrarSlot3.set(true);
+      }
+      this.toastService.success(`Imagem ${slot} enviada com sucesso!`, 'Sucesso');
+    } catch (err: any) {
+      const message = err?.error?.message || 'Falha ao enviar imagem. Verifique se o arquivo é válido (máx 3MB).';
+      this.toastService.error(message, 'Erro');
+    } finally {
+      this.uploadingSlot.set(null);
+      input.value = '';
+    }
+  }
+
+  removerImagem(slot: 1 | 2 | 3): void {
+    if (slot === 1) {
+      this.imagemUrl.set(null);
+    } else if (slot === 2) {
+      this.imagemUrl2.set(null);
+      this.mostrarSlot2.set(false);
+    } else if (slot === 3) {
+      this.imagemUrl3.set(null);
+      this.mostrarSlot3.set(false);
+    }
+  }
+
+  removerUltimaFoto(): void {
+    if (this.mostrarSlot3() || this.imagemUrl3()) {
+      this.imagemUrl3.set(null);
+      this.mostrarSlot3.set(false);
+    } else if (this.mostrarSlot2() || this.imagemUrl2()) {
+      this.imagemUrl2.set(null);
+      this.mostrarSlot2.set(false);
+    } else if (this.imagemUrl()) {
+      this.imagemUrl.set(null);
+    }
   }
 
   async salvar(): Promise<void> {
@@ -49,9 +150,15 @@ export class CatalogoNovoComponent implements OnInit {
       const val = this.form.getRawValue();
       const payload: ServicoPayload = {
         nome: val.nome,
+        descricao: val.descricao || null,
         preco: this.parseCurrency(val.preco),
+        precoAPartirDe: val.precoAPartirDe === true,
         duracao: val.duracao ? Number(val.duracao) : null,
         status: 'Ativo',
+        categoriaId: val.categoriaId,
+        imagemUrl: this.imagemUrl() || null,
+        imagemUrl2: this.imagemUrl2() || null,
+        imagemUrl3: this.imagemUrl3() || null,
       };
       await this.catalogoService.adicionar(payload);
       this.toastService.success('Serviço cadastrado com sucesso!', 'Sucesso');

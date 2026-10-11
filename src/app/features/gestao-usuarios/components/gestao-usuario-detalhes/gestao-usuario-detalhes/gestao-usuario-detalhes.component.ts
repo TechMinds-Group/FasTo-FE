@@ -10,13 +10,12 @@ import {
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { TmTextComponent, TmSelectComponent, TmModalComponent, TmToastService } from '@techminds-group/tm-angular-lib';
+import { TmSelectComponent, TmTextComponent, TmToastService } from '@techminds-group/tm-angular-lib';
 import { GestaoUsuariosService } from '../../../../../core/services/gestao-usuarios.service';
 import { Usuario } from '../../../../../core/models/gestao-usuarios/usuario.model';
 import { NivelAcesso } from '../../../../../core/models/gestao-usuarios/nivel-acesso.model';
 import { AuthService } from '../../../../../core/services/auth.service';
 import { ThemeService } from '../../../../../core/services/theme.service';
-import { TranslatePipe } from '../../../../../shared/pipes/translate.pipe';
 import { PerfilBadgePipe } from '../../../pipes/perfil-badge.pipe';
 import { StatusBadgePipe } from '../../../pipes/status-badge.pipe';
 import { GestaoUsuariosHelperService } from '../../../services/gestao-usuarios-helper.service';
@@ -34,8 +33,6 @@ import { UsuarioModalExcluirComponent } from '../../modais/usuario-modal-excluir
     ReactiveFormsModule,
     TmTextComponent,
     TmSelectComponent,
-    TmModalComponent,
-    TranslatePipe,
     PerfilBadgePipe,
     StatusBadgePipe,
     UsuarioModalAlterarSenhaComponent,
@@ -52,9 +49,9 @@ export class GestaoUsuarioDetalhesComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   protected readonly gestaoUsuariosService = inject(GestaoUsuariosService);
   protected readonly helper = inject(GestaoUsuariosHelperService);
+  protected readonly themeService = inject(ThemeService);
   private readonly authService = inject(AuthService);
   private readonly toastService = inject(TmToastService);
-  protected readonly themeService = inject(ThemeService);
 
   protected readonly id = signal<string | null>(null);
   protected readonly usuario = signal<Usuario | null>(null);
@@ -69,14 +66,12 @@ export class GestaoUsuarioDetalhesComponent implements OnInit {
 
   protected readonly showChangePasswordModal = signal<boolean>(false);
   protected readonly showDeleteConfirmModal = signal<boolean>(false);
-  protected readonly showConfirmarAgendamentosFuturosModal = signal<boolean>(false);
-  protected readonly mensagemConfirmacaoFuturos = signal<string>('');
 
   protected readonly form: FormGroup = this.fb.group({
     nome: ['', [Validators.required, Validators.maxLength(60)]],
     sobrenome: ['', [Validators.maxLength(60)]],
     email: ['', [Validators.required, Validators.email]],
-    telefone: ['', [Validators.maxLength(15)]],
+    telefone: ['', [Validators.required, Validators.maxLength(15)]],
     nivelAcessoId: [''],
     status: ['Ativo'],
   });
@@ -118,16 +113,16 @@ export class GestaoUsuarioDetalhesComponent implements OnInit {
   }
 
   protected onPerfisChange(val: unknown): void {
-    if (Array.isArray(val)) {
-      let selected = val as string[];
-      if (selected.length > 2) {
-        selected = selected.slice(0, 2);
-      }
-      if (selected.length === 0 && this.perfilOptions().length > 0) {
-        selected = [this.perfilOptions()[0].value];
-      }
-      this.perfisSelecionados.set(selected);
+    const selected = Array.isArray(val)
+      ? (val as string[])
+      : typeof val === 'string'
+      ? [val]
+      : [];
+    let sliced = selected.slice(0, 2);
+    if (sliced.length === 0 && this.perfilOptions().length > 0) {
+      sliced = [this.perfilOptions()[0].value];
     }
+    this.perfisSelecionados.set(sliced);
   }
 
   protected async salvarGeral(): Promise<void> {
@@ -143,16 +138,16 @@ export class GestaoUsuarioDetalhesComponent implements OnInit {
     this.salvando.set(true);
     try {
       const raw = this.form.value;
-      const selected = this.perfisSelecionados();
       const digitsTelefone = (raw.telefone ?? '').replace(/\D/g, '');
+      const selectedPerfis = this.perfisSelecionados();
 
       await this.gestaoUsuariosService.atualizar(userId, {
         nome: raw.nome,
         sobrenome: raw.sobrenome,
         email: raw.email,
         telefone: digitsTelefone,
-        nivelAcessoId: selected.length > 0 ? selected[0] : '',
-        secundarioNivelAcessoId: selected.length > 1 ? selected[1] : null,
+        nivelAcessoId: selectedPerfis.length > 0 ? selectedPerfis[0] : (raw.nivelAcessoId || ''),
+        secundarioNivelAcessoId: selectedPerfis.length > 1 ? selectedPerfis[1] : null,
         status: raw.status,
       });
 
@@ -176,21 +171,43 @@ export class GestaoUsuarioDetalhesComponent implements OnInit {
     if (!this.id()) return;
 
     try {
-      if (payload.forgotPassword && this.isAdmin()) {
-        const temp = await this.gestaoUsuariosService.resetarSenha(this.id()!);
-        this.toastService.success(`Senha temporária gerada: ${temp}`, 'Sucesso');
-      } else {
-        await this.gestaoUsuariosService.alterarSenha(this.id()!, {
-          oldPassword: payload.currentPassword || '',
-          newPassword: payload.newPassword,
-          forgotPassword: payload.forgotPassword,
-        });
-        this.toastService.success('Senha alterada com sucesso!', 'Sucesso');
-      }
+      await this.gestaoUsuariosService.alterarSenha(this.id()!, {
+        oldPassword: payload.currentPassword || '',
+        newPassword: payload.newPassword,
+        forgotPassword: payload.forgotPassword,
+      });
+      this.toastService.success('Senha alterada com sucesso!', 'Sucesso');
       this.showChangePasswordModal.set(false);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Erro ao alterar senha', err);
-      this.toastService.error('Erro ao alterar senha.', 'Erro');
+      let mensagem = 'Erro ao alterar senha.';
+
+      if (err?.error) {
+        if (typeof err.error === 'string') {
+          mensagem = err.error;
+        } else if (err.error.message || err.error.Message) {
+          mensagem = err.error.message || err.error.Message;
+        } else if (err.error.detail) {
+          mensagem = err.error.detail;
+        } else if (err.error.errors) {
+          const details: string[] = [];
+          for (const key of Object.keys(err.error.errors)) {
+            const fieldErrors = err.error.errors[key];
+            if (Array.isArray(fieldErrors)) {
+              details.push(...fieldErrors);
+            } else if (typeof fieldErrors === 'string') {
+              details.push(fieldErrors);
+            }
+          }
+          if (details.length > 0) {
+            mensagem = details.join(' ');
+          }
+        }
+      } else if (err?.message) {
+        mensagem = err.message;
+      }
+
+      this.toastService.error(mensagem, 'Falha ao alterar senha');
     }
   }
 
@@ -198,24 +215,16 @@ export class GestaoUsuarioDetalhesComponent implements OnInit {
     this.showDeleteConfirmModal.set(true);
   }
 
-  async confirmarExcluir(confirmarFuturos = false): Promise<void> {
+  async confirmarExcluir(): Promise<void> {
     if (!this.id()) return;
     try {
-      await this.gestaoUsuariosService.remover(this.id()!, confirmarFuturos);
+      await this.gestaoUsuariosService.remover(this.id()!);
       this.showDeleteConfirmModal.set(false);
-      this.showConfirmarAgendamentosFuturosModal.set(false);
       this.toastService.success('Usuário excluído com sucesso!', 'Sucesso');
       this.voltar();
-    } catch (err: unknown) {
-      this.showDeleteConfirmModal.set(false);
-      if (typeof err === 'object' && err !== null && 'requiresConfirmation' in err) {
-        this.mensagemConfirmacaoFuturos.set((err as any).message || '');
-        this.showConfirmarAgendamentosFuturosModal.set(true);
-        return;
-      }
-      const mensagem = err instanceof Error ? err.message : 'Erro ao remover usuário.';
+    } catch (err) {
       console.error('Erro ao remover usuário', err);
-      this.toastService.error(mensagem, 'Erro');
+      this.toastService.error('Erro ao remover usuário.', 'Erro');
     }
   }
 
@@ -256,19 +265,11 @@ export class GestaoUsuarioDetalhesComponent implements OnInit {
 
   private preencherFormulario(u: Usuario): void {
     const selectedValues: string[] = [];
-    if (u.nivelAcessoId) {
-      selectedValues.push(u.nivelAcessoId);
-    }
-    if (u.secundarioNivelAcessoId) {
-      selectedValues.push(u.secundarioNivelAcessoId);
-    }
+    if (u.nivelAcessoId) selectedValues.push(u.nivelAcessoId);
+    if (u.secundarioNivelAcessoId) selectedValues.push(u.secundarioNivelAcessoId);
 
-    if (selectedValues.length === 0) {
-      const userPerfis = (u.perfil || '')
-        .split(',')
-        .map((p) => p.trim())
-        .filter(Boolean);
-
+    if (selectedValues.length === 0 && u.perfil) {
+      const userPerfis = u.perfil.split(',').map((p) => p.trim()).filter(Boolean);
       for (const pName of userPerfis) {
         const matched = this.perfilOptions().find((n) => n.label === pName || n.value === pName);
         if (matched && !selectedValues.includes(matched.value)) {
@@ -288,6 +289,7 @@ export class GestaoUsuarioDetalhesComponent implements OnInit {
       sobrenome: u.sobrenome ?? '',
       email: u.email ?? '',
       telefone: this.formatarTelefone(u.telefone ?? ''),
+      nivelAcessoId: u.nivelAcessoId ?? '',
       status: u.status ?? 'Ativo',
     });
   }

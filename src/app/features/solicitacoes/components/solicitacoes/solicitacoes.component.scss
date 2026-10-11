@@ -1,0 +1,24 @@
+:host-context([data-theme='dark']) {
+  .custom-dark-text {
+    color: #ffffff !important;
+  }
+
+  .custom-dark-card {
+    background-color: #161b22 !important;
+    color: #f8fafc !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  }
+
+  .custom-dark-input {
+    background-color: #0d1117 !important;
+    color: #f8fafc !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    font-weight: 500;
+
+    &:focus {
+      border-color: #0d6efd !important;
+      box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25) !important;
+    }
+  }
+}

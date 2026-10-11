@@ -25,6 +25,7 @@ export interface AgendamentoApi {
   status: string;
   observacoes?: string;
   naoCompareceuNotificado?: boolean;
+  ehEncaixe?: boolean;
 }
 
 const STATUS_VALIDOS = [
@@ -50,23 +51,35 @@ function normalizarStatus(status: string): Agendamento['status'] {
 
 /** Mapeia o DTO da API para o modelo de domínio Agendamento (reutilizado por outros services). */
 export function mapearAgendamento(api: AgendamentoApi): Agendamento {
+  let servicoNome = api.servicoNome;
+  let observacoes = api.observacoes;
+
+  if (observacoes && observacoes.startsWith('[Serviços: ')) {
+    const idx = observacoes.indexOf(']');
+    if (idx > 11) {
+      servicoNome = observacoes.substring(11, idx);
+      observacoes = observacoes.substring(idx + 1).trim() || undefined;
+    }
+  }
+
   return {
     id: api.id,
     clienteId: api.clienteId,
     clienteNome: api.clienteNome,
     clienteTelefone: api.clienteTelefone ?? '',
-    servicoNome: api.servicoNome,
+    servicoNome: servicoNome,
     profissionalId: api.profissionalId,
     profissionalNome: api.profissionalNome,
     dataInicio: agendamentoParaDateLocal(api.dataInicio),
     dataFim: agendamentoParaDateLocal(api.dataFim),
     status: normalizarStatus(api.status),
     preco: api.preco,
-    observacoes: api.observacoes,
+    observacoes: observacoes,
     tipo: api.tipo ?? 'servico',
     planoId: api.planoId,
     planoNome: api.planoNome,
     naoCompareceuNotificado: api.naoCompareceuNotificado ?? false,
+    ehEncaixe: api.ehEncaixe ?? false,
   };
 }
 
@@ -109,8 +122,11 @@ export class AgendamentosService {
     clienteTelefone: string;
     profissionalId: string;
     servicoId: string;
+    servicoIds?: string[];
     dataInicio: string;
+    tipo?: string;
     observacoes?: string;
+    ehEncaixe?: boolean;
   }): Promise<Agendamento> {
     const data = await firstValueFrom(
       this.http.post<AgendamentoApi>(this.apiUrl, dados, { withCredentials: true }),
@@ -122,8 +138,10 @@ export class AgendamentosService {
     id: string,
     dados: {
       servicoId?: string;
+      servicoIds?: string[];
       dataInicio?: string;
-      status?: 'confirmado' | 'recusado' | 'nao_compareceu' | 'concluido';
+      status?: 'confirmado' | 'recusado' | 'nao_compareceu' | 'concluido' | 'agendado';
+      tipo?: string;
       observacoes?: string;
     },
   ): Promise<Agendamento> {
