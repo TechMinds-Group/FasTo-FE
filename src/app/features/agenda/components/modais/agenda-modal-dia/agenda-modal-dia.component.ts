@@ -33,15 +33,21 @@ import {
 import { AgendamentosService } from '../../../../../core/services/agendamentos.service';
 import { AuthService } from '../../../../../core/services/auth.service';
 import { CatalogoService } from '../../../../../core/services/catalogo.service';
+import { CatalogoCategoriaService } from '../../../../../core/services/catalogo-categoria.service';
 import { ClubesService } from '../../../../../core/services/clubes.service';
 import { ClientesService } from '../../../../../core/services/clientes.service';
 import { GestaoUsuariosService } from '../../../../../core/services/gestao-usuarios.service';
 import { LanguageService } from '../../../../../core/services/language.service';
 import { ThemeService } from '../../../../../core/services/theme.service';
 import { BloqueioAgendaDTO, BloqueioAgendaService } from '../../../../../core/services/bloqueio-agenda.service';
+import { ServicoCatalogo } from '../../../../../core/models/catalogo/servico.model';
 import { TxKey } from '../../../../../core/i18n/i18n.types';
 
 const NOVO_CLIENTE_VALUE = '__cadastrar_cliente__';
+/** Pseudo-categoria para edição de agendamentos legados do tipo Plano (Clube), que não pertencem a categorias. */
+const PLANO_CATEGORIA_VALUE = '__plano_clube__';
+/** Pseudo-categoria para serviços ativos sem categoria vinculada. */
+const SEM_CATEGORIA_VALUE = '__sem_categoria__';
 
 @Component({
   selector: 'app-agenda-modal-dia',
@@ -66,6 +72,7 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
   private readonly agendamentosService = inject(AgendamentosService);
   private readonly authService = inject(AuthService);
   private readonly catalogoService = inject(CatalogoService);
+  private readonly catalogoCategoriaService = inject(CatalogoCategoriaService);
   private readonly clubesService = inject(ClubesService);
   private readonly clientesService = inject(ClientesService);
   private readonly gestaoUsuariosService = inject(GestaoUsuariosService);
@@ -102,7 +109,8 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
   protected readonly horaOptions = signal<TmSelectOption<string>[]>([]);
 
   protected readonly clienteIdSelecionado = signal<string>('');
-  protected readonly tipoSelecionado = signal<string>('servico');
+  /** Categoria escolhida no formulário (id real, pseudo "sem categoria" ou pseudo "plano" em edição legada). */
+  protected readonly categoriaSelecionada = signal<string>('');
 
   protected getNomeClienteExibicao(c: { nome: string; sobrenome?: string | null }): string {
     const nome = c.nome ? c.nome.trim() : '';
@@ -133,18 +141,56 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
     cancelado: '#6c757d',
   };
 
+  /** Serviços ativos do tenant (com ou sem categoria). */
+  private servicosAtivos(): ServicoCatalogo[] {
+    return this.catalogoService
+      .servicos()
+      .filter((s) => !s.status || s.status === 'Ativo' || s.status.toLowerCase() === 'ativo');
+  }
+
+  /** Serviços ativos filtrados pela categoria escolhida (ou os órfãos, na pseudo-categoria). */
+  private servicosDaCategoria(categoriaId: string): ServicoCatalogo[] {
+    const ativos = this.servicosAtivos();
+    if (categoriaId === SEM_CATEGORIA_VALUE) {
+      return ativos.filter((s) => !s.categoriaId);
+    }
+    return ativos.filter((s) => s.categoriaId === categoriaId);
+  }
+
+  /** Categorias com ao menos um serviço ativo; inclui pseudo-opções de órfãos e de plano legado. */
+  protected readonly categoriaOptions = computed<TmSelectOption<string>[]>(() => {
+    const ativos = this.servicosAtivos();
+    const opcoes: TmSelectOption<string>[] = this.catalogoCategoriaService
+      .categorias()
+      .filter((c) => !c.status || c.status === 'Ativo' || c.status.toLowerCase() === 'ativo')
+      .filter((c) => ativos.some((s) => s.categoriaId === c.id))
+      .sort((a, b) => a.ordem - b.ordem)
+      .map((c) => ({ value: c.id, label: c.nome }));
+    if (ativos.some((s) => !s.categoriaId)) {
+      opcoes.push({ value: SEM_CATEGORIA_VALUE, label: 'Sem categoria' });
+    }
+    if (this.agendamentoEditando()?.tipo === 'plano') {
+      opcoes.push({ value: PLANO_CATEGORIA_VALUE, label: 'Plano (Clube)' });
+    }
+    return opcoes;
+  });
+
+  /** Edição legada de Plano (Clube): serviço vira seleção única. */
+  protected readonly ehPlanoSelecionado = computed(
+    () => this.categoriaSelecionada() === PLANO_CATEGORIA_VALUE,
+  );
+
   protected readonly servicoOptions = computed<TmSelectOption<string>[]>(() => {
-    const tipo = this.tipoSelecionado();
-    if (tipo === 'plano') {
+    if (this.ehPlanoSelecionado()) {
       return this.clubesService
         .clubes()
         .filter((c) => !c.status || c.status === 'Ativo' || c.status.toLowerCase() === 'ativo')
         .map((c) => ({ value: c.id, label: c.nome }));
     }
-    return this.catalogoService
-      .servicos()
-      .filter((s) => !s.status || s.status === 'Ativo' || s.status.toLowerCase() === 'ativo')
-      .map((s) => ({ value: s.id, label: s.nome }));
+    return this.servicosDaCategoria(this.categoriaSelecionada()).map((s) => ({
+      value: s.id,
+      label: s.nome,
+    }));
   });
 
   /** Profissionais do tenant com perfil Profissional (padrão ProfissionaisComponent), exibindo nome + sobrenome. */
@@ -214,17 +260,12 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
     return status === 'agendado' || status === 'pendente';
   });
 
-  protected readonly tipoOptions: TmSelectOption<string>[] = [
-    { value: 'servico', label: 'Serviço Avulso' },
-    { value: 'plano', label: 'Plano (Clube)' },
-  ];
-
   protected readonly form: FormGroup = this.fb.group({
     clienteNome: ['', [Validators.required]],
     clienteTelefone: [''],
     profissionalId: ['', [Validators.required]],
     servicoId: ['', [Validators.required]],
-    tipo: ['servico', [Validators.required]],
+    categoria: ['', [Validators.required]],
     horaInicio: ['', [Validators.required]],
     statusDecisao: ['confirmado'],
     observacoes: [''],
@@ -236,35 +277,27 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
   constructor() {
     const profissionalControl = this.form.get('profissionalId');
     const servicoControl = this.form.get('servicoId');
-    const tipoControl = this.form.get('tipo');
+    const categoriaControl = this.form.get('categoria');
     const ehEncaixeControl = this.form.get('ehEncaixe');
 
-    if (tipoControl) {
+    if (categoriaControl) {
       this.subscriptions.push(
-        tipoControl.valueChanges.subscribe((val) => {
-          const novoTipo = val || 'servico';
-          if (this.tipoSelecionado() !== novoTipo) {
-            this.tipoSelecionado.set(novoTipo);
+        categoriaControl.valueChanges.subscribe((val) => {
+          const novaCategoria = val || '';
+          if (this.categoriaSelecionada() !== novaCategoria) {
+            this.categoriaSelecionada.set(novaCategoria);
             const opts = this.servicoOptions();
             const currentVal = this.form.get('servicoId')?.value;
-            if (novoTipo === 'servico') {
-              let initial: string[] = [];
-              if (Array.isArray(currentVal)) {
-                initial = currentVal.filter((id) => opts.some((o) => o.value === id));
-              } else if (typeof currentVal === 'string' && opts.some((o) => o.value === currentVal)) {
-                initial = [currentVal];
-              }
-              if (initial.length === 0 && opts.length > 0) {
-                initial = [opts[0].value];
-              }
-              this.form.patchValue({ servicoId: initial });
-            } else {
-              let initial = typeof currentVal === 'string' ? currentVal : (Array.isArray(currentVal) && currentVal.length > 0 ? currentVal[0] : '');
-              if (opts.length > 0 && !opts.some((o) => o.value === initial)) {
-                initial = opts[0].value;
-              }
-              this.form.patchValue({ servicoId: initial });
+            let initial: string[] = [];
+            if (Array.isArray(currentVal)) {
+              initial = currentVal.filter((id) => opts.some((o) => o.value === id));
+            } else if (typeof currentVal === 'string' && opts.some((o) => o.value === currentVal)) {
+              initial = [currentVal];
             }
+            if (initial.length === 0 && opts.length > 0) {
+              initial = [opts[0].value];
+            }
+            this.form.patchValue({ servicoId: initial });
           }
         }),
       );
@@ -302,6 +335,7 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
     if (changes['show']?.currentValue === true) {
       await Promise.all([
         this.catalogoService.carregarServicos(),
+        this.catalogoCategoriaService.carregarCategorias(),
         firstValueFrom(this.clubesService.carregarClubes()),
         this.gestaoUsuariosService.carregarUsuarios(),
         this.clientesService.carregarClientes(),
@@ -455,22 +489,23 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
   protected abrirNovoForm(): void {
     this.agendamentoEditando.set(null);
     this.clienteIdSelecionado.set('');
-    this.tipoSelecionado.set('servico');
+    this.categoriaSelecionada.set('');
     const usuario = this.authService.currentUser();
     const ehAdmin = this.authService.hasAdminRole();
     const profissionalPadrao = ehAdmin
       ? (this.profissionalOptions()[0]?.value ?? '')
       : (usuario?.id ?? '');
 
-    const opts = this.servicoOptions();
-    const defaultServico = opts.length > 0 ? [opts[0].value] : [];
+    const primeiraCategoria = this.categoriaOptions()[0]?.value ?? '';
+    const servicosDaCategoria = this.servicosDaCategoria(primeiraCategoria);
+    const defaultServico = servicosDaCategoria.length > 0 ? [servicosDaCategoria[0].id] : [];
 
     this.form.reset({
       clienteNome: '',
       clienteTelefone: '',
       profissionalId: profissionalPadrao,
       servicoId: defaultServico,
-      tipo: 'servico',
+      categoria: primeiraCategoria,
       horaInicio: '',
       statusDecisao: 'confirmado',
       observacoes: '',
@@ -584,35 +619,40 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
     this.clienteIdSelecionado.set(clienteMatch?.id ?? '');
 
     const tipoVal = agendamento.tipo ?? 'servico';
-    this.tipoSelecionado.set(tipoVal);
 
-    let matchedServicoId = '';
+    let servicoVal: string | string[];
     if (tipoVal === 'plano') {
-      matchedServicoId =
+      // Agendamento legado de Plano (Clube): pseudo-categoria mantém o fluxo de edição funcionando.
+      this.categoriaSelecionada.set(PLANO_CATEGORIA_VALUE);
+      const matchedPlano =
         this.clubesService.clubes().find((c) => c.nome === agendamento.servicoNome || c.id === agendamento.servicoId)?.id ??
         agendamento.servicoId ??
         '';
+      servicoVal = matchedPlano || (this.servicoOptions()[0]?.value ?? '');
     } else {
-      matchedServicoId =
-        this.catalogoService.servicos().find((s) => s.nome === agendamento.servicoNome || s.id === agendamento.servicoId)?.id ??
-        agendamento.servicoId ??
-        '';
-    }
-
-    let servicoVal: string | string[];
-    if (tipoVal === 'servico') {
+      const ativos = this.servicosAtivos();
+      let matchedIds: string[] = [];
       if (agendamento.servicoNome && agendamento.servicoNome.includes(' + ')) {
         const names = agendamento.servicoNome.split(' + ').map((n) => n.trim().toLowerCase());
-        const matchedIds = this.catalogoService
-          .servicos()
-          .filter((s) => names.includes(s.nome.toLowerCase()))
-          .map((s) => s.id);
-        servicoVal = matchedIds.length > 0 ? matchedIds : (matchedServicoId ? [matchedServicoId] : []);
+        matchedIds = ativos.filter((s) => names.includes(s.nome.toLowerCase())).map((s) => s.id);
       } else {
-        servicoVal = matchedServicoId ? [matchedServicoId] : (this.servicoOptions()[0]?.value ? [this.servicoOptions()[0].value] : []);
+        const primary = ativos.find((s) => s.nome === agendamento.servicoNome || s.id === agendamento.servicoId);
+        if (primary) {
+          matchedIds = [primary.id];
+        }
       }
-    } else {
-      servicoVal = matchedServicoId || (this.servicoOptions()[0]?.value ?? '');
+
+      // Deriva a categoria a partir do serviço original do agendamento.
+      const categoriaDerivada =
+        ativos.find((s) => matchedIds.includes(s.id))?.categoriaId ?? '';
+      this.categoriaSelecionada.set(categoriaDerivada || SEM_CATEGORIA_VALUE);
+
+      if (matchedIds.length > 0) {
+        servicoVal = matchedIds;
+      } else {
+        const optsCategoria = this.servicosDaCategoria(this.categoriaSelecionada());
+        servicoVal = optsCategoria.length > 0 ? [optsCategoria[0].id] : [];
+      }
     }
 
     this.form.reset({
@@ -620,7 +660,7 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
       clienteTelefone: agendamento.clienteTelefone,
       profissionalId: agendamento.profissionalId,
       servicoId: servicoVal,
-      tipo: tipoVal,
+      categoria: this.categoriaSelecionada(),
       horaInicio: hora,
       statusDecisao: agendamento.status === 'recusado' ? 'recusado' : 'confirmado',
       observacoes: agendamento.observacoes ?? '',
@@ -680,14 +720,16 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
       const editando = this.agendamentoEditando();
       const primaryServicoId = servicoIds[0] ?? '';
       const clienteIdSelected = this.clienteIdSelecionado();
+      // Plano (Clube) só existe em edição legada; agendamentos novos são sempre do tipo serviço.
+      const tipoBackend = this.ehPlanoSelecionado() ? 'plano' : 'servico';
 
       if (editando) {
         await this.agendamentosService.editarManual(editando.id, {
           servicoId: primaryServicoId,
-          servicoIds: val.tipo === 'servico' ? servicoIds : [primaryServicoId],
+          servicoIds: tipoBackend === 'servico' ? servicoIds : [primaryServicoId],
           dataInicio: dataInicioIso,
           status: val.statusDecisao,
-          tipo: val.tipo,
+          tipo: tipoBackend,
           observacoes: val.observacoes,
         });
         this.toastService.success('Agendamento atualizado com sucesso');
@@ -698,9 +740,9 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
           clienteTelefone: val.clienteTelefone,
           profissionalId: val.profissionalId,
           servicoId: primaryServicoId,
-          servicoIds: val.tipo === 'servico' ? servicoIds : [primaryServicoId],
+          servicoIds: tipoBackend === 'servico' ? servicoIds : [primaryServicoId],
           dataInicio: dataInicioIso,
-          tipo: val.tipo,
+          tipo: tipoBackend,
           observacoes: val.observacoes,
           ehEncaixe: val.ehEncaixe ?? false,
         });

@@ -458,34 +458,34 @@
               </div>
             </div>
 
-            <!-- Row 2: Tipo de Agendamento e Serviço/Plano -->
+            <!-- Row 2: Categoria e Serviço (filtrado pela categoria) -->
             <div class="row g-3 mb-3">
               <div class="col-md-6 col-12">
                 <label
                   class="form-label small fw-bold text-muted text-uppercase tracking-wider mb-2 custom-dark-text"
                 >
-                  Tipo de Agendamento *
+                  Categoria *
                 </label>
                 <tm-select
-                  [options]="tipoOptions"
-                  [value]="form.get('tipo')?.value"
+                  [options]="categoriaOptions()"
+                  [value]="form.get('categoria')?.value"
                   [darkMode]="themeService.isDarkMode()"
-                  placeholder="Selecione o tipo..."
-                  (valueChange)="form.patchValue({ tipo: $event })"
+                  placeholder="Selecione a categoria..."
+                  (valueChange)="form.patchValue({ categoria: $event })"
                 ></tm-select>
               </div>
               <div class="col-md-6 col-12">
                 <label
                   class="form-label small fw-bold text-muted text-uppercase tracking-wider mb-2 custom-dark-text"
                 >
-                  {{ tipoSelecionado() === 'plano' ? 'Plano *' : ('AGENDA_MODAL.FORM.SERVICO' | translate) + ' *' }}
+                  {{ ehPlanoSelecionado() ? 'Plano *' : ('AGENDA_MODAL.FORM.SERVICO' | translate) + ' *' }}
                 </label>
                 <tm-select
                   [options]="servicoOptions()"
                   [value]="form.get('servicoId')?.value"
-                  [multiple]="tipoSelecionado() === 'servico'"
+                  [multiple]="!ehPlanoSelecionado()"
                   [darkMode]="themeService.isDarkMode()"
-                  [placeholder]="tipoSelecionado() === 'plano' ? 'Selecione o plano...' : ('AGENDA_MODAL.FORM.SERVICO_PLACEHOLDER' | translate)"
+                  [placeholder]="ehPlanoSelecionado() ? 'Selecione o plano...' : ('AGENDA_MODAL.FORM.SERVICO_PLACEHOLDER' | translate)"
                   (valueChange)="form.patchValue({ servicoId: $event })"
                 ></tm-select>
               </div>
@@ -551,34 +551,34 @@
           }
 
           @if (agendamentoEditando()) {
-            <!-- Row 1 (Edição): Tipo de Agendamento e Serviço/Plano -->
+            <!-- Row 1 (Edição): Categoria e Serviço (filtrado pela categoria) -->
             <div class="row g-3 mb-3">
               <div class="col-md-6 col-12">
                 <label
                   class="form-label small fw-bold text-muted text-uppercase tracking-wider mb-2 custom-dark-text"
                 >
-                  Tipo de Agendamento *
+                  Categoria *
                 </label>
                 <tm-select
-                  [options]="tipoOptions"
-                  [value]="form.get('tipo')?.value"
+                  [options]="categoriaOptions()"
+                  [value]="form.get('categoria')?.value"
                   [darkMode]="themeService.isDarkMode()"
-                  placeholder="Selecione o tipo..."
-                  (valueChange)="form.patchValue({ tipo: $event })"
+                  placeholder="Selecione a categoria..."
+                  (valueChange)="form.patchValue({ categoria: $event })"
                 ></tm-select>
               </div>
               <div class="col-md-6 col-12">
                 <label
                   class="form-label small fw-bold text-muted text-uppercase tracking-wider mb-2 custom-dark-text"
                 >
-                  {{ tipoSelecionado() === 'plano' ? 'Plano *' : ('AGENDA_MODAL.FORM.SERVICO' | translate) + ' *' }}
+                  {{ ehPlanoSelecionado() ? 'Plano *' : ('AGENDA_MODAL.FORM.SERVICO' | translate) + ' *' }}
                 </label>
                 <tm-select
                   [options]="servicoOptions()"
                   [value]="form.get('servicoId')?.value"
-                  [multiple]="tipoSelecionado() === 'servico'"
+                  [multiple]="!ehPlanoSelecionado()"
                   [darkMode]="themeService.isDarkMode()"
-                  [placeholder]="tipoSelecionado() === 'plano' ? 'Selecione o plano...' : ('AGENDA_MODAL.FORM.SERVICO_PLACEHOLDER' | translate)"
+                  [placeholder]="ehPlanoSelecionado() ? 'Selecione o plano...' : ('AGENDA_MODAL.FORM.SERVICO_PLACEHOLDER' | translate)"
                   (valueChange)="form.patchValue({ servicoId: $event })"
                 ></tm-select>
               </div>
