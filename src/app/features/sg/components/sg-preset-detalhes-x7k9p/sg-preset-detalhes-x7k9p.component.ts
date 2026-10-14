@@ -131,6 +131,13 @@ export class SgPresetDetalhesX7k9pComponent implements OnInit {
       ativo: false,
     },
     {
+      key: 'opc15OutrosAssuntos',
+      label: 'Outros assuntos (mensagem livre)',
+      descricao: 'Mensagem livre do cliente com protocolo; conversa fica em aberto com o profissional',
+      icone: '💬',
+      ativo: false,
+    },
+    {
       key: 'opc12Simular',
       label: '12. Simulação / Calculadora Estimativa',
       descricao: 'Coleta parâmetros para simulação prévia',
