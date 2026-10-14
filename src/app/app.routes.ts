@@ -301,6 +301,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'solicitacoes/novo',
+        loadComponent: () =>
+          import('./features/solicitacoes/components/solicitacoes-novo/solicitacoes-novo.component').then(
+            (m) => m.SolicitacoesNovoComponent,
+          ),
+      },
+      {
         path: 'solicitacoes/:id',
         loadComponent: () =>
           import('./features/solicitacoes/components/solicitacoes-detalhes/solicitacoes-detalhes.component').then(

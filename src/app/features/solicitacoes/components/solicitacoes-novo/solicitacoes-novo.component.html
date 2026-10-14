@@ -1,0 +1,127 @@
+<div class="container mt-5 mb-5">
+  <!-- Header: botão voltar + título fixo -->
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <button (click)="voltar()" class="btn btn-light shadow-sm rounded-circle p-0 d-flex align-items-center justify-content-center btn-voltar" title="Cancelar cadastro">
+      <i class="fas fa-arrow-left text-muted"></i>
+    </button>
+    <div>
+      <h1 class="h2 text-primary fw-bold mb-1 custom-dark-text">Nova Solicitação</h1>
+      <p class="text-muted small mb-0 custom-dark-text">Cadastre manualmente um orçamento. O protocolo é gerado automaticamente e os profissionais são avisados.</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm p-4 custom-dark-card rounded-4">
+        <form [formGroup]="form" (ngSubmit)="salvar()">
+          <div class="row g-3">
+            <!-- Nome do cliente -->
+            <div class="col-sm-6 col-12">
+              <tm-text
+                formControlName="nomeCliente"
+                label="Nome do cliente *"
+                placeholder="Nome do cliente"
+                class="custom-dark-text"
+              ></tm-text>
+              @if (form.get('nomeCliente')?.touched && form.get('nomeCliente')?.invalid) {
+                <div class="text-danger extra-small mt-1">Nome do cliente é obrigatório.</div>
+              }
+            </div>
+
+            <!-- Celular -->
+            <div class="col-sm-6 col-12">
+              <tm-text
+                formControlName="celular"
+                label="Celular / WhatsApp *"
+                placeholder="(11) 98888-7777"
+                mask="phone"
+                [maxlength]="15"
+                class="custom-dark-text"
+              ></tm-text>
+              @if (form.get('celular')?.touched && form.get('celular')?.invalid) {
+                <div class="text-danger extra-small mt-1">Celular é obrigatório.</div>
+              }
+            </div>
+
+            <!-- E-mail -->
+            <div class="col-12">
+              <tm-text
+                formControlName="email"
+                label="E-mail"
+                placeholder="email@exemplo.com (opcional)"
+                type="email"
+                class="custom-dark-text"
+              ></tm-text>
+            </div>
+
+            <!-- Categoria -->
+            <div class="col-sm-6 col-12">
+              <tm-select
+                formControlName="categoriaId"
+                label="Categoria *"
+                placeholder="Selecione uma categoria"
+                [options]="categoriasOptions()"
+                [darkMode]="themeService.isDarkMode()"
+                class="custom-dark-text"
+              ></tm-select>
+              @if (form.get('categoriaId')?.touched && form.get('categoriaId')?.invalid) {
+                <div class="text-danger extra-small mt-1">Categoria é obrigatória.</div>
+              }
+            </div>
+
+            <!-- Serviço -->
+            <div class="col-sm-6 col-12">
+              <tm-select
+                formControlName="servicoId"
+                label="Serviço *"
+                placeholder="Selecione primeiro uma categoria"
+                [options]="servicosOptions()"
+                [darkMode]="themeService.isDarkMode()"
+                class="custom-dark-text"
+              ></tm-select>
+              @if (form.get('servicoId')?.touched && form.get('servicoId')?.invalid) {
+                <div class="text-danger extra-small mt-1">Serviço é obrigatório.</div>
+              }
+            </div>
+
+            <!-- Descrição -->
+            <div class="col-12">
+              <label class="form-label small fw-bold text-muted text-uppercase tracking-wider mb-2">Descrição *</label>
+              <textarea
+                class="form-control rounded-3 custom-dark-input"
+                rows="4"
+                formControlName="descricao"
+                placeholder="Descreva a necessidade do cliente..."
+                aria-label="Descrição da solicitação"
+              ></textarea>
+              @if (form.get('descricao')?.touched && form.get('descricao')?.invalid) {
+                <div class="text-danger extra-small mt-1">Descrição é obrigatória.</div>
+              }
+            </div>
+          </div>
+
+          <!-- Barra de Ações -->
+          <div class="border-top pt-4 mt-4 d-flex align-items-center justify-content-end gap-3">
+            <button
+              type="button"
+              class="btn btn-outline-secondary px-4 py-2.5 rounded-3 fw-bold"
+              (click)="voltar()"
+              [disabled]="salvando()"
+            >
+              <i class="fas fa-times me-2"></i>Cancelar
+            </button>
+
+            <tm-button
+              label="Cadastrar Solicitação"
+              variant="primary"
+              icon="fas fa-save"
+              [disabled]="salvando() || form.invalid"
+              [loading]="salvando()"
+              (onClick)="salvar()"
+            ></tm-button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

@@ -9,6 +9,8 @@ export interface SolicitacaoWhatsApp {
   createdAtUtc: string;
   tenantId: string;
   tipoFluxo: string;
+  /** Pode ser null em registros antigos ou fluxos sem serviço. */
+  servicoId: string | null;
   nomeCliente: string;
   celular: string;
   email: string | null;
@@ -22,6 +24,20 @@ export interface SolicitacaoWhatsApp {
 
 export interface ResponderSolicitacao {
   resposta: string;
+}
+
+export interface AlterarServicoPayload {
+  categoriaId: string;
+  servicoId: string;
+}
+
+export interface CriarSolicitacaoPayload {
+  nomeCliente: string;
+  celular: string;
+  email: string | null;
+  categoriaId: string;
+  servicoId: string;
+  descricao: string;
 }
 
 export interface AtualizarStatusSolicitacao {

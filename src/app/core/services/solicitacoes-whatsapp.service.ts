@@ -1,12 +1,15 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
+  AlterarServicoPayload,
   AtualizarStatusSolicitacao,
+  CriarSolicitacaoPayload,
   EncerrarConversaResponse,
   ResponderSolicitacao,
   ResponderSolicitacaoResponse,
+  SolicitacaoWhatsApp,
   SolicitacoesWhatsAppFiltros,
   SolicitacoesWhatsAppResponse,
 } from '../models/solicitacao-whatsapp/solicitacao-whatsapp.model';
@@ -74,6 +77,50 @@ export class SolicitacoesWhatsAppService {
       this.http.post<EncerrarConversaResponse>(`${this.apiUrl}/${id}/encerrar-conversa`, {}, {
         withCredentials: true,
       }),
+    );
+  }
+
+  /**
+   * Altera o enquadramento da solicitação (categoria e serviço do catálogo).
+   * Requer perfil de Administrador e solicitação em análise (403/400 caso contrário).
+   */
+  async alterarServico(id: string, payload: AlterarServicoPayload): Promise<SolicitacaoWhatsApp> {
+    return firstValueFrom(
+      this.http.put<SolicitacaoWhatsApp>(`${this.apiUrl}/${id}/servico`, payload, { withCredentials: true }),
+    );
+  }
+
+  /**
+   * Notifica o cliente de que o serviço está pronto para retirada
+   * (mensagem configurável; não altera o status da solicitação).
+   */
+  async notificarServicoPronto(id: string): Promise<{ notificado: boolean; message: string }> {
+    return await firstValueFrom(
+      this.http.post<{ notificado: boolean; message: string }>(
+        `${this.apiUrl}/${id}/notificar-servico-pronto`,
+        {},
+        { withCredentials: true },
+      ),
+    );
+  }
+
+  /**
+   * Exclui definitivamente a solicitação do painel.
+   * Requer perfil de Administrador (403 caso contrário).
+   */
+  async excluir(id: string): Promise<void> {
+    await firstValueFrom(
+      this.http.delete<void>(`${this.apiUrl}/${id}`, { withCredentials: true }),
+    );
+  }
+
+  /**
+   * Cadastra manualmente um protocolo de orçamento (pendente) e notifica os
+   * profissionais do serviço. Requer perfil de Administrador.
+   */
+  async cadastrar(payload: CriarSolicitacaoPayload): Promise<SolicitacaoWhatsApp> {
+    return firstValueFrom(
+      this.http.post<SolicitacaoWhatsApp>(this.apiUrl, payload, { withCredentials: true }),
     );
   }
 }

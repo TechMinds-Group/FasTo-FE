@@ -42,6 +42,8 @@ export class SolicitacoesComponent implements OnInit, AfterViewInit {
   tipoTemplate!: TemplateRef<{ $implicit: SolicitacaoWhatsApp }>;
   @ViewChild('clienteTemplate', { static: true })
   clienteTemplate!: TemplateRef<{ $implicit: SolicitacaoWhatsApp }>;
+  @ViewChild('celularTemplate', { static: true })
+  celularTemplate!: TemplateRef<{ $implicit: SolicitacaoWhatsApp }>;
   @ViewChild('recebidoTemplate', { static: true })
   recebidoTemplate!: TemplateRef<{ $implicit: SolicitacaoWhatsApp }>;
   @ViewChild('statusTemplate', { static: true })
@@ -60,16 +62,21 @@ export class SolicitacoesComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.cols.set([
-      { header: 'Protocolo', template: this.protocoloTemplate, width: '18%' },
-      { header: 'Tipo', template: this.tipoTemplate, width: '18%' },
-      { header: 'Cliente', template: this.clienteTemplate, width: '28%' },
-      { header: 'Recebido em', template: this.recebidoTemplate, width: '18%' },
-      { header: 'Status', template: this.statusTemplate, width: '18%' },
+      { header: 'Protocolo', template: this.protocoloTemplate, width: '15%' },
+      { header: 'Tipo', template: this.tipoTemplate, width: '16%' },
+      { header: 'Cliente', template: this.clienteTemplate, width: '22%' },
+      { header: 'Celular', template: this.celularTemplate, width: '17%' },
+      { header: 'Recebido em', template: this.recebidoTemplate, width: '15%' },
+      { header: 'Status', template: this.statusTemplate, width: '15%' },
     ]);
   }
 
   async ngOnInit(): Promise<void> {
     await this.carregar();
+  }
+
+  abrirCadastro(): void {
+    this.router.navigate(['/solicitacoes/novo']);
   }
 
   protected async carregar(): Promise<void> {

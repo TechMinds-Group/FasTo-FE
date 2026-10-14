@@ -2,8 +2,11 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TmToastService } from '@techminds-group/tm-angular-lib';
+import { TmModalComponent, TmToastService } from '@techminds-group/tm-angular-lib';
 import { SolicitacoesWhatsAppService } from '../../../../core/services/solicitacoes-whatsapp.service';
+import { CatalogoCategoriaService } from '../../../../core/services/catalogo-categoria.service';
+import { CatalogoService } from '../../../../core/services/catalogo.service';
+import { ServicoCatalogo } from '../../../../core/models/catalogo/servico.model';
 import { SolicitacaoWhatsApp } from '../../../../core/models/solicitacao-whatsapp/solicitacao-whatsapp.model';
 import {
   formatarDataHoraSolicitacao,
@@ -19,7 +22,7 @@ interface RouteStateComSolicitacao {
 @Component({
   selector: 'app-solicitacoes-detalhes',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TmModalComponent],
   templateUrl: './solicitacoes-detalhes.component.html',
   styleUrl: './solicitacoes-detalhes.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,12 +32,21 @@ export class SolicitacoesDetalhesComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly toastService = inject(TmToastService);
   protected readonly solicitacoesService = inject(SolicitacoesWhatsAppService);
+  protected readonly categoriasService = inject(CatalogoCategoriaService);
+  protected readonly catalogoService = inject(CatalogoService);
 
   protected readonly solicitacao = signal<SolicitacaoWhatsApp | null>(null);
   protected readonly carregando = signal(true);
   protected readonly salvandoStatus = signal(false);
   protected readonly salvandoResposta = signal(false);
   protected readonly encerrandoConversa = signal(false);
+  protected readonly editando = signal(false);
+  protected readonly salvandoEdicao = signal(false);
+  protected readonly excluindo = signal(false);
+  protected readonly enviandoPronto = signal(false);
+  protected readonly showModalExcluir = signal(false);
+  protected readonly editCategoriaId = signal('');
+  protected readonly editServicoId = signal('');
   protected readonly novoStatus = signal<string>('');
   protected readonly novaResposta = signal<string>('');
 
@@ -47,6 +59,10 @@ export class SolicitacoesDetalhesComponent implements OnInit {
     } else {
       this.carregando.set(false);
     }
+
+    // Catálogos para exibir e editar categoria/serviço da solicitação
+    this.categoriasService.carregarCategorias().catch(() => {});
+    this.catalogoService.carregarServicos().catch(() => {});
   }
 
   voltar(): void {
@@ -121,8 +137,140 @@ export class SolicitacoesDetalhesComponent implements OnInit {
     }
   }
 
+  /**
+   * Notifica o cliente de que o serviço está pronto para retirada, usando a mensagem
+   * configurada ou o padrão genérico. Não altera o status da solicitação.
+   */
+  protected async notificarServicoPronto(): Promise<void> {
+    const atual = this.solicitacao();
+    if (!atual || this.enviandoPronto()) return;
+
+    this.enviandoPronto.set(true);
+    try {
+      const resposta = await this.solicitacoesService.notificarServicoPronto(atual.id);
+      if (resposta.notificado) {
+        this.toastService.success("Aviso de serviço pronto enviado ao cliente!", "Sucesso");
+      } else {
+        this.toastService.warning("Aviso salvo, mas o envio pelo WhatsApp falhou.", "Atenção");
+      }
+    } catch (erro) {
+      this.toastService.error(this.mensagemErro(erro, "Erro ao notificar serviço pronto."), "Erro");
+    } finally {
+      this.enviandoPronto.set(false);
+    }
+  }
+
   protected statusConfig(status: string) {
     return obterConfigStatusSolicitacao(status);
+  }
+
+  /** Link wa.me para conversar diretamente com o cliente (padrão detalhes de usuário). */
+  protected obterLinkWhatsapp(celular: string): string {
+    const digitos = celular.replace(/\D/g, '');
+    return `https://wa.me/${digitos}`;
+  }
+
+  /** Edição de enquadramento só existe para solicitações em análise (pendente).
+   *  Registros antigos sem serviço também podem ser enquadrados agora. */
+  protected podeEditarServico(): boolean {
+    const s = this.solicitacao();
+    return !!s && s.status === 'pendente';
+  }
+
+  /** Serviço do catálogo vinculado à solicitação (para exibir categoria/serviço). */
+  protected servicoAtual(): ServicoCatalogo | undefined {
+    const s = this.solicitacao();
+    if (!s?.servicoId) {
+      return undefined;
+    }
+
+    return this.catalogoService.servicos().find((serv) => serv.id === s.servicoId);
+  }
+
+  protected categoriaDaSolicitacao(): string {
+    return this.servicoAtual()?.categoriaNome ?? '—';
+  }
+
+  protected servicoNomeDaSolicitacao(): string {
+    return this.servicoAtual()?.nome ?? '—';
+  }
+
+  /** Serviços do catálogo pertencentes à categoria selecionada no modo edição. */
+  protected servicosDaCategoriaEdicao(): ServicoCatalogo[] {
+    const categoriaId = this.editCategoriaId();
+    if (!categoriaId) {
+      return [];
+    }
+
+    return this.catalogoService.servicos().filter((serv) => serv.categoriaId === categoriaId);
+  }
+
+  protected onCategoriaEdicaoChange(valor: string | number | null): void {
+    this.editCategoriaId.set(valor === null || valor === '' ? '' : String(valor));
+    this.editServicoId.set('');
+  }
+
+  protected onServicoEdicaoChange(valor: string | number | null): void {
+    this.editServicoId.set(valor === null || valor === '' ? '' : String(valor));
+  }
+
+  /** Abre o modo edição de enquadramento preenchendo categoria e serviço atuais. */
+  protected abrirEdicao(): void {
+    const atual = this.solicitacao();
+    if (!atual) return;
+
+    this.editCategoriaId.set(this.servicoAtual()?.categoriaId ?? '');
+    this.editServicoId.set(atual.servicoId ?? '');
+    this.editando.set(true);
+  }
+
+  protected cancelarEdicao(): void {
+    this.editando.set(false);
+  }
+
+  /** Salva o novo enquadramento (categoria/serviço) da solicitação. */
+  protected async salvarEdicao(): Promise<void> {
+    const atual = this.solicitacao();
+    if (!atual || this.salvandoEdicao()) return;
+
+    if (!this.editCategoriaId() || !this.editServicoId()) {
+      this.toastService.error('Selecione a categoria e o serviço.', 'Atenção');
+      return;
+    }
+
+    this.salvandoEdicao.set(true);
+    try {
+      const atualizado = await this.solicitacoesService.alterarServico(atual.id, {
+        categoriaId: this.editCategoriaId(),
+        servicoId: this.editServicoId(),
+      });
+      this.solicitacao.set(atualizado);
+      this.editando.set(false);
+      this.toastService.success('Categoria e serviço atualizados com sucesso!', 'Sucesso');
+    } catch (erro) {
+      this.toastService.error(this.mensagemErro(erro, 'Erro ao atualizar categoria e serviço.'), 'Erro');
+    } finally {
+      this.salvandoEdicao.set(false);
+    }
+  }
+
+  /** Exclui definitivamente a solicitação do painel (sem notificar o cliente). */
+  protected async confirmarExcluir(): Promise<void> {
+    const atual = this.solicitacao();
+    if (!atual || this.excluindo()) return;
+
+    this.excluindo.set(true);
+    try {
+      await this.solicitacoesService.excluir(atual.id);
+      this.showModalExcluir.set(false);
+      this.toastService.success('Solicitação excluída com sucesso.', 'Sucesso');
+      this.voltar();
+    } catch (erro) {
+      this.showModalExcluir.set(false);
+      this.toastService.error(this.mensagemErro(erro, 'Erro ao excluir a solicitação.'), 'Erro');
+    } finally {
+      this.excluindo.set(false);
+    }
   }
 
   protected tipoLabel(tipoFluxo: string): string {

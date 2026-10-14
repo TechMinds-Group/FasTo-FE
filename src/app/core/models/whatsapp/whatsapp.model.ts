@@ -24,6 +24,8 @@ export interface WhatsAppTenantConfig {
   lembrete1DiaMensagem: string | null;
   lembrete4hMensagem: string | null;
   naoCompareceuMensagem: string | null;
+  foraDoHorarioMensagem: string | null;
+  servicoProntoMensagem: string | null;
   testMode: boolean;
   testNumbers: string | null;
 }

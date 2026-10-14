@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, ChangeDetectorRef, OnInit, signal } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, DestroyRef, inject, ChangeDetectorRef, OnInit, signal } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
@@ -62,6 +62,8 @@ export class WhatsappIntegracaoComponent implements OnInit {
     lembrete1DiaMensagem: [''],
     lembrete4hMensagem: [''],
     naoCompareceuMensagem: [''],
+    foraDoHorarioMensagem: [''],
+    servicoProntoMensagem: [''],
     testMode: [false],
     testNumber1: [''],
     testNumber2: [''],
@@ -123,6 +125,8 @@ export class WhatsappIntegracaoComponent implements OnInit {
         lembrete1DiaMensagem: v.lembrete1DiaMensagem || null,
         lembrete4hMensagem: v.lembrete4hMensagem || null,
         naoCompareceuMensagem: v.naoCompareceuMensagem || null,
+    foraDoHorarioMensagem: v.foraDoHorarioMensagem || null,
+    servicoProntoMensagem: v.servicoProntoMensagem || null,
         testMode: v.testMode ?? false,
         testNumbers: numeros || null,
       };
@@ -146,6 +150,8 @@ export class WhatsappIntegracaoComponent implements OnInit {
         lembrete1DiaMensagem: config.lembrete1DiaMensagem ?? '',
         lembrete4hMensagem: config.lembrete4hMensagem ?? '',
         naoCompareceuMensagem: config.naoCompareceuMensagem ?? '',
+      foraDoHorarioMensagem: config.foraDoHorarioMensagem ?? '',
+      servicoProntoMensagem: config.servicoProntoMensagem ?? '',
         testMode: config.testMode,
         testNumber1: numeros[0] ?? '',
         testNumber2: numeros[1] ?? '',
@@ -159,6 +165,8 @@ export class WhatsappIntegracaoComponent implements OnInit {
         lembrete1DiaMensagem: '',
         lembrete4hMensagem: '',
         naoCompareceuMensagem: '',
+      foraDoHorarioMensagem: '',
+      servicoProntoMensagem: '',
         testMode: false,
         testNumber1: '',
         testNumber2: '',
