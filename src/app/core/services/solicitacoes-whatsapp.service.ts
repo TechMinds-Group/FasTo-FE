@@ -47,10 +47,16 @@ export class SolicitacoesWhatsAppService {
    * Atualiza o status da solicitação; backend rejeita valores fora do
    * conjunto válido com 400.
    */
-  async atualizarStatus(id: string, status: string): Promise<void> {
+  /**
+   * Atualiza o status da solicitação e notifica o cliente pelo WhatsApp
+   * (notificado === false quando o envio falha).
+   */
+  async atualizarStatus(id: string, status: string): Promise<{ notificado: boolean; solicitacao: SolicitacaoWhatsApp }> {
     const body: AtualizarStatusSolicitacao = { status };
-    await firstValueFrom(
-      this.http.put<void>(`${this.apiUrl}/${id}/status`, body, { withCredentials: true }),
+    return await firstValueFrom(
+      this.http.put<{ notificado: boolean; solicitacao: SolicitacaoWhatsApp }>(`${this.apiUrl}/${id}/status`, body, {
+        withCredentials: true,
+      }),
     );
   }
 

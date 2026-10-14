@@ -76,9 +76,13 @@ export class SolicitacoesDetalhesComponent implements OnInit {
 
     this.salvandoStatus.set(true);
     try {
-      await this.solicitacoesService.atualizarStatus(atual.id, novo);
-      this.solicitacao.update((cur) => (cur ? { ...cur, status: novo } : cur));
-      this.toastService.success('Status atualizado com sucesso!', 'Sucesso');
+      const resposta = await this.solicitacoesService.atualizarStatus(atual.id, novo);
+      this.solicitacao.set(resposta.solicitacao);
+      if (resposta.notificado) {
+        this.toastService.success('Status atualizado! Cliente notificado no WhatsApp.', 'Sucesso');
+      } else {
+        this.toastService.warning('Status atualizado, mas o envio da notificação falhou.', 'Atenção');
+      }
     } catch (erro) {
       this.toastService.error(this.mensagemErro(erro, 'Erro ao atualizar status.'), 'Erro');
     } finally {
