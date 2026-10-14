@@ -302,6 +302,42 @@
             </div>
 
             <div class="mb-4">
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <span><i class="fas fa-moon text-primary"></i></span>
+                <span class="fw-semibold custom-dark-text small">Fora do Horário</span>
+              </div>
+              <div class="form-text custom-dark-text small mb-3 ms-1 lh-sm">
+                Enviada antes do menu quando o cliente chama fora do horário de funcionamento cadastrado. Vazio = não envia aviso. Use &#123;estabelecimento&#125; e &#123;horario&#125; para personalizar.
+              </div>
+              <tm-text
+                formControlName="foraDoHorarioMensagem"
+                [textarea]="true"
+                [rows]="5"
+                label="Mensagem de Fora do Horário"
+                placeholder="Ex: Obrigado pelo contato! Atendemos de seg a sex, das 14h às 18h. Deixe sua mensagem que retornaremos! 😉"
+                icon="fas fa-moon"
+              ></tm-text>
+            </div>
+
+            <div class="p-4 rounded-3 border dia-card mb-4">
+              <div class="fw-bold custom-dark-text fs-6 mb-1 d-flex align-items-center gap-2">
+                <i class="fas fa-box-open text-success me-2"></i>
+                <span>Serviço Pronto</span>
+              </div>
+              <div class="form-text custom-dark-text small mb-3 ms-1 lh-sm">
+                Enviada pelo painel (botão "Serviço Pronto" na solicitação) quando o serviço fica pronto para retirada. Use &#123;nome&#125; e &#123;estabelecimento&#125; para personalizar.
+              </div>
+              <tm-text
+                formControlName="servicoProntoMensagem"
+                [textarea]="true"
+                [rows]="5"
+                label="Mensagem de Serviço Pronto"
+                placeholder="Ex: {nome}, seu serviço está pronto para retirada! Prazo: 10 dias corridos. Após isso, taxa de R$ 5,00/dia."
+                icon="fas fa-box-open"
+              ></tm-text>
+            </div>
+
+            <div class="mb-4">
               <div class="form-text custom-dark-text small mb-2 ms-1 fw-semibold">
                 Variáveis disponíveis:
               </div>

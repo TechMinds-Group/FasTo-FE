@@ -1,10 +1,9 @@
-<div class="container detalhe-container mt-4 mt-md-5 mb-5">
+<div class="container mt-5 mb-5">
   @if (solicitacao(); as s) {
-    <!-- Header: Voltar + Protocolo em destaque + Badge do tipo -->
+    <!-- Header: Voltar + Protocolo + Subtítulo — padrão idêntico a usuários/clientes -->
     <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
       <div class="d-flex align-items-center gap-3">
         <button
-          type="button"
           (click)="voltar()"
           class="btn btn-light shadow-sm rounded-circle p-0 d-flex align-items-center justify-content-center btn-voltar"
           title="Voltar"
@@ -12,141 +11,172 @@
           <i class="fas fa-arrow-left custom-dark-text"></i>
         </button>
 
-        <div class="min-w-0">
-          <h2 class="h4 mb-1 fw-bold custom-dark-text font-monospace d-flex align-items-center gap-2 text-break">
-            <i class="fas fa-hashtag text-primary fs-5 flex-shrink-0"></i>{{ s.protocolo || 'Sem protocolo' }}
-          </h2>
-          <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2.5 py-1 rounded-pill small fw-semibold">
-            <i class="fas fa-comment-dots me-1"></i>{{ tipoLabel(s.tipoFluxo) }}
-          </span>
+        <div>
+          <h2 class="h4 mb-0 fw-bold custom-dark-text">{{ s.protocolo || 'Sem protocolo' }}</h2>
+          <span class="text-muted small custom-dark-text">Detalhes da Solicitação</span>
         </div>
       </div>
     </div>
 
-    <!-- Grid Principal: ações abaixo do detalhe; lateral apenas em janelas realmente largas -->
-    <div class="detalhe-grid mb-4">
-      <!-- Card de detalhes -->
-      <div class="detalhe-col">
-        <div class="card border-0 shadow-sm p-3 p-md-4 details-card custom-dark-card rounded-4 h-100">
-          <!-- Cliente -->
-          <div class="d-flex align-items-center gap-3 border-bottom pb-3 pb-md-4 mb-3 mb-md-4">
-            <div class="avatar-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center flex-shrink-0">
-              <i class="fas fa-user fs-3 text-primary"></i>
+    <!-- Grid Principal (row g-4 mb-5) — padrão idêntico a detalhes de usuário -->
+    <div class="row g-4 mb-5">
+      <!-- Coluna Principal: quando em edição, expande para col-12 ocultando os demais cards -->
+      <div [class]="editando() ? 'col-12' : 'col-xl-8 col-12'">
+
+        <!-- Card: Dados da Solicitação (único bloco alterado pelo botão Editar) -->
+        <div class="card border-0 shadow-sm p-4 details-card custom-dark-card rounded-4 mb-4">
+
+          <!-- 1. Header do Perfil (Avatar e Nome do Cliente) -->
+          <div class="d-flex align-items-center gap-3 border-bottom pb-4 mb-4">
+            <div class="avatar-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center">
+              <i class="fas fa-user fs-3"></i>
             </div>
-            <div class="min-w-0">
-              <h2 class="h3 fw-bold mb-0 custom-dark-text text-break">{{ s.nomeCliente }}</h2>
-              <span class="text-muted small custom-dark-text">
-                <i class="fab fa-whatsapp me-1"></i>{{ s.celular }}
-              </span>
+            <div>
+              <h2 class="h3 fw-bold mb-0 custom-dark-text">{{ s.nomeCliente }}</h2>
             </div>
           </div>
 
-          <!-- Informações compactas: 2 colunas no mobile, 4 a partir de lg -->
-          <div class="row g-3 mb-3 mb-md-4">
-            <div class="col-6 col-lg-3">
-              <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">Status</label>
-              <div class="mt-1">
-                <span [class]="'badge px-3 py-1.5 rounded-pill fw-semibold ' + statusConfig(s.status).badgeClass">
-                  <i [class]="statusConfig(s.status).iconClass + ' me-1'"></i>{{ statusConfig(s.status).label }}
-                </span>
+          @if (!editando()) {
+            <!-- Informações Cadastrais (Leitura) -->
+            <div class="row g-4 mb-2">
+              <!-- Tipo -->
+              <div class="col-sm-6 col-12">
+                <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">Tipo</label>
+                <div class="mt-1">
+                  <span class="badge border bg-primary-subtle text-primary px-3 py-1.5 rounded-pill fw-semibold">
+                    <i class="fas fa-comment-dots me-1"></i>{{ tipoLabel(s.tipoFluxo) }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Recebido em -->
+              <div class="col-sm-6 col-12">
+                <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">Recebido em</label>
+                <p class="fw-semibold mb-0 custom-dark-text">
+                  <i class="fas fa-clock text-info me-2"></i>{{ recebidoEm(s) }}
+                </p>
+              </div>
+
+              <!-- Categoria -->
+              <div class="col-sm-6 col-12">
+                <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">Categoria</label>
+                <p class="fw-semibold mb-0 custom-dark-text text-break">
+                  <i class="fas fa-tags text-primary me-2"></i>{{ categoriaDaSolicitacao() }}
+                </p>
+              </div>
+
+              <!-- Serviço -->
+              <div class="col-sm-6 col-12">
+                <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">Serviço</label>
+                <p class="fw-semibold mb-0 custom-dark-text text-break">
+                  <i class="fas fa-concierge-bell text-primary me-2"></i>{{ servicoNomeDaSolicitacao() }}
+                </p>
+              </div>
+
+              <!-- Celular / WhatsApp -->
+              <div class="col-sm-6 col-12">
+                <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">Celular / WhatsApp</label>
+                <div class="mt-1">
+                  <a
+                    [href]="obterLinkWhatsapp(s.celular)"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-success text-decoration-none d-inline-flex align-items-center fw-semibold"
+                    title="Chamar no WhatsApp"
+                  >
+                    <i class="fab fa-whatsapp fs-5 text-success me-2"></i>
+                    <span class="custom-dark-text">{{ s.celular }}</span>
+                  </a>
+                </div>
+              </div>
+
+              <!-- E-mail -->
+              <div class="col-sm-6 col-12">
+                <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">E-mail</label>
+                <p class="fw-semibold mb-0 custom-dark-text">
+                  <i class="far fa-envelope text-primary me-2"></i>{{ s.email || '—' }}
+                </p>
+              </div>
+            </div>
+          } @else {
+            <!-- Formulário: alterar categoria e serviço (padrão usuários) -->
+            <div class="d-grid gap-3 mb-4">
+              <div>
+                <label class="form-label small fw-bold text-muted text-uppercase tracking-wider mb-2">Categoria *</label>
+                <select
+                  class="form-select rounded-3 custom-dark-input py-2"
+                  [ngModel]="editCategoriaId()"
+                  (ngModelChange)="onCategoriaEdicaoChange($event)"
+                  aria-label="Categoria da solicitação"
+                >
+                  <option value="" disabled>Selecione uma categoria</option>
+                  @for (categoria of categoriasService.categorias(); track categoria.id) {
+                    <option [value]="categoria.id">{{ categoria.icone ? categoria.icone + ' ' : '' }}{{ categoria.nome }}</option>
+                  }
+                </select>
+              </div>
+
+              <div>
+                <label class="form-label small fw-bold text-muted text-uppercase tracking-wider mb-2">Serviço *</label>
+                <select
+                  class="form-select rounded-3 custom-dark-input py-2"
+                  [ngModel]="editServicoId()"
+                  (ngModelChange)="onServicoEdicaoChange($event)"
+                  [disabled]="!editCategoriaId()"
+                  aria-label="Serviço da solicitação"
+                >
+                  <option value="" disabled>Selecione um serviço</option>
+                  @for (serv of servicosDaCategoriaEdicao(); track serv.id) {
+                    <option [value]="serv.id">{{ serv.nome }}</option>
+                  }
+                </select>
               </div>
             </div>
 
-            <div class="col-6 col-lg-3">
-              <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">Recebido em</label>
-              <p class="fw-semibold mb-0 custom-dark-text small-lg">
-                <i class="fas fa-clock text-info me-2"></i>{{ recebidoEm(s) }}
-              </p>
-            </div>
+            <!-- Barra de Ações (Salvar / Cancelar) — padrão usuários -->
+            <div class="border-top pt-4 mt-4 d-flex align-items-center justify-content-end gap-3">
+              <button
+                type="button"
+                class="btn btn-outline-secondary px-4 py-2.5 rounded-3 fw-bold"
+                (click)="cancelarEdicao()"
+                [disabled]="salvandoEdicao()"
+              >
+                <i class="fas fa-times me-2"></i>Cancelar
+              </button>
 
-            <div class="col-6 col-lg-3">
-              <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">Email</label>
-              <p class="fw-semibold mb-0 custom-dark-text text-break small-lg">
-                <i class="fas fa-envelope text-info me-2"></i>{{ s.email || '-' }}
-              </p>
-            </div>
-
-            <div class="col-6 col-lg-3">
-              <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">Celular</label>
-              <p class="fw-semibold mb-0 custom-dark-text small-lg">
-                <i class="fab fa-whatsapp text-success me-2"></i>{{ s.celular }}
-              </p>
-            </div>
-          </div>
-
-          <!-- Conversa: mensagem do cliente e resposta como balões -->
-          <div class="conversa-block border rounded-3 p-3 bg-body-tertiary mb-3">
-            <label class="form-label small fw-bold text-muted text-uppercase tracking-wider mb-2">
-              <i class="fas fa-align-left text-primary me-2"></i>Mensagem do cliente
-            </label>
-            <p class="mb-0 text-secondary custom-dark-text lh-base fs-6 text-break">
-              {{ s.descricao || '-' }}
-            </p>
-          </div>
-
-          @if (s.resposta) {
-            <div class="conversa-block conversa-resposta border rounded-3 p-3 bg-body-tertiary">
-              <label class="form-label small fw-bold text-muted text-uppercase tracking-wider mb-2">
-                <i class="fas fa-reply text-success me-2"></i>Resposta enviada
-              </label>
-              <p class="mb-0 text-secondary custom-dark-text lh-base fs-6 text-break">
-                {{ s.resposta }}
-              </p>
+              <button
+                type="button"
+                class="btn btn-primary px-4 py-2.5 rounded-3 fw-bold shadow-sm"
+                (click)="salvarEdicao()"
+                [disabled]="salvandoEdicao()"
+              >
+                @if (salvandoEdicao()) {
+                  <span class="spinner-border spinner-border-sm me-2" role="status"></span>Salvando...
+                } @else {
+                  <i class="fas fa-save me-2"></i>Salvar
+                }
+              </button>
             </div>
           }
+
         </div>
-      </div>
 
-      <!-- Card Ações: primária (responder) → status → zona de perigo (encerrar) -->
-      <div class="detalhe-col">
-        <div class="card border-0 shadow-sm p-3 p-md-4 actions-card custom-dark-card rounded-4">
-          <h4 class="h5 fw-bold mb-3 mb-md-4 custom-dark-text">
-            <i class="fas fa-sliders-h me-2 text-primary"></i>Ações
-          </h4>
+        @if (!editando()) {
+          <!-- Card: Status da Solicitação -->
+          <div class="card border-0 shadow-sm p-4 details-card custom-dark-card rounded-4 mb-4">
+            <h4 class="h5 fw-bold mb-4 custom-dark-text">
+              <i class="fas fa-circle-info me-2 text-primary"></i>Status
+            </h4>
 
-          <!-- Botões: largura total apenas no mobile; acima de md, largura automática -->
-          <div class="d-grid gap-3 d-md-flex flex-md-column align-items-md-start">
-            <div class="w-100">
-              <label class="form-label small fw-bold text-muted text-uppercase tracking-wider mb-2">
-                <i class="fas fa-pen text-primary me-2"></i>Nova resposta
-              </label>
-              <textarea
-                class="form-control rounded-3 custom-dark-input"
-                rows="4"
-                [ngModel]="novaResposta()"
-                (ngModelChange)="novaResposta.set($event)"
-                placeholder="Escreva a resposta que será enviada ao cliente pelo WhatsApp..."
-                aria-label="Nova resposta para o cliente"
-              ></textarea>
+            <div class="mb-3">
+              <span class="badge border px-3 py-1.5 rounded-pill fw-semibold" [ngClass]="statusConfig(s.status).badgeClass">
+                <i [class]="statusConfig(s.status).iconClass" class="me-1"></i>{{ statusConfig(s.status).label }}
+              </span>
             </div>
 
-            <button
-              type="button"
-              (click)="responder()"
-              [disabled]="salvandoResposta() || !novaResposta().trim()"
-              class="btn btn-success py-2.5 fw-bold transition-all custom-action-btn"
-            >
-              <i class="fab fa-whatsapp me-2"></i>{{ salvandoResposta() ? 'Enviando...' : 'Responder e notificar no WhatsApp' }}
-            </button>
-
-            <hr class="my-2 w-100" />
-
-            <div class="w-100">
-              <div class="d-flex flex-nowrap align-items-center justify-content-between gap-2 mb-2">
-                <label class="form-label status-label fw-bold text-muted text-uppercase tracking-wider mb-0 text-nowrap">
-                  <i class="fas fa-circle-info text-primary me-2"></i>Status
-                </label>
-                <button
-                  type="button"
-                  (click)="aplicarStatus()"
-                  [disabled]="salvandoStatus() || novoStatus() === s.status"
-                  class="btn btn-sm btn-primary px-3 fw-semibold text-nowrap transition-all custom-action-btn"
-                >
-                  <i class="fas fa-rotate me-2"></i>{{ salvandoStatus() ? 'Aplicando...' : 'Aplicar' }}
-                </button>
-              </div>
+            <div class="d-flex align-items-end gap-2">
               <select
-                class="form-select rounded-3 custom-dark-input py-2"
+                class="form-select rounded-3 custom-dark-input py-2 flex-fill"
                 [ngModel]="novoStatus()"
                 (ngModelChange)="novoStatus.set($event)"
                 aria-label="Alterar status da solicitação"
@@ -155,31 +185,144 @@
                   <option [value]="opcao.value">{{ opcao.label }}</option>
                 }
               </select>
+              <button
+                type="button"
+                (click)="aplicarStatus()"
+                [disabled]="salvandoStatus() || novoStatus() === s.status"
+                class="btn btn-sm btn-primary px-3 fw-semibold text-nowrap transition-all custom-action-btn"
+              >
+                <i class="fas fa-rotate me-2"></i>{{ salvandoStatus() ? 'Aplicando...' : 'Aplicar' }}
+              </button>
             </div>
+          </div>
 
-            <hr class="my-2 w-100" />
+          <!-- Card: Conversa -->
+          <div class="card border-0 shadow-sm p-4 details-card custom-dark-card rounded-4 mb-4">
+            <h4 class="h5 fw-bold mb-4 custom-dark-text">
+              <i class="fas fa-comments me-2 text-primary"></i>Conversa
+            </h4>
 
-            <button
-              type="button"
-              (click)="encerrarConversa()"
-              [disabled]="encerrandoConversa()"
-              class="btn btn-outline-danger py-2.5 fw-bold transition-all custom-action-btn"
-            >
-              <i class="fas fa-comment-slash me-2"></i>{{ encerrandoConversa() ? 'Encerrando...' : 'Encerrar Conversa no WhatsApp' }}
-            </button>
-            <p class="text-muted extra-small mb-0 custom-dark-text">
-              Limpa o atendimento automático do cliente e envia a mensagem de encerramento. Não altera o status desta solicitação.
-            </p>
+            <label class="form-label small fw-bold text-muted text-uppercase tracking-wider mb-2">
+              <i class="fas fa-align-left text-primary me-2"></i>Mensagem do cliente
+            </label>
+            <p class="mb-0 text-secondary custom-dark-text lh-base">{{ s.descricao || '—' }}</p>
+
+            @if (s.resposta) {
+              <div class="border-top pt-3 mt-3">
+                <label class="form-label small fw-bold text-muted text-uppercase tracking-wider mb-2">
+                  <i class="fas fa-reply text-success me-2"></i>Resposta enviada
+                </label>
+                <p class="fw-semibold mb-0 custom-dark-text lh-base">{{ s.resposta }}</p>
+              </div>
+            }
+          </div>
+
+          <!-- Card: Responder ao cliente -->
+          <div class="card border-0 shadow-sm p-4 details-card custom-dark-card rounded-4">
+            <h4 class="h5 fw-bold mb-4 custom-dark-text">
+              <i class="fab fa-whatsapp me-2 text-success"></i>Responder ao cliente
+            </h4>
+
+            <textarea
+              class="form-control rounded-3 custom-dark-input"
+              rows="3"
+              [ngModel]="novaResposta()"
+              (ngModelChange)="novaResposta.set($event)"
+              placeholder="Escreva a resposta que será enviada ao cliente pelo WhatsApp..."
+              aria-label="Nova resposta para o cliente"
+            ></textarea>
+            <div class="d-flex align-items-center justify-content-end mt-3">
+              <button
+                type="button"
+                (click)="responder()"
+                [disabled]="salvandoResposta() || !novaResposta().trim()"
+                class="btn btn-success px-4 py-2.5 rounded-3 fw-bold shadow-sm"
+              >
+                @if (salvandoResposta()) {
+                  <span class="spinner-border spinner-border-sm me-2" role="status"></span>Enviando...
+                } @else {
+                  <i class="fab fa-whatsapp me-2"></i>Notificar no WhatsApp
+                }
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Coluna Direita: Card Ações Rápidas (apenas no modo de leitura) -->
+      @if (!editando()) {
+        <div class="col-xl-4 col-12">
+          <div class="card border-0 shadow-sm p-4 actions-card custom-dark-card">
+            <h4 class="h5 fw-bold mb-4 custom-dark-text">
+              <i class="fas fa-sliders-h me-2 text-primary"></i>Ações Rápidas
+            </h4>
+
+            <div class="d-grid gap-3">
+              @if (podeEditarServico()) {
+                <button
+                  type="button"
+                  (click)="abrirEdicao()"
+                  class="btn btn-primary py-2.5 fw-bold w-100 transition-all custom-action-btn"
+                >
+                  <i class="fas fa-edit me-2"></i>Alterar Serviço
+                </button>
+              }
+
+              <button
+                type="button"
+                (click)="encerrarConversa()"
+                [disabled]="encerrandoConversa()"
+                class="btn btn-outline-primary py-2.5 fw-bold w-100 transition-all custom-action-btn"
+              >
+                @if (encerrandoConversa()) {
+                  <span class="spinner-border spinner-border-sm me-2" role="status"></span>Encerrando...
+                } @else {
+                  <i class="fas fa-comment-slash me-2"></i>Encerrar Conversa
+                }
+              </button>
+
+              <button
+                type="button"
+                (click)="showModalExcluir.set(true)"
+                class="btn btn-outline-danger py-2.5 fw-bold w-100 transition-all custom-action-btn"
+              >
+                <i class="fas fa-trash-can me-2"></i>Excluir
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      }
     </div>
   } @else if (carregando()) {
-    <div class="d-flex flex-column align-items-center justify-content-center py-5 gap-3">
+    <div class="text-center py-5">
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Carregando...</span>
       </div>
-      <span class="text-muted custom-dark-text">Carregando solicitação...</span>
+      <p class="text-muted mt-3">Carregando informações da solicitação...</p>
     </div>
   }
 </div>
+
+<tm-modal
+  title="Excluir Solicitação"
+  icon="fas fa-exclamation-triangle"
+  iconClass="text-danger"
+  confirmClass="btn-danger"
+  confirmLabel="Excluir"
+  cancelLabel="Cancelar"
+  [show]="showModalExcluir()"
+  (cancel)="showModalExcluir.set(false)"
+  (confirm)="confirmarExcluir()"
+>
+  @if (solicitacao(); as s) {
+    <div class="p-1">
+      <p class="mb-0 custom-dark-text">
+        Tem certeza que deseja excluir a solicitação <strong>{{ s.protocolo || 'sem protocolo' }}</strong> de
+        <strong>{{ s.nomeCliente }}</strong>?
+      </p>
+      <p class="text-danger small mt-2 mb-0">
+        <i class="fas fa-triangle-exclamation me-1"></i>Esta ação não pode ser desfeita. O cliente não será notificado.
+      </p>
+    </div>
+  }
+</tm-modal>

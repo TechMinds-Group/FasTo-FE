@@ -117,10 +117,24 @@ export class SgPresetDetalhesX7k9pComponent implements OnInit {
       ativo: false,
     },
     {
-      key: 'opc11AgendarVisita',
-      label: '11. Agendamento de Visita Técnica',
-      descricao: 'Solicitações de visitas no local para medição/manutenção',
-      icone: '🧰',
+      key: 'opc13TriagemAdvocacia',
+      label: 'Triagem Jurídica por Área',
+      descricao: 'Triagem do caso do cliente por área do direito',
+      icone: '⚖️',
+      ativo: false,
+    },
+    {
+      key: 'opc14ServicosValores',
+      label: 'Serviços e valores (consulta)',
+      descricao: 'Cliente consulta o catálogo com preços sem abrir orçamento',
+      icone: '🏷️',
+      ativo: false,
+    },
+    {
+      key: 'opc15OutrosAssuntos',
+      label: 'Outros assuntos (mensagem livre)',
+      descricao: 'Mensagem livre do cliente com protocolo; conversa fica em aberto com o profissional',
+      icone: '💬',
       ativo: false,
     },
     {
