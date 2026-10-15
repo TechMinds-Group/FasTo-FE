@@ -4,6 +4,7 @@ import { PerfilBadgeConfig } from '../models/perfil-badge-config.model';
 
 export interface PerfilBadgeInput {
   perfil: string;
+  perfilSecundario?: string | null;
   perfilCorHex?: string;
   perfilIconeClass?: string;
 }
@@ -23,6 +24,9 @@ export class PerfilBadgePipe implements PipeTransform {
     if (typeof value === 'string') {
       return this.helper.getPerfilBadgeConfigs(value);
     }
-    return this.helper.getPerfilBadgeConfigs(value.perfil, value.perfilCorHex, value.perfilIconeClass);
+    const perfisCombinados = value.perfilSecundario
+      ? `${value.perfil}, ${value.perfilSecundario}`
+      : value.perfil;
+    return this.helper.getPerfilBadgeConfigs(perfisCombinados, value.perfilCorHex, value.perfilIconeClass);
   }
 }

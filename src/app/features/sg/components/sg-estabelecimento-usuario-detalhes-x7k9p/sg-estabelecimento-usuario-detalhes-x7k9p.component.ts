@@ -5,6 +5,14 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TmTextComponent, TmSelectComponent, TmToastService, TmModalComponent } from '@techminds-group/tm-angular-lib';
 import { ThemeService } from '../../../../core/services/theme.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { PERFIS_ACESSO, obterPerfilAcesso } from '../../../../core/models/gestao-usuarios/perfil-acesso.model';
+
+/** Vínculo que impede a exclusão de um usuário (retornado pela API em 409). */
+interface VinculoExclusao {
+  tipo: string;
+  quantidade: number;
+  detalhe?: string | null;
+}
 
 @Component({
   selector: 'app-sg-estabelecimento-usuario-detalhes-x7k9p',
@@ -30,16 +38,24 @@ export class SgEstabelecimentoUsuarioDetalhesX7k9pComponent implements OnInit {
   protected empresaId = signal<string>('');
   protected usuarioId = signal<string>('');
   protected usuario = signal<any | null>(null);
-  protected niveis = signal<any[]>([]);
   protected modoEdicao = signal<boolean>(false);
   protected salvando = signal<boolean>(false);
   protected showDeleteModal = signal<boolean>(false);
+  /** Vínculos impeditivos (agendamentos futuros ativos) exibidos no modal de bloqueio. */
+  protected readonly vinculosExclusao = signal<VinculoExclusao[]>([]);
+  protected readonly showVinculosModal = signal<boolean>(false);
+  /** Vínculos não impeditivos (agenda, serviços, planos, histórico) que serão limpos após confirmação. */
+  protected readonly vinculosLimpeza = signal<VinculoExclusao[]>([]);
+  protected readonly showConfirmLimpezaModal = signal<boolean>(false);
 
   protected perfisSelecionados = signal<string[]>([]);
 
-  protected niveisOptions = computed(() =>
-    this.niveis().map(n => ({ value: n.id, label: n.nome }))
+  /** Opções estáticas da enum de perfis (Administrador, Operador, Profissional). */
+  protected readonly niveisOptions = computed(() =>
+    PERFIS_ACESSO.map(p => ({ value: p.value, label: p.label }))
   );
+
+  protected readonly obterPerfilAcesso = obterPerfilAcesso;
 
   protected form: FormGroup = this.fb.group({
     nome: ['', [Validators.required, Validators.maxLength(50)]],
@@ -58,18 +74,11 @@ export class SgEstabelecimentoUsuarioDetalhesX7k9pComponent implements OnInit {
     if (empId && uId) {
       this.empresaId.set(empId);
       this.usuarioId.set(uId);
-      this.carregarNiveis(empId);
       this.carregarUsuario(uId);
     } else {
       this.toastService.error('Parâmetros inválidos.', 'Erro');
       this.router.navigate(['/sg-estabelecimentos-x7k9p']);
     }
-  }
-
-  carregarNiveis(empId: string): void {
-    this.authService.getSgNiveisAcesso(empId).subscribe({
-      next: (data) => this.niveis.set(data || [])
-    });
   }
 
   carregarUsuario(uId: string): void {
@@ -87,11 +96,11 @@ export class SgEstabelecimentoUsuarioDetalhesX7k9pComponent implements OnInit {
 
   preencherForm(user: any): void {
     const selected: string[] = [];
-    if (user.nivelAcessoId) {
-      selected.push(user.nivelAcessoId);
+    if (user.perfil) {
+      selected.push(user.perfil);
     }
-    if (user.secundarioNivelAcessoId) {
-      selected.push(user.secundarioNivelAcessoId);
+    if (user.perfilSecundario) {
+      selected.push(user.perfilSecundario);
     }
     this.perfisSelecionados.set(selected);
 
@@ -156,8 +165,8 @@ export class SgEstabelecimentoUsuarioDetalhesX7k9pComponent implements OnInit {
         sobrenome: raw.sobrenome || '',
         email: raw.email,
         telefone: (raw.telefone || '').replace(/\D/g, ''),
-        nivelAcessoId: selected.length > 0 ? selected[0] : '',
-        secundarioNivelAcessoId: selected.length > 1 ? selected[1] : null,
+        perfil: selected.length > 0 ? selected[0] : '',
+        perfilSecundario: selected.length > 1 ? selected[1] : null,
         senha: raw.senha || null
       }).toPromise();
 
@@ -191,9 +200,57 @@ export class SgEstabelecimentoUsuarioDetalhesX7k9pComponent implements OnInit {
       this.toastService.success('Usuário excluído com sucesso!', 'Sucesso');
       this.voltar();
     } catch (err: any) {
-      const msg = err?.error?.message || 'Erro ao excluir usuário.';
+      const vinculos = err?.status === 409 ? (err?.error?.vinculos ?? []) : [];
+      if (vinculos.length > 0 && err?.error?.requiresCleanup) {
+        // Impeditivo: agendamentos futuros ativos — usuário precisa resolver antes.
+        this.vinculosExclusao.set(vinculos);
+        this.showVinculosModal.set(true);
+        return;
+      }
+      if (vinculos.length > 0 && err?.error?.requiresConfirmation) {
+        // Não impeditivo: vínculos serão limpos automaticamente — só pede confirmação.
+        this.vinculosLimpeza.set(vinculos);
+        this.showConfirmLimpezaModal.set(true);
+        return;
+      }
+      const msg = err?.error?.message || err?.error?.Message || 'Erro ao excluir usuário.';
       this.toastService.error(msg, 'Erro');
     }
+  }
+
+  /** Executa a exclusão com limpeza automática dos vínculos não impeditivos. */
+  async confirmarExclusaoComLimpeza(): Promise<void> {
+    this.showConfirmLimpezaModal.set(false);
+    this.salvando.set(true);
+    try {
+      await this.authService.deleteSgUsuario(this.usuarioId(), true).toPromise();
+      this.toastService.success('Usuário excluído com sucesso!', 'Sucesso');
+      this.voltar();
+    } catch (err: any) {
+      const msg = err?.error?.message || err?.error?.Message || 'Erro ao excluir usuário.';
+      this.toastService.error(msg, 'Erro');
+    } finally {
+      this.salvando.set(false);
+    }
+  }
+
+  fecharVinculosModal(): void {
+    this.showVinculosModal.set(false);
+  }
+
+  cancelarExclusaoComLimpeza(): void {
+    this.showConfirmLimpezaModal.set(false);
+  }
+
+  /** Ícone Font Awesome por tipo de vínculo (chave pelo início do tipo retornado pela API). */
+  iconeVinculo(tipo: string): string {
+    const t = (tipo || '').toLowerCase();
+    if (t.startsWith('agendamento')) return 'fas fa-calendar-check';
+    if (t.startsWith('agenda')) return 'fas fa-calendar-alt';
+    if (t.startsWith('servi')) return 'fas fa-briefcase';
+    if (t.startsWith('plano')) return 'fas fa-id-card';
+    if (t.startsWith('configura')) return 'fab fa-whatsapp';
+    return 'fas fa-link';
   }
 
   obterLinkWhatsapp(phone: string): string {

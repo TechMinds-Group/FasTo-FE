@@ -2,7 +2,6 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { NivelAcesso } from '../models/gestao-usuarios/nivel-acesso.model';
 import { Usuario } from '../models/gestao-usuarios/usuario.model';
 import { AtuacaoProfissional } from '../models/gestao-usuarios/atuacao-profissional.model';
 
@@ -19,10 +18,6 @@ export class GestaoUsuariosService {
   async carregarUsuarios(): Promise<void> {
     const data = await firstValueFrom(this.http.get<Usuario[]>(this.apiUrl, { withCredentials: true }));
     this._usuarios.set(data);
-  }
-
-  async carregarNiveis(): Promise<NivelAcesso[]> {
-    return await firstValueFrom(this.http.get<NivelAcesso[]>(`${this.apiUrl}/niveis`, { withCredentials: true }));
   }
 
   async adicionar(usuario: any): Promise<string> {

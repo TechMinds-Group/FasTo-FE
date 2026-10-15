@@ -4,8 +4,8 @@ export interface UsuarioEdicaoPayload {
   email: string;
   telefone?: string;
   status: string;
-  nivelAcessoId: string;
-  secundarioNivelAcessoId?: string | null;
+  perfil: string;
+  perfilSecundario?: string | null;
   plano?: string;
   tema?: string;
 }

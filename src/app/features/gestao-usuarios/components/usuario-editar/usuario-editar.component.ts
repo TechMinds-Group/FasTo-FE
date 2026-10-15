@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TmTextComponent, TmSelectComponent, TmToastService } from '@techminds-group/tm-angular-lib';
 import { Usuario } from '../../../../core/models/gestao-usuarios/usuario.model';
+import { PERFIS_ACESSO } from '../../../../core/models/gestao-usuarios/perfil-acesso.model';
 import { GestaoUsuariosService } from '../../../../core/services/gestao-usuarios.service';
 import { UsuarioEdicaoPayload } from '../../models/usuario-edicao-payload.model';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
@@ -31,7 +32,9 @@ export class UsuarioEditarComponent implements OnInit {
 
   protected readonly usuario = signal<Usuario | null>(null);
   protected readonly salvando = signal<boolean>(false);
-  protected readonly perfilOptions = signal<{ value: string; label: string }[]>([]);
+  protected readonly perfilOptions = signal<{ value: string; label: string }[]>(
+    PERFIS_ACESSO.map((p) => ({ value: p.value, label: p.label })),
+  );
   protected readonly perfisSelecionados = signal<string[]>([]);
 
   protected readonly temaOptions = signal<{ value: string; label: string }[]>([
@@ -66,9 +69,6 @@ export class UsuarioEditarComponent implements OnInit {
       this.voltar();
       return;
     }
-
-    const niveis = await this.gestaoUsuariosService.carregarNiveis();
-    this.perfilOptions.set(niveis.map((n) => ({ value: n.id, label: n.nome })));
 
     await this.carregarUsuario(id);
   }
@@ -136,8 +136,8 @@ export class UsuarioEditarComponent implements OnInit {
         email: val.email,
         telefone: (val.telefone ?? '').replace(/\D/g, ''),
         status: val.status,
-        nivelAcessoId: selected.length > 0 ? selected[0] : '',
-        secundarioNivelAcessoId: selected.length > 1 ? selected[1] : null,
+        perfil: selected.length > 0 ? selected[0] : '',
+        perfilSecundario: selected.length > 1 ? selected[1] : null,
         plano: u.planoAssinatura || undefined,
         tema: val.tema || 'dispositivo',
       };
@@ -174,25 +174,11 @@ export class UsuarioEditarComponent implements OnInit {
       this.usuario.set(user);
 
       const selectedValues: string[] = [];
-      if (user.nivelAcessoId) {
-        selectedValues.push(user.nivelAcessoId);
+      if (user.perfil) {
+        selectedValues.push(user.perfil);
       }
-      if (user.secundarioNivelAcessoId) {
-        selectedValues.push(user.secundarioNivelAcessoId);
-      }
-
-      if (selectedValues.length === 0) {
-        const userPerfis = (user.perfil || '')
-          .split(',')
-          .map((p) => p.trim())
-          .filter(Boolean);
-
-        for (const pName of userPerfis) {
-          const matched = this.perfilOptions().find((n) => n.label === pName || n.value === pName);
-          if (matched && !selectedValues.includes(matched.value)) {
-            selectedValues.push(matched.value);
-          }
-        }
+      if (user.perfilSecundario) {
+        selectedValues.push(user.perfilSecundario);
       }
 
       if (selectedValues.length === 0 && this.perfilOptions().length > 0) {

@@ -59,24 +59,24 @@
                 <div class="col-sm-6 col-12">
                   <label class="form-label small fw-bold text-muted text-uppercase tracking-wider">Perfil</label>
                   <div class="mt-1 d-flex flex-wrap gap-2">
-                    @if (user.nivelAcesso) {
+                    @if (user.perfil) {
                       <span
                         class="badge border px-3 py-1.5 rounded-pill fw-semibold text-white d-inline-flex align-items-center gap-1"
-                        [style.backgroundColor]="user.nivelAcesso.corHex || '#0d6efd'"
+                        [style.backgroundColor]="obterPerfilAcesso(user.perfil).corHex"
                       >
-                        <i [class]="user.nivelAcesso.iconeClass || 'fas fa-user'"></i>{{ user.nivelAcesso.nome }}
+                        <i [class]="obterPerfilAcesso(user.perfil).iconeClass"></i>{{ obterPerfilAcesso(user.perfil).label }}
                       </span>
                     } @else {
                       <span class="badge bg-secondary border border-secondary px-3 py-1.5 rounded-pill fw-semibold text-white">
                         Sem perfil
                       </span>
                     }
-                    @if (user.secundarioNivelAcesso) {
+                    @if (user.perfilSecundario) {
                       <span
                         class="badge border px-3 py-1.5 rounded-pill fw-semibold text-white d-inline-flex align-items-center gap-1"
-                        [style.backgroundColor]="user.secundarioNivelAcesso.corHex || '#6c757d'"
+                        [style.backgroundColor]="obterPerfilAcesso(user.perfilSecundario).corHex"
                       >
-                        <i [class]="user.secundarioNivelAcesso.iconeClass || 'fas fa-user'"></i>{{ user.secundarioNivelAcesso.nome }}
+                        <i [class]="obterPerfilAcesso(user.perfilSecundario).iconeClass"></i>{{ obterPerfilAcesso(user.perfilSecundario).label }}
                       </span>
                     }
                   </div>
@@ -252,6 +252,78 @@
     <p class="mb-0 text-white">Tem certeza que deseja excluir o usuário <strong>{{ usuario()?.nome }} {{ usuario()?.sobrenome }}</strong>?</p>
     <p class="text-danger small mt-2 mb-0">
       <i class="fas fa-exclamation-triangle me-1"></i>O acesso deste usuário ao estabelecimento será removido permanentemente.
+    </p>
+  </div>
+</tm-modal>
+
+<!-- Modal de vínculos: listado quando a API recusa a exclusão (409) por dependências ativas -->
+<tm-modal
+  [show]="showVinculosModal()"
+  (cancel)="fecharVinculosModal()"
+  (confirm)="fecharVinculosModal()"
+  confirmLabel="Entendi"
+  cancelLabel="Fechar"
+  title="Usuário possui vínculos"
+  confirmClass="btn-primary"
+>
+  <div class="p-1">
+    <p class="mb-2 text-white">
+      <i class="fas fa-circle-exclamation text-warning me-1"></i>
+      Não é possível excluir <strong>{{ usuario()?.nome }} {{ usuario()?.sobrenome }}</strong> enquanto existirem vínculos ativos.
+      Remova primeiro cada item listado abaixo:
+    </p>
+    <ul class="list-group list-group-flush mb-2">
+      @for (v of vinculosExclusao(); track v.tipo) {
+        <li class="list-group-item bg-transparent custom-dark-text d-flex align-items-start gap-2 px-0">
+          <i class="{{ iconeVinculo(v.tipo) }} text-warning mt-1"></i>
+          <div>
+            <span class="fw-semibold">{{ v.tipo }}</span>
+            <span class="badge bg-warning text-dark ms-2">{{ v.quantidade }} registro{{ v.quantidade > 1 ? 's' : '' }}</span>
+            @if (v.detalhe) {
+              <div class="small text-muted mt-1">{{ v.detalhe }}</div>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+    <p class="text-danger small mb-0">
+      <i class="fas fa-arrow-right me-1"></i>Cancele ou reatribua os agendamentos futuros na tela <strong>Agenda</strong> antes de excluir o usuário.
+    </p>
+  </div>
+</tm-modal>
+
+<!-- Modal de confirmação: vínculos não impeditivos serão limpos automaticamente pela API -->
+<tm-modal
+  [show]="showConfirmLimpezaModal()"
+  (confirm)="confirmarExclusaoComLimpeza()"
+  (cancel)="cancelarExclusaoComLimpeza()"
+  confirmLabel="Confirmar Exclusão"
+  cancelLabel="Cancelar"
+  title="Confirmar exclusão do usuário"
+  confirmClass="btn-danger"
+>
+  <div class="p-1">
+    <p class="mb-2 text-white">
+      <i class="fas fa-circle-info text-info me-1"></i>
+      <strong>{{ usuario()?.nome }} {{ usuario()?.sobrenome }}</strong> possui os vínculos abaixo, que não impedem a exclusão —
+      eles serão <strong>removidos automaticamente</strong> ao confirmar:
+    </p>
+    <ul class="list-group list-group-flush mb-2">
+      @for (v of vinculosLimpeza(); track v.tipo) {
+        <li class="list-group-item bg-transparent custom-dark-text d-flex align-items-start gap-2 px-0">
+          <i class="{{ iconeVinculo(v.tipo) }} text-info mt-1"></i>
+          <div>
+            <span class="fw-semibold">{{ v.tipo }}</span>
+            <span class="badge bg-info text-dark ms-2">{{ v.quantidade }} registro{{ v.quantidade > 1 ? 's' : '' }}</span>
+            @if (v.detalhe) {
+              <div class="small text-muted mt-1">{{ v.detalhe }}</div>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+    <p class="text-danger small mb-0">
+      <i class="fas fa-exclamation-triangle me-1"></i>Esta ação é permanente. O acesso do usuário ao estabelecimento será removido.
     </p>
   </div>
 </tm-modal>

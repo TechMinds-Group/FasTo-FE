@@ -13,7 +13,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { TmSelectComponent, TmTextComponent, TmToastService } from '@techminds-group/tm-angular-lib';
 import { GestaoUsuariosService } from '../../../../../core/services/gestao-usuarios.service';
 import { Usuario } from '../../../../../core/models/gestao-usuarios/usuario.model';
-import { NivelAcesso } from '../../../../../core/models/gestao-usuarios/nivel-acesso.model';
+import { PERFIS_ACESSO } from '../../../../../core/models/gestao-usuarios/perfil-acesso.model';
 import { AuthService } from '../../../../../core/services/auth.service';
 import { ThemeService } from '../../../../../core/services/theme.service';
 import { PerfilBadgePipe } from '../../../pipes/perfil-badge.pipe';
@@ -55,8 +55,10 @@ export class GestaoUsuarioDetalhesComponent implements OnInit {
 
   protected readonly id = signal<string | null>(null);
   protected readonly usuario = signal<Usuario | null>(null);
-  protected readonly niveisAcesso = signal<NivelAcesso[]>([]);
-  protected readonly perfilOptions = signal<{ value: string; label: string }[]>([]);
+  /** Opções estáticas da enum de perfis (Administrador, Operador, Profissional). */
+  protected readonly perfilOptions = signal<{ value: string; label: string }[]>(
+    PERFIS_ACESSO.map((p) => ({ value: p.value, label: p.label })),
+  );
   protected readonly perfisSelecionados = signal<string[]>([]);
   protected readonly modoEdicao = signal<boolean>(false);
   protected readonly salvando = signal<boolean>(false);
@@ -72,7 +74,7 @@ export class GestaoUsuarioDetalhesComponent implements OnInit {
     sobrenome: ['', [Validators.maxLength(60)]],
     email: ['', [Validators.required, Validators.email]],
     telefone: ['', [Validators.required, Validators.maxLength(15)]],
-    nivelAcessoId: [''],
+    perfil: [''],
     status: ['Ativo'],
   });
 
@@ -81,13 +83,6 @@ export class GestaoUsuarioDetalhesComponent implements OnInit {
     if (paramId) {
       this.id.set(paramId);
       await this.carregarDadosUsuario(paramId);
-    }
-    try {
-      const niveis = await this.gestaoUsuariosService.carregarNiveis();
-      this.niveisAcesso.set(niveis);
-      this.perfilOptions.set(niveis.map((n) => ({ value: n.id, label: n.nome })));
-    } catch {
-      // Ignora erro se níveis já carregados
     }
   }
 
@@ -146,8 +141,8 @@ export class GestaoUsuarioDetalhesComponent implements OnInit {
         sobrenome: raw.sobrenome,
         email: raw.email,
         telefone: digitsTelefone,
-        nivelAcessoId: selectedPerfis.length > 0 ? selectedPerfis[0] : (raw.nivelAcessoId || ''),
-        secundarioNivelAcessoId: selectedPerfis.length > 1 ? selectedPerfis[1] : null,
+        perfil: selectedPerfis.length > 0 ? selectedPerfis[0] : (raw.perfil || ''),
+        perfilSecundario: selectedPerfis.length > 1 ? selectedPerfis[1] : null,
         status: raw.status,
       });
 
@@ -265,18 +260,8 @@ export class GestaoUsuarioDetalhesComponent implements OnInit {
 
   private preencherFormulario(u: Usuario): void {
     const selectedValues: string[] = [];
-    if (u.nivelAcessoId) selectedValues.push(u.nivelAcessoId);
-    if (u.secundarioNivelAcessoId) selectedValues.push(u.secundarioNivelAcessoId);
-
-    if (selectedValues.length === 0 && u.perfil) {
-      const userPerfis = u.perfil.split(',').map((p) => p.trim()).filter(Boolean);
-      for (const pName of userPerfis) {
-        const matched = this.perfilOptions().find((n) => n.label === pName || n.value === pName);
-        if (matched && !selectedValues.includes(matched.value)) {
-          selectedValues.push(matched.value);
-        }
-      }
-    }
+    if (u.perfil) selectedValues.push(u.perfil);
+    if (u.perfilSecundario) selectedValues.push(u.perfilSecundario);
 
     if (selectedValues.length === 0 && this.perfilOptions().length > 0) {
       selectedValues.push(this.perfilOptions()[0].value);
@@ -289,7 +274,7 @@ export class GestaoUsuarioDetalhesComponent implements OnInit {
       sobrenome: u.sobrenome ?? '',
       email: u.email ?? '',
       telefone: this.formatarTelefone(u.telefone ?? ''),
-      nivelAcessoId: u.nivelAcessoId ?? '',
+      perfil: u.perfil ?? '',
       status: u.status ?? 'Ativo',
     });
   }

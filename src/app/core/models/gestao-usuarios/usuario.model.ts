@@ -5,10 +5,9 @@ export interface Usuario {
   email: string;
   telefone?: string;
   perfil: string;
+  perfilSecundario?: string | null;
   perfilCorHex: string;
   perfilIconeClass: string;
-  nivelAcessoId?: string;
-  secundarioNivelAcessoId?: string | null;
   status: 'Ativo' | 'Inativo';
   faturamento?: number;
   planoAssinatura?: string;

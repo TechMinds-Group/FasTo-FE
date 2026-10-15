@@ -8,7 +8,7 @@ import {
   OnDestroy,
 } from '@angular/core';
 import { Subscription, timer } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { switchMap, filter, takeUntil } from 'rxjs/operators';
 import { TmToastService } from '@techminds-group/tm-angular-lib';
 import { PlanoAssinatura } from '../../../../core/models/assinatura-sistema/plano-assinatura.model';
 import { LanguageService } from '../../../../core/services/language.service';
@@ -263,6 +263,10 @@ export class AssinaturaSistemaComponent implements OnInit, OnDestroy {
   private iniciarPollingStatus(): void {
     this.pararPollingStatus();
     this.pollIntervalSub = timer(3000, 4000).pipe(
+      // Pausa quando a aba está em segundo plano e encerra após 30 min
+      // (PIX expira em 15 min; evita polling infinito em aba esquecida).
+      filter(() => !document.hidden),
+      takeUntil(timer(30 * 60 * 1000)),
       switchMap(() => this.assinaturaService.sincronizarPagamento())
     ).subscribe({
       next: (res) => {

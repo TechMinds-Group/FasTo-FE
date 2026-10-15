@@ -3,7 +3,7 @@ import { CommonModule, Location } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { interval, firstValueFrom } from 'rxjs';
+import { interval, firstValueFrom, Subscription, filter } from 'rxjs';
 import { TmTextComponent, TmToastService } from '@techminds-group/tm-angular-lib';
 import { environment } from '../../../../../environments/environment';
 import { WhatsAppTenantConfig } from '../../../../core/models/whatsapp/whatsapp.model';
@@ -78,6 +78,11 @@ export class WhatsappIntegracaoComponent implements OnInit {
   protected readonly statusTexto = signal('Verificando conexão...');
   protected readonly dispositivos = signal<DispositivoWhatsApp[]>([]);
   protected readonly configSalvando = signal(false);
+
+  /** Polling de status do QR Code. Para ao conectar, ao expirar o tempo ou quando a aba está oculta (economia de requisições). */
+  private pollingSub?: Subscription;
+  private pollingTicks = 0;
+  private readonly pollingMaxTicks = 144; // ~12 min: QR Code expira antes disso
 
   /** Sinais para controle de expansão dos blocos colapsáveis (nascem colapsados) */
   protected readonly blocoConfigExpandido = signal(false);
@@ -258,18 +263,40 @@ export class WhatsappIntegracaoComponent implements OnInit {
   }
 
   private iniciarPolling(): void {
-    interval(5000)
-      .pipe(takeUntilDestroyed(this.destroyRef))
+    this.pararPolling();
+    this.pollingTicks = 0;
+    this.pollingSub = interval(5000)
+      .pipe(
+        // Pausa o polling quando a aba está em segundo plano (reduz consumo de API/Cloudflare)
+        filter(() => !document.hidden),
+        takeUntilDestroyed(this.destroyRef),
+      )
       .subscribe(async () => {
+        this.pollingTicks++;
+        if (this.pollingTicks > this.pollingMaxTicks) {
+          this.pararPolling();
+          if (!this.conectado()) {
+            this.statusTexto.set('Tempo de espera pelo QR Code esgotado. Clique em "Conectar" para gerar um novo.');
+          }
+          return;
+        }
+
         const isOpen = await this.verificarStatusPoll();
 
-        if (isOpen) {
+        if (isOpen && !this.conectado()) {
           this.conectado.set(true);
           this.statusTexto.set('WhatsApp conectado com sucesso!');
           this.qrCodeBase64.set(null);
+          // Conexão estabelecida: encerra o polling — não há motivo para continuar consultando.
+          this.pararPolling();
           await this.carregarDispositivos();
         }
       });
+  }
+
+  private pararPolling(): void {
+    this.pollingSub?.unsubscribe();
+    this.pollingSub = undefined;
   }
 
   protected formatarNumero(num?: string): string {

@@ -12,6 +12,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TableColumn, TmTableComponent, TmToastService } from '@techminds-group/tm-angular-lib';
 import { AuthService } from '../../../../core/services/auth.service';
+import { obterPerfilAcesso } from '../../../../core/models/gestao-usuarios/perfil-acesso.model';
 
 @Component({
   selector: 'app-sg-estabelecimento-usuarios-x7k9p',
@@ -31,6 +32,8 @@ export class SgEstabelecimentoUsuariosX7k9pComponent implements OnInit, AfterVie
   protected readonly usuarios = signal<any[]>([]);
   protected readonly isLoading = signal<boolean>(true);
   protected readonly tamanhoPagina = signal<number>(10);
+
+  protected readonly obterPerfilAcesso = obterPerfilAcesso;
 
   @ViewChild('usuarioTemplate', { static: true })
   usuarioTemplate!: TemplateRef<{ $implicit: any }>;

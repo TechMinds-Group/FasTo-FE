@@ -177,12 +177,6 @@ export class AuthService {
     });
   }
 
-  getSgNiveisAcesso(empresaId: string): Observable<any[]> {
-    return this.http.get<any[]>(`${environment.apiUrl}/sg-empresas/${empresaId}/niveis-acesso`, {
-      withCredentials: true
-    });
-  }
-
   createSgUsuario(empresaId: string, data: any): Observable<any> {
     return this.http.post<any>(`${environment.apiUrl}/sg-empresas/${empresaId}/usuarios`, data, {
       withCredentials: true,
@@ -293,8 +287,10 @@ export class AuthService {
     });
   }
 
-  deleteSgUsuario(id: string): Observable<any> {
-    return this.http.delete<any>(`${environment.apiUrl}/sg-usuarios/${id}`, {
+  /** limparVinculos=true confirma a remoção automática dos vínculos não impeditivos (agenda, serviços, planos, histórico). */
+  deleteSgUsuario(id: string, limparVinculos = false): Observable<any> {
+    const query = limparVinculos ? '?limparVinculos=true' : '';
+    return this.http.delete<any>(`${environment.apiUrl}/sg-usuarios/${id}${query}`, {
       withCredentials: true
     });
   }
