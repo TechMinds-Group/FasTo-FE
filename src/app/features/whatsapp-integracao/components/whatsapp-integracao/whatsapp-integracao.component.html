@@ -78,6 +78,46 @@
               <span>{{ qrCodeBase64() ? 'Gerar novo QR Code' : 'Conectar WhatsApp' }}</span>
             </button>
           </div>
+        } @else {
+          <div class="w-100 w-md-auto shrink-0 mt-2 mt-md-0">
+            @if (confirmandoDesconexao()) {
+              <div
+                class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center justify-content-end gap-2"
+              >
+                <button
+                  type="button"
+                  class="btn btn-danger w-100 w-sm-auto px-4 py-2 fw-bold rounded-pill shadow-sm d-inline-flex align-items-center justify-content-center gap-2"
+                  (click)="desconectar()"
+                  [disabled]="desconectando()"
+                >
+                  @if (desconectando()) {
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                  } @else {
+                    <i class="fas fa-plug-circle-xmark me-2"></i>
+                  }
+                  <span>Confirmar desconexão</span>
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary w-100 w-sm-auto px-4 py-2 fw-semibold rounded-pill"
+                  (click)="cancelarDesconexao()"
+                  [disabled]="desconectando()"
+                >
+                  <i class="fas fa-xmark me-2"></i>Cancelar
+                </button>
+              </div>
+            } @else {
+              <button
+                type="button"
+                class="btn btn-outline-danger w-100 w-md-auto px-4 py-2 fw-semibold rounded-pill shadow-sm d-inline-flex align-items-center justify-content-center gap-2"
+                (click)="solicitarDesconexao()"
+                title="Desconecta todas as conexões WhatsApp deste estabelecimento"
+              >
+                <i class="fas fa-plug-circle-xmark me-2"></i>
+                <span>Desconectar</span>
+              </button>
+            }
+          </div>
         }
       </div>
 
