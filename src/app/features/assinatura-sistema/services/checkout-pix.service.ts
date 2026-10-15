@@ -222,6 +222,10 @@ export class CheckoutPixService implements OnDestroy {
     this.pararPolling();
 
     this.pollingInterval = setInterval(() => {
+      // Pausa em aba oculta: evita desperdício de requisições/limite de edge com a tela em segundo plano.
+      if (document.hidden) {
+        return;
+      }
       this.assinaturaService.obterStatusPagamento(id).subscribe({
         next: (res: StatusPagamentoResponse) => {
           if (res.status === 'approved') {
