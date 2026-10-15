@@ -53,16 +53,24 @@
 
 <ng-template #perfilTemplate let-item>
   <div class="d-flex align-items-center gap-1 flex-wrap">
-    @if (item.nivelAcesso) {
+    @if (item.perfil) {
       <span
         class="badge border px-2.5 py-1 rounded-pill small fw-semibold text-white d-inline-flex align-items-center gap-1"
-        [style.backgroundColor]="item.nivelAcesso.corHex || '#0d6efd'"
+        [style.backgroundColor]="obterPerfilAcesso(item.perfil).corHex"
       >
-        <i [class]="item.nivelAcesso.iconeClass || 'fas fa-user'"></i>{{ item.nivelAcesso.nome }}
+        <i [class]="obterPerfilAcesso(item.perfil).iconeClass"></i>{{ obterPerfilAcesso(item.perfil).label }}
       </span>
     } @else {
       <span class="badge bg-secondary border border-secondary px-2.5 py-1 rounded-pill small fw-semibold text-white">
         Sem perfil
+      </span>
+    }
+    @if (item.perfilSecundario) {
+      <span
+        class="badge border px-2.5 py-1 rounded-pill small fw-semibold text-white d-inline-flex align-items-center gap-1"
+        [style.backgroundColor]="obterPerfilAcesso(item.perfilSecundario).corHex"
+      >
+        <i [class]="obterPerfilAcesso(item.perfilSecundario).iconeClass"></i>{{ obterPerfilAcesso(item.perfilSecundario).label }}
       </span>
     }
   </div>

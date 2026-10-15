@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TmTextComponent, TmSelectComponent, TmToastService } from '@techminds-group/tm-angular-lib';
 import { ThemeService } from '../../../../core/services/theme.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { PERFIS_ACESSO } from '../../../../core/models/gestao-usuarios/perfil-acesso.model';
 
 @Component({
   selector: 'app-sg-usuario-novo-x7k9p',
@@ -23,13 +24,13 @@ export class SgUsuarioNovoX7k9pComponent implements OnInit {
 
   protected empresaId = signal<string>('');
   protected empresa = signal<any | null>(null);
-  protected niveis = signal<any[]>([]);
   protected salvando = signal<boolean>(false);
 
   protected perfisSelecionados = signal<string[]>([]);
 
+  /** Opções estáticas da enum de perfis (Administrador, Operador, Profissional). */
   protected niveisOptions = computed(() =>
-    this.niveis().map(n => ({ value: n.id, label: n.nome }))
+    PERFIS_ACESSO.map(p => ({ value: p.value, label: p.label }))
   );
 
   protected form: FormGroup = this.fb.group({
@@ -46,7 +47,8 @@ export class SgUsuarioNovoX7k9pComponent implements OnInit {
     if (id) {
       this.empresaId.set(id);
       this.carregarEmpresa(id);
-      this.carregarNiveis(id);
+      this.perfisSelecionados.set([this.niveisOptions()[0].value]);
+      this.form.patchValue({ perfil: this.niveisOptions()[0].value });
     } else {
       this.toastService.error('Empresa não especificada.', 'Erro');
       this.router.navigate(['/sg-estabelecimentos-x7k9p']);
@@ -56,18 +58,6 @@ export class SgUsuarioNovoX7k9pComponent implements OnInit {
   carregarEmpresa(id: string): void {
     this.authService.getSgEmpresaById(id).subscribe({
       next: (data) => this.empresa.set(data)
-    });
-  }
-
-  carregarNiveis(id: string): void {
-    this.authService.getSgNiveisAcesso(id).subscribe({
-      next: (data) => {
-        this.niveis.set(data || []);
-        if (data && data.length > 0) {
-          this.perfisSelecionados.set([data[0].id]);
-          this.form.patchValue({ perfil: data[0].id });
-        }
-      }
     });
   }
 
@@ -106,8 +96,8 @@ export class SgUsuarioNovoX7k9pComponent implements OnInit {
         email: raw.email,
         senha: raw.senha,
         telefone: (raw.telefone || '').replace(/\D/g, ''),
-        nivelAcessoId: selected.length > 0 ? selected[0] : (this.niveisOptions()[0]?.value || ''),
-        secundarioNivelAcessoId: selected.length > 1 ? selected[1] : null
+        perfil: selected.length > 0 ? selected[0] : (this.niveisOptions()[0]?.value || ''),
+        perfilSecundario: selected.length > 1 ? selected[1] : null
       }).toPromise();
 
       this.toastService.success('Usuário criado com sucesso!', 'Sucesso');

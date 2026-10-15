@@ -14,6 +14,7 @@ import { Router } from '@angular/router';
 import { TmTableComponent, TableColumn } from '@techminds-group/tm-angular-lib';
 import { GestaoUsuariosService } from '../../../../../core/services/gestao-usuarios.service';
 import { Usuario } from '../../../../../core/models/gestao-usuarios/usuario.model';
+import { temPerfil } from '../../../../../core/models/gestao-usuarios/perfil-acesso.model';
 import { GestaoUsuariosHelperService } from '../../../../gestao-usuarios/services/gestao-usuarios-helper.service';
 import { StatusBadgePipe } from '../../../../gestao-usuarios/pipes/status-badge.pipe';
 import { LanguageService } from '../../../../../core/services/language.service';
@@ -49,12 +50,10 @@ export class ProfissionaisComponent implements OnInit, AfterViewInit {
 
   private readonly templatesReady = signal(false);
 
-  // Filtra apenas usuários que possuem nível de acesso / perfil "Profissional"
+  // Filtra apenas usuários que possuem perfil "Profissional" (principal ou secundário).
   // Administrador vê todos; Profissional não-admin vê apenas a si mesmo.
   protected readonly profissionais = computed(() => {
-    const todos = this.gestaoUsuariosService.usuarios().filter((u) =>
-      u.perfil === 'Profissional' || u.perfil === 'Atendente' || (u.perfil && (u.perfil.includes('Profissional') || u.perfil.includes('Atendente')))
-    );
+    const todos = this.gestaoUsuariosService.usuarios().filter((u) => temPerfil(u, 'Profissional'));
 
     if (this.authService.hasAdminRole()) {
       return todos;

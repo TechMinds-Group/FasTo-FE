@@ -160,8 +160,8 @@ export class ProfissionalEditarComponent implements OnInit {
         email: raw.email,
         telefone: digitsWhatsApp,
         status: raw.status,
-        nivelAcessoId: p.nivelAcessoId,
-        secundarioNivelAcessoId: p.secundarioNivelAcessoId ?? null,
+        perfil: p.perfil,
+        perfilSecundario: p.perfilSecundario ?? null,
       });
 
       if (this.fotoFile()) {

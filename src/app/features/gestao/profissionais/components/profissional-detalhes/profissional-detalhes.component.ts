@@ -266,8 +266,8 @@ export class ProfissionalDetalhesComponent implements OnInit, AfterViewInit {
         email: raw.email,
         telefone: digitsWhatsApp,
         status: raw.status,
-        nivelAcessoId: p.nivelAcessoId,
-        secundarioNivelAcessoId: p.secundarioNivelAcessoId ?? null,
+        perfil: p.perfil,
+        perfilSecundario: p.perfilSecundario ?? null,
       });
 
       // 2. Foto (se removida ou alterada)

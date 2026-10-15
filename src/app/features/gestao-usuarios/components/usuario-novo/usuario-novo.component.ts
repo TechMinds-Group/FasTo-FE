@@ -5,6 +5,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { TmTextComponent, TmSelectComponent, TmToastService } from '@techminds-group/tm-angular-lib';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 import { GestaoUsuariosService } from '../../../../core/services/gestao-usuarios.service';
+import { PERFIS_ACESSO } from '../../../../core/models/gestao-usuarios/perfil-acesso.model';
 import { ThemeService } from '../../../../core/services/theme.service';
 
 @Component({
@@ -23,7 +24,10 @@ export class UsuarioNovoComponent implements OnInit {
   protected readonly themeService = inject(ThemeService);
 
   protected readonly salvando = signal<boolean>(false);
-  protected readonly perfilOptions = signal<{ value: string; label: string }[]>([]);
+  /** Opções estáticas da enum de perfis (Administrador, Operador, Profissional). */
+  protected readonly perfilOptions = signal<{ value: string; label: string }[]>(
+    PERFIS_ACESSO.map((p) => ({ value: p.value, label: p.label })),
+  );
   protected readonly perfisSelecionados = signal<string[]>([]);
 
   protected readonly fotoFile = signal<File | null>(null);
@@ -46,16 +50,8 @@ export class UsuarioNovoComponent implements OnInit {
   });
 
   async ngOnInit(): Promise<void> {
-    const niveis = await this.gestaoUsuariosService.carregarNiveis();
-    const options = niveis.map((n) => ({
-      value: n.id,
-      label: n.nome,
-    }));
-    this.perfilOptions.set(options);
-    if (options.length > 0) {
-      this.perfisSelecionados.set([options[0].value]);
-      this.form.patchValue({ perfil: options[0].value });
-    }
+    this.perfisSelecionados.set([this.perfilOptions()[0].value]);
+    this.form.patchValue({ perfil: this.perfilOptions()[0].value });
   }
 
   voltar(): void {
@@ -110,8 +106,8 @@ export class UsuarioNovoComponent implements OnInit {
         senha: raw.senha,
         telefone: (raw.telefone ?? '').replace(/\D/g, ''),
         status: 'Ativo',
-        nivelAcessoId: selected.length > 0 ? selected[0] : (this.perfilOptions()[0]?.value || ''),
-        secundarioNivelAcessoId: selected.length > 1 ? selected[1] : null,
+        perfil: selected.length > 0 ? selected[0] : (this.perfilOptions()[0]?.value || ''),
+        perfilSecundario: selected.length > 1 ? selected[1] : null,
         tema: raw.tema || 'dispositivo',
       });
 

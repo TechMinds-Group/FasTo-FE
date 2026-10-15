@@ -1,4 +1,4 @@
-﻿import {
+import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
@@ -30,6 +30,7 @@ import {
 } from '../../../../core/models/disponibilidade/disponibilidade.model';
 import { DiaFuncionamento } from '../../../../core/models/configuracoes/horario-estabelecimento.model';
 import { Usuario } from '../../../../core/models/gestao-usuarios/usuario.model';
+import { temPerfil } from '../../../../core/models/gestao-usuarios/perfil-acesso.model';
 import { AuthService } from '../../../../core/services/auth.service';
 import { CatalogoService } from '../../../../core/services/catalogo.service';
 import { ClubesService } from '../../../../core/services/clubes.service';
@@ -129,10 +130,7 @@ export class DisponibilidadeComponent implements OnInit, AfterViewInit {
   protected readonly profissionais = computed<Usuario[]>(() => {
     const todos = this.gestaoUsuariosService.usuarios().filter((u) => u.status !== 'Inativo');
     const profs = todos.filter(
-      (u) =>
-        u.perfil === 'Profissional' ||
-        (u.perfil && u.perfil.includes('Profissional')) ||
-        (u.perfil && u.perfil.includes('Administrador')),
+      (u) => temPerfil(u, 'Profissional') || temPerfil(u, 'Administrador'),
     );
     const list = profs.length > 0 ? profs : todos;
 

@@ -41,6 +41,7 @@ import { LanguageService } from '../../../../../core/services/language.service';
 import { ThemeService } from '../../../../../core/services/theme.service';
 import { BloqueioAgendaDTO, BloqueioAgendaService } from '../../../../../core/services/bloqueio-agenda.service';
 import { ServicoCatalogo } from '../../../../../core/models/catalogo/servico.model';
+import { temPerfil } from '../../../../../core/models/gestao-usuarios/perfil-acesso.model';
 import { TxKey } from '../../../../../core/i18n/i18n.types';
 
 const NOVO_CLIENTE_VALUE = '__cadastrar_cliente__';
@@ -197,7 +198,7 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
   protected readonly profissionalOptions = computed<TmSelectOption<string>[]>(() =>
     this.gestaoUsuariosService
       .usuarios()
-      .filter((u) => u.perfil === 'Profissional' || (u.perfil && u.perfil.includes('Profissional')))
+      .filter((u) => temPerfil(u, 'Profissional'))
       .map((u) => ({ value: u.id, label: u.sobrenome ? `${u.nome} ${u.sobrenome}` : u.nome })),
   );
 
