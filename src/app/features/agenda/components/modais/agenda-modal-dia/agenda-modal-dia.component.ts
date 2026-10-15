@@ -39,7 +39,6 @@ import { ClientesService } from '../../../../../core/services/clientes.service';
 import { GestaoUsuariosService } from '../../../../../core/services/gestao-usuarios.service';
 import { LanguageService } from '../../../../../core/services/language.service';
 import { ThemeService } from '../../../../../core/services/theme.service';
-import { BloqueioAgendaDTO, BloqueioAgendaService } from '../../../../../core/services/bloqueio-agenda.service';
 import { ServicoCatalogo } from '../../../../../core/models/catalogo/servico.model';
 import { temPerfil } from '../../../../../core/models/gestao-usuarios/perfil-acesso.model';
 import { TxKey } from '../../../../../core/i18n/i18n.types';
@@ -80,7 +79,6 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
   private readonly languageService = inject(LanguageService);
   private readonly toastService = inject(TmToastService);
   protected readonly themeService = inject(ThemeService);
-  private readonly bloqueioService = inject(BloqueioAgendaService);
 
   /** Admin pode agendar para qualquer profissional; profissional fica restrito ao próprio id (backend também valida). */
   protected readonly ehAdmin = this.authService.hasAdminRole;
@@ -91,7 +89,6 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
 
   readonly mudancaAgendamento = output<void>();
 
-  protected readonly bloqueiosDoDia = signal<BloqueioAgendaDTO[]>([]);
   protected readonly carregando = signal(false);
   protected readonly salvando = signal(false);
   protected readonly exibeForm = signal(false);
@@ -340,29 +337,9 @@ export class AgendaModalDiaComponent implements OnChanges, OnDestroy {
         firstValueFrom(this.clubesService.carregarClubes()),
         this.gestaoUsuariosService.carregarUsuarios(),
         this.clientesService.carregarClientes(),
-        this.carregarBloqueiosDoDia(),
       ]);
       this.fecharForm();
       this.fecharDetalhes();
-    }
-  }
-
-  protected async carregarBloqueiosDoDia(): Promise<void> {
-    const data = this.dataSelecionada();
-    if (!data) {
-      this.bloqueiosDoDia.set([]);
-      return;
-    }
-    try {
-      const ano = data.getFullYear();
-      const mes = String(data.getMonth() + 1).padStart(2, '0');
-      const dia = String(data.getDate()).padStart(2, '0');
-      const inicio = `${ano}-${mes}-${dia}T00:00:00`;
-      const fim = `${ano}-${mes}-${dia}T23:59:59`;
-      const dados = await this.bloqueioService.listarBloqueios(inicio, fim);
-      this.bloqueiosDoDia.set(dados);
-    } catch {
-      this.bloqueiosDoDia.set([]);
     }
   }
 

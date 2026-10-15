@@ -21,7 +21,6 @@ import { EstabelecimentoService } from '../../../core/services/estabelecimento.s
 
 import { GestaoUsuariosService } from '../../../core/services/gestao-usuarios.service';
 import { ThemeService } from '../../../core/services/theme.service';
-import { BloqueioAgendaDTO, BloqueioAgendaService } from '../../../core/services/bloqueio-agenda.service';
 
 /** Breakpoint Bootstrap md — abaixo disso usa View Dia para melhor legibilidade em mobile. */
 const MOBILE_BREAKPOINT = 992;
@@ -48,9 +47,7 @@ export class CalendarioComponent implements OnInit, OnDestroy {
   private readonly estabelecimentoService = inject(EstabelecimentoService);
   private readonly gestaoUsuariosService = inject(GestaoUsuariosService);
   protected readonly themeService = inject(ThemeService);
-  private readonly bloqueioService = inject(BloqueioAgendaService);
   private readonly platformId = inject(PLATFORM_ID);
-  protected readonly bloqueios = signal<BloqueioAgendaDTO[]>([]);
 
   CalendarView = CalendarView;
   viewDate = signal(new Date());
@@ -177,7 +174,6 @@ export class CalendarioComponent implements OnInit, OnDestroy {
     }
 
     this.carregarAgendamentos();
-    this.carregarBloqueios();
     this.estabelecimentoService.carregarHorarios();
     this.setupResizeListener();
     this.setupRefreshTimer();
@@ -224,18 +220,6 @@ export class CalendarioComponent implements OnInit, OnDestroy {
     const usuario = this.authService.currentUser();
     const ehAdmin = this.authService.hasAdminRole();
     await this.agendaService.carregarAgendamentos(ehAdmin ? undefined : usuario?.id);
-  }
-
-  protected async carregarBloqueios(): Promise<void> {
-    try {
-      const hoje = new Date();
-      const inicio = new Date(hoje.getFullYear() - 1, 0, 1).toISOString();
-      const fim = new Date(hoje.getFullYear() + 1, 11, 31, 23, 59, 59).toISOString();
-      const dados = await this.bloqueioService.listarBloqueios(inicio, fim);
-      this.bloqueios.set(dados);
-    } catch {
-      // Graceful fallback
-    }
   }
 
   /** Configura listener de resize para atualizar isMobile e view ao redimensionar. */
@@ -285,29 +269,7 @@ export class CalendarioComponent implements OnInit, OnDestroy {
       };
     });
 
-    const profIdFiltro = this.profissionalIdFiltro();
-    const bloqueiosEvents = this.bloqueios()
-      .filter((b) => !b.profissionalId || profIdFiltro === 'todos' || b.profissionalId === profIdFiltro)
-      .map((b) => {
-        const inicio = agendamentoParaDateLocal(b.dataInicio);
-        const fim = agendamentoParaDateLocal(b.dataFim);
-        const ehFeriado = b.origem === 'feriado_nacional';
-        const prefixo = ehFeriado ? '🚩 Feriado: ' : '🚫 Bloqueio: ';
-        return {
-          id: `bloqueio-${b.id}`,
-          start: inicio,
-          end: fim,
-          title: `${prefixo}${b.titulo}`,
-          allDay: b.diaInteiro,
-          color: {
-            primary: '#dc3545',
-            secondary: '#f8d7da'
-          },
-          meta: { isBloqueio: true, bloqueio: b }
-        };
-      });
-
-    return [...agendamentosEvents, ...bloqueiosEvents];
+    return [...agendamentosEvents];
   });
 
   onDateChange(date: Date) {
