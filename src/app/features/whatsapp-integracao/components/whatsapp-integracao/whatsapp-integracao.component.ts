@@ -78,6 +78,8 @@ export class WhatsappIntegracaoComponent implements OnInit {
   protected readonly statusTexto = signal('Verificando conexão...');
   protected readonly dispositivos = signal<DispositivoWhatsApp[]>([]);
   protected readonly configSalvando = signal(false);
+  protected readonly desconectando = signal(false);
+  protected readonly confirmandoDesconexao = signal(false);
 
   /** Polling de status do QR Code. Para ao conectar, ao expirar o tempo ou quando a aba está oculta (economia de requisições). */
   private pollingSub?: Subscription;
@@ -102,6 +104,40 @@ export class WhatsappIntegracaoComponent implements OnInit {
 
   protected toggleBlocoConfig(): void { this.blocoConfigExpandido.update(v => !v); }
   protected toggleBlocoAjuda(): void { this.blocoAjudaExpandido.update(v => !v); }
+
+  /** Primeiro clique: pede confirmação antes de desconectar (ação destrutiva). */
+  protected solicitarDesconexao(): void {
+    this.confirmandoDesconexao.set(true);
+  }
+
+  protected cancelarDesconexao(): void {
+    this.confirmandoDesconexao.set(false);
+  }
+
+  /** Desconecta todas as conexões WhatsApp do estabelecimento na Evolution API. */
+  protected async desconectar(): Promise<void> {
+    this.desconectando.set(true);
+    this.confirmandoDesconexao.set(false);
+
+    try {
+      const resultado = await firstValueFrom(
+        this.http.post<{ desconectadas: number }>(`${this.apiUrl}/disconnect`, {}),
+      );
+
+      const total = resultado?.desconectadas ?? 0;
+      this.conectado.set(false);
+      this.qrCodeBase64.set(null);
+      this.dispositivos.set([]);
+      this.statusTexto.set(total > 0
+        ? `WhatsApp desconectado (${total} ${total === 1 ? 'conexão removida' : 'conexões removidas'}). Clique em "Conectar" para gerar um novo QR Code.`
+        : 'Nenhuma conexão ativa encontrada. Clique em "Conectar" para gerar um novo QR Code.');
+      this.toastService.success('WhatsApp desconectado com sucesso!', 'Desconectado');
+    } catch {
+      this.toastService.error('Erro ao desconectar o WhatsApp. Tente novamente.', 'Erro');
+    } finally {
+      this.desconectando.set(false);
+    }
+  }
 
   protected voltar(): void {
     this.location.back();
@@ -203,6 +239,10 @@ export class WhatsappIntegracaoComponent implements OnInit {
         this.conectado.set(true);
         this.statusTexto.set('WhatsApp conectado com sucesso!');
         await this.carregarDispositivos();
+      } else if (raw.status === 'connecting') {
+        this.erro.set('A instância está se conectando. Aguarde alguns segundos e clique em "Conectar WhatsApp" novamente.');
+      } else if (raw.status === 'disconnected') {
+        this.erro.set('A instância está desconectada. Clique em "Conectar WhatsApp" novamente para gerar um novo QR Code.');
       } else {
         this.erro.set('Resposta inesperada da Evolution API. Tente novamente.');
       }
