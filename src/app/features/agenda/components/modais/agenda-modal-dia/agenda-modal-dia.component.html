@@ -317,17 +317,6 @@
         </div>
       </div>
 
-      <!-- Alertas de Feriados e Bloqueios do Dia -->
-      @for (b of bloqueiosDoDia(); track b.id) {
-        <div class="alert alert-danger d-flex align-items-center gap-2 mb-3 rounded-3 shadow-sm" role="alert">
-          <i class="fas fa-ban fs-5"></i>
-          <div>
-            <strong class="d-block">{{ b.titulo }} ({{ b.origem === 'feriado_nacional' ? 'Feriado Nacional' : 'Bloqueio/Folga' }})</strong>
-            <span class="small">{{ b.diaInteiro ? 'Bloqueio de dia inteiro (sem atendimento).' : 'Bloqueio parcial de horário.' }} {{ b.profissionalId ? 'Apenas para ' + b.nomeProfissional : 'Para toda a barbearia.' }}</span>
-          </div>
-        </div>
-      }
-
       <!-- Lista de agendamentos -->
       @if (agendamentosDoDia().length === 0) {
         <div class="empty-state text-center py-4 py-sm-5 rounded-4">
